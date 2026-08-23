@@ -36,3 +36,6 @@ out/
 .cache/
 .npm/
 .eslintcache
+
+# Agent tooling
+.opencode/
