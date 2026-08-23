@@ -48,18 +48,20 @@ FastAPI modular monolith ---------------- Managed identity
 | Communication | REST and SSE | `CONFIRMED` | Request/response commands plus one-way long-task progress |
 | Identity | Managed identity provider | `CONFIRMED` | Avoids owning password security while preserving app authorization |
 | Model | One hosted model through a thin adapter | `CONFIRMED` | Limits the evaluation matrix and avoids premature routing |
+| Tool protocol | MCP | `CONFIRMED` | External official-source consumption and internal tool definitions; no public server (ADR-0004) |
 
 ## Modules and Responsibilities
 
 | Module / boundary | Responsibility | Owns | Must not own |
 | --- | --- | --- | --- |
 | Identity and Workspace | Map external identity to private teacher workspaces and enforce ownership | Workspace membership, access decisions, quotas | Password storage, planning content, Agent workflow |
-| Sources and Grounding | Accept, validate, parse, retrieve, and cite allowed sources | Source lifecycle, extraction status, retrieval evidence | Teacher intent, artifact completion |
+| Sources and Grounding | Accept, validate, parse, retrieve, and cite allowed sources, consuming controlled official sources through MCP | Source lifecycle, extraction status, retrieval evidence | Teacher intent, artifact completion |
 | Discovery and Planning | Identify requirement gaps and create teacher-confirmable intent | Requirements brief and unit-blueprint versions | Binary storage, task transport, product-validation claims |
-| Artifact Production | Generate lesson plans, decks, exercises, and answers from an immutable approved version | Derived artifact versions and generation outcomes | Source ownership, final validation status |
+| Artifact Production | Generate lesson plans, decks, exercises, and answers from an immutable approved version using MCP-defined tools | Derived artifact versions and generation outcomes | Source ownership, final validation status |
 | Alignment and Evaluation | Trace objectives through plans and artifacts and record findings and evidence | Alignment findings, technical package-validation status, product-validation status, evaluation results | Silent mutation of owning content or intent |
 | Run Orchestration and Observability | Coordinate specialists, human gates, checkpoints, idempotency, progress, cost, and traces | Run lifecycle and complete run trace | Domain truth outside a bound intent version |
 | Export and Delivery | Package authorized private artifacts for download or printable review | Export lifecycle and authorized delivery | In-browser Office-class editing |
+| Teacher Memory and Preferences | Propose, confirm, apply, and manage workspace-scoped memory | Confirmed memory records and applied-context references | Confirmed intent versions, cross-user data, training use |
 
 ## Dependencies
 
@@ -70,6 +72,9 @@ FastAPI modular monolith ---------------- Managed identity
 - `Alignment and Evaluation -> sources, approved intent, artifacts, and runs`: compare evidence and own validation outcomes but never silently rewrite the owning concepts.
 - `Run Orchestration -> all Agent-capable modules, PostgreSQL, and Celery`: control sequence and state without making modules or task transport a competing workflow truth.
 - `Export and Delivery -> workspace authorization, artifact versions, and object storage`: never expose a storage location without authorization.
+- `Teacher Memory and Preferences -> workspace authorization, PostgreSQL, and Discovery and Planning context`: propose from confirmed outcomes, persist only teacher-confirmed records, and supply subordinate context.
+- `Sources and Grounding -> MCP official-source servers`: consume curriculum evidence through the controlled protocol boundary while treating server content and metadata as untrusted.
+- `Artifact Production -> MCP tool definitions`: register generation and validation tools once and consume the same definitions from the workflow.
 
 ## Main Data and Request Flows
 
@@ -106,13 +111,14 @@ FastAPI modular monolith ---------------- Managed identity
 | Managed identity provider | Registration, login, verification, and identity sessions | New login or session refresh may be unavailable | The application still owns workspace authorization and deletion orchestration |
 | S3-compatible storage | Private uploads and generated files | Upload, generation, or download pauses; database state must not claim a missing file is ready | Access only through authorized application flows or scoped signed delivery |
 | Controlled official sources | Curriculum-grounding evidence | Missing evidence triggers a question, source warning, or blocked generation | Only configured public authoritative sources; no arbitrary Web search |
+| MCP official-source servers | Controlled curriculum evidence via standardized protocol | Missing or failing evidence triggers questions or blocked generation like any source | Application owns authorization; server content and tool metadata remain untrusted |
 
 ## Security and Observability
 
 - Authentication / authorization direction: managed authentication, application-owned object-level authorization, strict teacher-workspace isolation, and application-enforced quotas and rate limits, with managed infrastructure controls as defense in depth.
 - Sensitive data boundary: reject identifiable student data and real student answers or grades; validate files, source rights acknowledgement, and private object access.
 - Logging, metrics and tracing direction: retain complete run traces inside the owning workspace, including prompts and outputs needed for technical evidence. Do not reuse across users or for training. Delete traces with the project or account. Operational access is disclosed, controlled, and audited.
-- Injection boundary: source content is untrusted data. It cannot grant tools, change system policy, reveal other workspaces, or bypass source and completion gates.
+- Injection boundary: source content is untrusted data. It cannot grant tools, change system policy, reveal other workspaces, or bypass source and completion gates. MCP server/tool metadata and teacher memory content follow the same untrusted-input rule.
 
 ## Deployment Direction
 
@@ -124,6 +130,8 @@ Local and CI environments must be reproducible once scaffolding exists. The publ
 - Full-unit, every-lesson generation has high latency, cost, and evaluation surface. Reopen Scope only through `YMY / Project Owner` if it prevents end-to-end evidence.
 - Complete trace retention increases private-content exposure. Revisit if regulatory, provider, or operational constraints prevent user-scoped deletion and access control.
 - Celery and LangGraph can overlap if responsibilities drift. Revisit if task transport begins to own semantic state or the graph begins to replace reliable task delivery.
+- MCP framework coupling. Revisit if the ecosystem or LangGraph integration destabilizes the tool boundary, or if reviewer evidence justifies exposing a read-only evidence server.
+- Applied memory biasing generation. Revisit if evaluation shows confirmed memory harms comparability or teacher outcomes; F009 pins memory state.
 - [UNKNOWN, NON_BLOCKING] Exact model, identity, cloud, and storage providers remain open. Resolve in their owning Features before implementation commitments.
 
 ## Related ADRs
@@ -131,3 +139,5 @@ Local and CI environments must be reproducible once scaffolding exists. The publ
 - `docs/adr/0001-portfolio-first-multi-agent-architecture.md`
 - `docs/adr/0002-stateful-agent-and-async-execution.md`
 - `docs/adr/0003-user-owned-complete-run-traces.md`
+- `docs/adr/0004-mcp-tool-and-source-protocol.md`
+- `docs/adr/0005-workspace-scoped-teacher-memory.md`

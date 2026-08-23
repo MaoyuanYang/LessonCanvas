@@ -4,7 +4,7 @@
 - Roadmap Status: `DRAFT`
 - Priority: `P0`
 - Owner: Unassigned until Feature development starts
-- Last Updated: 2026-08-21
+- Last Updated: 2026-08-23
 
 > This is a macro-level DRAFT created during `coding-start`. It is not `SPEC READY`, does not authorize Coding, and must be refined by `feature-dev`.
 
@@ -49,6 +49,7 @@ As a portfolio reviewer or project owner, I want repeatable technical evaluation
 - Evaluation never mutates the sources, intent, runs, artifacts, or findings it measures.
 - Every result is bound to a fixed version and sufficient configuration evidence for later comparison.
 - Public and persistent evaluation fixtures are synthetic, public, or explicitly licensed and contain no private teacher or student content.
+- Evaluation runs pin or empty teacher-memory state so results remain comparable across runs and versions (ADR-0005).
 - A model-based judge cannot be the only evidence for a technical or product claim.
 - A failed or missing core technical criterion remains visible; it cannot be hidden by an aggregate score.
 - This Feature creates technical evidence but does not alone declare the publicly deployed Phase 1 complete.

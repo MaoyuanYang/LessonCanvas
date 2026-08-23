@@ -44,6 +44,7 @@ Concrete directories and components are decided by the owning Features, not by t
 - API client and error normalization: one typed boundary attaches identity, correlation context, and version preconditions and maps API error classes to project UI states.
 - Authentication state: derive identity from the managed provider and backend authorization result. Never persist credentials in application storage.
 - Persistence / local storage: do not store private source text, full traces, generated content, or identity tokens in browser storage. Any safe preference persistence needs an explicit threat review.
+- Streaming responses: consume SSE token streams for interview, explanation, and generation narration; render incremental text without persisting private content to browser storage; reconnect through the authoritative API rather than local replay.
 
 ## Forms and Validation
 

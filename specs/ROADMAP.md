@@ -20,7 +20,7 @@ Phase 1 produces a publicly inspectable, multi-account LessonCanvas workflow in 
 
 | ID | Name | Goal | Business Value | Priority | Dependencies | Status | Summary |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `F001` | Grounded Confirmed Brief | Confirm a source-grounded teaching brief inside a private teacher project | First real Agent/HITL outcome and ownership proof | `P0` | None | `NEXT` | Managed sign-in, private project, allowed sources, Agent questions, structured brief, and first confirmation gate |
+| `F001` | Grounded Confirmed Brief | Confirm a source-grounded teaching brief inside a private teacher project | First real Agent/HITL outcome and ownership proof | `P0` | None | `NEXT` | Managed sign-in, private project, allowed sources via MCP, streamed Agent questions, structured brief, and first confirmation gate |
 | `F002` | Confirmed Unit Blueprint | Confirm a complete every-lesson unit design | Makes expensive generation governable by teacher intent | `P0` | `F001` | `DRAFT` | Source-linked unit blueprint, structured revision, and second confirmation gate |
 | `F003` | Recoverable Unit Lesson Plans | Generate DOCX lesson plans for every lesson with durable recovery | First useful Office artifact and proof of long-running Agent execution | `P0` | `F002` | `DRAFT` | Version-bound asynchronous run, all-lesson plans, trace capture, progress, idempotency, checkpoints, and authorized downloads |
 | `F004` | Editable Lesson Slide Decks | Generate editable PPTX decks for every lesson | Adds the presentation deliverable and a distinct rendering boundary | `P0` | `F003` | `DRAFT` | Evidence-linked slide decks with scoped progress, file validation, and recoverable delivery |
@@ -32,6 +32,7 @@ Phase 1 produces a publicly inspectable, multi-account LessonCanvas workflow in 
 | `F010` | Teacher Product Validation | Record independent teacher-quality pass, fail, or not-complete status | Prevents technical completion from becoming a false usability claim | `P1` | `F009` | `DRAFT` | External teacher rubric for representative complete units with separate product-validation status |
 | `F011` | Public Multi-Account Guardrails | Verify the complete system's privacy, abuse, cost, and deletion controls | Makes public use bounded and defensible | `P0` | `F009` | `DRAFT` | System-wide isolation, quotas, rate/concurrency limits, injection defense, authorized objects, operator audit, and deletion |
 | `F012` | Deployed Portfolio Proof | Make the protected workflow independently inspectable in the cloud | Converts repository claims into observable release evidence | `P0` | `F009`, `F011` | `DRAFT` | Public entry, synthetic demo data, complete runtime deployment, accessibility, recovery, and honest validation status |
+| `F013` | Teacher Memory | Personalize future work with teacher-confirmed workspace memory | Faster repeat preparation and governed-memory portfolio evidence | `P1` | `F001` | `DRAFT` | Agent-proposed, teacher-confirmed memory records; management UI; subordinate context application; untrusted-input handling |
 
 Only `DRAFT/NEXT/READY/IN_PROGRESS/REVIEW/DONE/BLOCKED` may appear in this Roadmap. No Feature becomes `READY` during `coding-start`.
 
@@ -49,6 +50,7 @@ F008 -> F009
 F009 -> F010
 F009 -> F011
 F009 + F011 -> F012
+F001 -> F013
 ```
 
 ## Handoff
@@ -60,7 +62,7 @@ F009 + F011 -> F012
 - Why now: it is the smallest dependency-free slice that delivers a private, source-grounded, human-confirmed Agent outcome rather than a technical foundation alone.
 - Dependencies satisfied: no Feature dependencies; all provider choices remain bounded refinement questions inside the approved architecture.
 - Expected learning: whether ownership, source grounding, dynamic questions, structured state, teacher confirmation, and the project-centered Web flow form a credible first Agent experience.
-- Refinement still required: concrete providers, initial source formats and official sources, brief completeness and question stopping rules, deletion evidence, provider contracts, UI state detail, Acceptance Test Design, and implementation planning.
+- Refinement still required: concrete providers, initial source formats and official sources, brief completeness and question stopping rules, deletion evidence, provider contracts, UI state detail, Acceptance Test Design, implementation planning, streaming interruption semantics, and first MCP official-source servers.
 
 ## Sequencing Notes
 
@@ -68,10 +70,12 @@ F009 + F011 -> F012
 - `F004` and `F005` may be refined in parallel after `F003`, but neither bypasses the versioned run and recovery contract established there.
 - `F010` does not block an honest technical portfolio release. `F012` must display product validation as passed, failed, or not complete.
 - Security, ownership, accessibility, and untrusted-input behavior are obligations in every Feature. `F011` verifies the completed system rather than introducing these concerns late.
+- Token streaming lands with `F001` (interview), `F003` (generation narration), and `F006` (explanation); MCP consumption lands with `F001` (official sources) and `F003` (tool definitions).
+- `F013` may be refined after `F001`; `F003`–`F005` can adopt confirmed memory as optional context after `F013` without a hard dependency.
 
 ## Roadmap Risks
 
-- `F001` crosses identity, source, Agent, structured-state, and UI boundaries. Keep its outcome to one confirmed brief and defer unit planning and artifacts.
+- `F001` crosses identity, source, Agent, structured-state, streaming, MCP, and UI boundaries. Keep its outcome to one confirmed brief and defer unit planning and artifacts.
 - `F003` is the largest early risk because it introduces full-unit long-running execution. It may be refined only into sub-outcomes that still deliver teacher-visible all-lesson value, not infrastructure-only tasks.
 - Full trace retention increases deletion and operator-access risk across `F006` and `F011`; public portfolio samples remain synthetic-only.
 - Exact providers, official sources, formats, evaluation topics, and rubric details remain Feature-level questions with documented resolution points.

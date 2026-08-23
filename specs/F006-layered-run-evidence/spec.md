@@ -4,7 +4,7 @@
 - Roadmap Status: `DRAFT`
 - Priority: `P0`
 - Owner: Unassigned until Feature development starts
-- Last Updated: 2026-08-21
+- Last Updated: 2026-08-23
 
 > This is a macro-level DRAFT created during `coding-start`. It is not `SPEC READY`, does not authorize Coding, and must be refined by `feature-dev`.
 
@@ -27,6 +27,7 @@ As a teacher or authorized reviewer, I want to move from a plain-language run ex
 - Bind every displayed detail to the authoritative project, immutable intent version, run, and artifact scope.
 - Disclose missing or incomplete telemetry without hiding the authoritative run outcome.
 - Preserve accessible keyboard, semantic, reduced-motion, and non-color behavior for trace relationships.
+- Stream explanation responses where the evidence view narrates findings, keeping complete content in the trace.
 
 ## Out of Scope
 

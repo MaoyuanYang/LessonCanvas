@@ -4,7 +4,7 @@
 - Roadmap Status: `NEXT`
 - Priority: `P0`
 - Owner: Unassigned until Feature development starts
-- Last Updated: 2026-08-21
+- Last Updated: 2026-08-23
 
 > This is a macro-level DRAFT created during `coding-start`. It is not `SPEC READY`, does not authorize Coding, and must be refined by `feature-dev`.
 
@@ -30,6 +30,8 @@ As an individual senior-high English teacher, I want the Agent to identify gaps 
 - Present the inferred teaching intent as a structured draft, including task-level Chinese, English, or bilingual output choice.
 - Allow structured correction and explicit confirmation into an immutable brief version.
 - Show teacher-readable source support and the current draft/confirmed/waiting/error state.
+- Stream interview and explanation responses token by token over SSE, with stop control and complete responses captured in the full trace.
+- Consume controlled official sources through MCP servers and register source/retrieval tooling with MCP-compatible definitions.
 
 ## Out of Scope
 
@@ -81,7 +83,7 @@ As an individual senior-high English teacher, I want the Agent to identify gaps 
 ## Dependencies
 
 - Feature dependencies: None
-- External dependencies: concrete managed identity, hosted model, object storage, and initial official-source choices must be resolved during refinement within the approved architecture
+- External dependencies: concrete managed identity, hosted model, object-storage providers, and the first MCP official-source servers must be resolved during refinement within the approved architecture
 
 ## Initial Acceptance Criteria
 
@@ -91,6 +93,7 @@ These are refinement inputs, not a complete Test Design.
 - [ ] Given another authenticated teacher, when they attempt to access the project, source, interaction, or brief, then the system reveals no private content or resource existence.
 - [ ] Given identifiable student data or a policy-violating source, when it is submitted, then generation is blocked with a specific safe recovery path.
 - [ ] Given a confirmed brief, when the teacher starts a correction, then the confirmed version remains unchanged until a new draft is explicitly confirmed.
+- [ ] Given a streamed interview response, when the teacher stops it, then the underlying interaction remains intact and the complete response stays in the owner-scoped trace.
 
 ## Risks and Assumptions
 
@@ -107,6 +110,8 @@ These are refinement inputs, not a complete Test Design.
 - [ ] What operational access and deletion evidence must the first provider integrations expose?
 - [ ] Which project-workspace and reduced small-screen interactions pass teacher and accessibility validation?
 - [ ] Which opaque ID strategy satisfies the project conventions for the first persistence-owning Feature?
+- [ ] Which MCP servers package the first controlled official sources, and how is their availability verified?
+- [ ] What stop/interruption semantics apply to streamed interview responses without losing partial answers?
 
 ## Deliberately Deferred Detail
 

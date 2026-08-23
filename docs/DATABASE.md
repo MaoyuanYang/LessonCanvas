@@ -22,6 +22,7 @@ This document governs project-level ownership, persistence, versioning, consiste
 | Generated artifacts | Artifact metadata in PostgreSQL plus private object storage | Artifact identity and status come from PostgreSQL; binary content must match the referenced version |
 | Alignment, package validation, and product evaluation | Alignment and Evaluation in PostgreSQL | Status and results describe a particular source, intent, artifact, and run version and cannot silently mutate them |
 | Official curriculum evidence | Controlled external source, with application citation/snapshot metadata | The external source remains authoritative; the application records enough evidence to explain its use |
+| Teacher memory | Teacher Memory and Preferences in PostgreSQL | Only teacher-confirmed proposals persist; memory is subordinate context and never overrides confirmed intent versions |
 
 ## Core Entities and Relationships
 
@@ -36,6 +37,7 @@ This document governs project-level ownership, persistence, versioning, consiste
 | Artifact set | Derived lesson plans, decks, exercises, answers, and exports | Bound to an intent version and producing run |
 | Alignment finding | Evidence-backed coverage, conflict, or gap | References objectives, sources, plans, and artifacts without owning them |
 | Evaluation result | Technical or product evidence for a fixed version | Never retroactively changes the evaluated version |
+| Teacher memory | Workspace-scoped confirmed preferences applied as subordinate context | Owned by the workspace; referenced by runs as applied context |
 
 ## Project-level Conventions
 
@@ -53,7 +55,7 @@ This document governs project-level ownership, persistence, versioning, consiste
 
 ## Delete, Retention and Audit
 
-- Delete strategy: deleting a project or account initiates deletion of its sources, artifacts, complete traces, vectors, and owned business records across PostgreSQL and object storage. The UI must expose progress or failure when deletion is not immediate.
+- Delete strategy: deleting a project or account initiates deletion of its sources, artifacts, complete traces, vectors, confirmed memory records, and owned business records across PostgreSQL and object storage. The UI must expose progress or failure when deletion is not immediate.
 - Retention / privacy: full prompts, materials, outputs, and traces persist only inside the owning workspace while that workspace exists. They are not shared across accounts or used for training.
 - Audit requirements: owner changes, sensitive access, operator troubleshooting access, quota decisions, deletion, severe-finding overrides, and security-relevant actions require auditable evidence without creating a second content corpus.
 

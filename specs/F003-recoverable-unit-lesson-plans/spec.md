@@ -4,7 +4,7 @@
 - Roadmap Status: `DRAFT`
 - Priority: `P0`
 - Owner: Unassigned until Feature development starts
-- Last Updated: 2026-08-21
+- Last Updated: 2026-08-23
 
 > This is a macro-level DRAFT created during `coding-start`. It is not `SPEC READY`, does not authorize Coding, and must be refined by `feature-dev`.
 
@@ -31,6 +31,8 @@ As a senior-high English teacher, I want all lesson plans generated from my conf
 - Make duplicate submission and Worker retry reuse the same run and semantic checkpoints.
 - Preserve completed lesson plans and resume only failed or incomplete scope.
 - Validate that delivered files are authorized, present, structurally sound, and openable.
+- Stream generation narration describing current specialist activity alongside phase-level progress; narration never becomes a second source of truth.
+- Register document-generation and validation tools with MCP-compatible definitions consumed by the workflow.
 
 ## Out of Scope
 
@@ -94,6 +96,7 @@ These are refinement inputs, not a complete Test Design.
 - [ ] Given a Worker or transient provider failure after some lessons complete, when the run resumes, then completed lesson plans remain intact and only eligible incomplete work continues.
 - [ ] Given an old run is superseded by a newer confirmed version, when it reaches a safe checkpoint, then it stops and cannot publish over the newer version.
 - [ ] Given insufficient generation quota, when the teacher starts or repeats an expensive run, then no unauthorized model work begins and the limit/recovery state is explicit.
+- [ ] Given active generation, when narration streaming fails or is stopped, then phase progress and artifact production continue unaffected.
 
 ## Risks and Assumptions
 
@@ -110,6 +113,7 @@ These are refinement inputs, not a complete Test Design.
 - [ ] Which progress granularity informs the teacher without exposing unstable internal implementation?
 - [ ] How do SSE reconnect, resume position, and event evolution restore authoritative progress after the browser leaves or loses its network connection?
 - [ ] What conditions make a failure retryable, blocked on teacher action, or terminal?
+- [ ] How do narration streams relate to phase progress so the teacher receives one coherent story?
 
 ## Deliberately Deferred Detail
 

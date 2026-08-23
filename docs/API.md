@@ -6,7 +6,7 @@ This document governs the project-level HTTP and progress-stream conventions bet
 
 ## Style
 
-- Protocol / style: REST over HTTPS for commands and queries; Server-Sent Events for one-way task progress
+- Protocol / style: REST over HTTPS for commands and queries; Server-Sent Events for one-way task progress and token-level model responses
 - Status: `CONFIRMED`
 - Rationale: the user flow is command/query oriented and needs resumable progress, not a general bidirectional socket protocol.
 
@@ -18,6 +18,15 @@ This document governs the project-level HTTP and progress-stream conventions bet
 - IDs: [CONFIRMED] opaque strings with no embedded user or mutable business meaning.
 - Time: [CONFIRMED] ISO 8601 instants normalized to UTC at the interface boundary.
 - Pagination: [RECOMMENDED] use cursor-oriented pagination for runs, projects, traces, and artifacts where lists can grow; bounded lists may omit it. Revisit with measured list behavior in the owning Feature.
+
+## Streaming
+
+- Transport: [CONFIRMED] SSE remains the one-way streaming transport for task progress and token-level model responses.
+- Event binding: [CONFIRMED] streaming events carry owner-authorized run/correlation context; incremental token events never create new model work.
+- Reconnect: [CONFIRMED] reconnects resume from authoritative server state; replay must not duplicate generation or mutate confirmed state.
+- Stop: [CONFIRMED] a teacher may stop a streamed response; stopping narration is not run cancellation unless explicitly requested.
+- Trace integrity: [CONFIRMED] streamed content is not a separate corpus; the complete response is captured in the workspace's full run trace.
+- Exact event envelopes and interruption contracts wait for Feature refinement.
 
 ## Authentication and Authorization
 

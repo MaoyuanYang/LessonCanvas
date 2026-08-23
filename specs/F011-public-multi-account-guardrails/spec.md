@@ -4,7 +4,7 @@
 - Roadmap Status: `DRAFT`
 - Priority: `P0`
 - Owner: Unassigned until Feature development starts
-- Last Updated: 2026-08-21
+- Last Updated: 2026-08-23
 
 > This is a macro-level DRAFT created during `coding-start`. It is not `SPEC READY`, does not authorize Coding, and must be refined by `feature-dev`.
 
@@ -29,6 +29,7 @@ As an individual teacher, I want my sources, intent, runs, traces, evaluations, 
 - Disclose and audit operator troubleshooting access without creating a shared content corpus.
 - Delete project/account sources, vectors, versions, runs, complete traces, artifacts, exports, and owned records across systems, with visible progress and repair when cleanup is incomplete.
 - Verify non-disclosing permission, limit, provider, and deletion failure UX, including the reduced small-screen boundary.
+- Verify MCP tool authorization and teacher-memory re-injection against injection and policy-bypass attempts.
 
 ## Out of Scope
 
@@ -90,6 +91,7 @@ These are refinement inputs, not a complete Test Design.
 - [ ] Given duplicate, excessive, concurrent, or over-quota requests, when they reach the application, then authoritative limits prevent uncontrolled model work and the owner sees an accurate recovery path.
 - [ ] Given an adversarial source attempts to change policy, invoke unauthorized tools, or exfiltrate another workspace, when processed, then the attempt is contained and auditable.
 - [ ] Given project or account deletion, when cleanup completes, then all governed owned content and complete traces are removed; partial cleanup remains visible and repairable until complete.
+- [ ] Given a malicious MCP tool description or confirmed memory record, when it enters a run, then it cannot grant tools, change policy, or cross workspace boundaries.
 
 ## Risks and Assumptions
 

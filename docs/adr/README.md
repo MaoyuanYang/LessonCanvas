@@ -21,6 +21,8 @@ A confirmed L3 decision must have an Accepted ADR before implementation relies o
 | `0001-portfolio-first-multi-agent-architecture.md` | Keep explicitly orchestrated Multi-Agent as a portfolio requirement and separate technical from product validation | `Accepted` | 2026-08-21 |
 | `0002-stateful-agent-and-async-execution.md` | Adopt the Phase-1 application, data, API, identity, model, and durable Agent runtime architecture | `Accepted` | 2026-08-21 |
 | `0003-user-owned-complete-run-traces.md` | Retain complete traces inside the owning, deletable teacher workspace | `Accepted` | 2026-08-21 |
+| `0004-mcp-tool-and-source-protocol.md` | Adopt MCP for external source consumption and internal tool definitions without exposing a public server | `Accepted` | 2026-08-23 |
+| `0005-workspace-scoped-teacher-memory.md` | Persist teacher memory only as workspace-scoped, teacher-confirmed, subordinate context | `Accepted` | 2026-08-23 |
 
 ## When to Create an ADR
 

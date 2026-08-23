@@ -25,13 +25,16 @@
 | Long-task UI ambiguity | User retries, leaves, or cannot recover safely | Component interaction tests and critical E2E flows |
 | Accessibility regression | Core flow excludes keyboard or assistive-technology users | Automated checks plus manual keyboard/focus review against WCAG 2.2 AA |
 | Model cost or latency regression | Public demo becomes unusable or unaffordable | Per-stage telemetry assertions, evaluation reports, and bounded performance runs |
+| Streaming interruption or reconnect | Partial responses duplicate work or lose authoritative content | API/SSE integration tests for reconnect, stop semantics, and trace completeness |
+| Malicious MCP server or tool metadata | Tool authorization, policy, or data boundaries are bypassed | Adversarial MCP integration cases inside injection and security tests |
+| Memory contamination or self-injection | Confirmed memory poisons later runs or overrides intent | Memory injection cases, authority-rule tests, and teacher-management flows |
 
 ## Test Layers
 
 | Layer | Use for | Avoid |
 | --- | --- | --- |
 | Unit | State transitions, impact rules, source policy, quota rules, status derivation, and evaluation calculations | Framework internals and prompt snapshots as sole evidence |
-| Integration | PostgreSQL transactions, pgvector retrieval, Celery/Redis delivery, checkpoints, object lifecycle, identity verification, provider adapters, and Office rendering | Duplicating all pure rule cases |
+| Integration | PostgreSQL transactions, pgvector retrieval, Celery/Redis delivery, checkpoints, object lifecycle, identity verification, provider adapters, Office rendering, MCP client/tool boundaries, and SSE streaming | Duplicating all pure rule cases |
 | API / Contract | Ownership, errors, stale-version conflicts, idempotency, upload/download authorization, and SSE behavior | Private functions or incidental serialization |
 | Component / Interaction | Confirmation gates, structured revisions, progress, stale state, partial failure, recovery, and layered trace disclosure | Pixel assertions without regression value |
 | E2E | Login-to-private-project, brief and blueprint confirmation, representative generation, failure recovery, review, override, export, and deletion | Every content permutation or low-level edge case |

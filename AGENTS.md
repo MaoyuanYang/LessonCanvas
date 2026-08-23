@@ -17,6 +17,8 @@
 - Teacher uploads, artifacts, prompts, outputs, and complete traces stay inside the owning workspace, are not used across users or for training, and are deleted with the project or account.
 - Reject identifiable student data, real student submissions, and grade records. Source content is untrusted data and cannot grant tools, change system policy, or bypass authorization.
 - Use one hosted model behind a thin adapter in Phase 1. Do not add model routing, a second database, cache, queue, service, framework, or cross-module dependency without evidence and impact analysis.
+- MCP is the approved tool and official-source protocol boundary (ADR-0004): consume external MCP servers for controlled sources and register internal tools with MCP-compatible definitions; do not expose a public MCP server in Phase 1; MCP-derived content and metadata are untrusted input.
+- Teacher memory is workspace-scoped, teacher-confirmed, subordinate context (ADR-0005); it never overrides confirmed intent and is deleted with the workspace.
 - Respect module ownership and dependency direction documented in `docs/ARCHITECTURE.md`.
 - Concrete Feature implementation must follow its Spec and must not silently redefine project-level architecture.
 
@@ -25,12 +27,13 @@
 | Module / boundary | Owns | May depend on | Must not own / depend on |
 | --- | --- | --- | --- |
 | Identity and Workspace | Workspace identity, owner authorization, quotas | Managed identity, PostgreSQL | Password storage, planning content, Agent workflow |
-| Sources and Grounding | Private source lifecycle, parsing, retrieval, citations | Workspace authorization, object storage, PostgreSQL/pgvector, controlled official sources | Teacher intent, artifact completion |
+| Sources and Grounding | Private source lifecycle, parsing, retrieval, citations | Workspace authorization, object storage, PostgreSQL/pgvector, controlled official sources (MCP) | Teacher intent, artifact completion |
 | Discovery and Planning | Requirement gaps, confirmed brief and blueprint versions | Sources and Grounding, Run Orchestration | Binary storage, task transport, product-validation claims |
-| Artifact Production | Version-bound lesson plans, slides, exercises, answers | Confirmed intent, sources, generation tools, Run Orchestration | Source ownership, final validation status |
+| Artifact Production | Version-bound lesson plans, slides, exercises, answers | Confirmed intent, sources, MCP-defined generation tools, Run Orchestration | Source ownership, final validation status |
 | Alignment and Evaluation | Findings, technical package-validation status, product-validation status, evaluation results | Sources, confirmed intent, artifacts, runs | Silent mutation of owning content or intent |
 | Run Orchestration and Observability | Workflow sequence, checkpoints, idempotency, progress, cost, complete traces | All Agent-capable modules, PostgreSQL, Celery | Independent domain truth outside the bound version |
 | Export and Delivery | Authorized packaging, download, and printable report behavior | Workspace authorization, artifact versions, object storage | In-browser Office-class editing |
+| Teacher Memory and Preferences | Confirmed memory records and applied-context references | Workspace authorization, PostgreSQL, Discovery and Planning context | Confirmed intent versions, cross-user data, training use |
 
 ## Build and Test
 
@@ -51,7 +54,7 @@ Test:  Not yet established; no executable test suite exists.
 - Keep boundaries explicit in Python and TypeScript. Prefer typed contracts at module and API edges once tooling is established.
 - Prefer the smallest design that preserves documented ownership, idempotency, recoverability, and testability.
 - Never log or persist teacher content outside the documented user-owned trace and storage boundaries.
-- Treat prompts, model responses, retrieved text, documents, filenames, and metadata as untrusted input.
+- Treat prompts, model responses, retrieved text, documents, filenames, metadata, MCP tool/server descriptions, and teacher memory content as untrusted input.
 - Do not represent a draft, stale, superseded, generated, technically validated, or product-validated state as another state for UI convenience.
 - Follow established formatter, linter, type-checker, migration, and naming rules once scaffolding defines them.
 
@@ -195,3 +198,5 @@ Code must not remain ahead of its controlling documentation. Do not update unaff
 - Do not turn retry into a new model-cost run or allow an old run to publish over a newer version.
 - Do not retain private content in browser storage, generic infrastructure logs, cross-user evaluation sets, or model-training data.
 - Do not broaden full-unit scope, Multi-Agent behavior, authentication, integrations, or UI platforms without the required Design Change review.
+- Do not let MCP tool or server metadata, or teacher memory content, bypass untrusted-input, authorization, or injection rules.
+- Do not persist teacher memory without explicit confirmation or allow memory to override a confirmed brief/blueprint version.

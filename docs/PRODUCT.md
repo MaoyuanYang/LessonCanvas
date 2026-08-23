@@ -47,6 +47,8 @@ The differentiator is not one-shot content generation. LessonCanvas turns teache
 - Structured Web revision and version comparison; final formatting remains editable in exported Office files.
 - A public cloud demo protected by verified login, per-user quotas, rate limits, and concurrency limits.
 - Layered teacher-friendly explanations with expandable technical run details.
+- Token-level streaming for interview, explanation, and generation narration over the confirmed SSE boundary, with complete responses still captured in full traces.
+- Workspace-scoped teacher memory: the Agent proposes preferences from confirmed outcomes; only teacher-confirmed records persist, personalize future work as subordinate context, and are inspectable, editable, and deleted with the workspace.
 
 ## Out of Scope
 
@@ -68,6 +70,7 @@ The differentiator is not one-shot content generation. LessonCanvas turns teache
 - Long work must be resumable, and retries must be idempotent.
 - Private material stays private, user-owned, and deletable; it is never reused across users or for training.
 - A draft may be exported, but a package cannot be marked validated while a severe finding remains unresolved or lacks a teacher-recorded override reason.
+- Memory is subordinate context: it may personalize future discovery and generation but can never override or rewrite a confirmed intent version.
 
 ## Success Criteria
 

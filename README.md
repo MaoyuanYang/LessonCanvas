@@ -10,6 +10,8 @@ LessonCanvas is a portfolio-first Agent application for individual mainland Chin
 - Generate a complete unit package as editable DOCX and PPTX artifacts.
 - Trace goals through plans, lesson artifacts, exercises, and alignment findings.
 - Preserve complete user-owned run traces and recover long-running work from safe checkpoints.
+- Stream interview and generation narration token by token while preserving complete traces.
+- Remember teacher-confirmed preferences as workspace-scoped, deletable memory.
 - Evaluate technical behavior and teacher-facing content as separate, honest outcomes.
 
 ## Tech Stack
@@ -24,6 +26,7 @@ LessonCanvas is a portfolio-first Agent application for individual mainland Chin
 | Files | S3-compatible object storage | `CONFIRMED` | Private uploads and generated DOCX/PPTX artifacts |
 | Identity | Managed identity service | `CONFIRMED` | The application owns authorization, not password security |
 | Model | One hosted model behind a thin adapter | `CONFIRMED` | Provider selection remains open until the Agent runtime Feature |
+| Tool protocol | MCP | `CONFIRMED` | External source consumption and internal tool definitions; no public server |
 
 ## Current Stage
 

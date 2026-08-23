@@ -57,6 +57,19 @@ Open a run or artifact
 - Interruption / return: expanded technical views are optional and do not change project state.
 - Permission boundary: a teacher sees only traces for their own project. Portfolio sample runs use synthetic data; private teacher runs are never republished as portfolio samples under the current privacy decision.
 
+### Manage Teaching Preferences
+
+```text
+Confirm a brief or complete a run
+-> Agent proposes preference candidates with evidence
+-> teacher confirms, edits, or rejects each proposal
+-> confirmed records apply as visible subordinate context to future work
+```
+
+- Failure path: rejected proposals never apply and are not re-proposed identically; a conflict with confirmed intent surfaces with the confirmed version winning.
+- Interruption / return: proposals persist as pending until addressed or dismissed.
+- Permission boundary: only the workspace owner can confirm, edit, or delete memory records.
+
 ## Information Architecture
 
 | Area | Responsibility | Primary users | Entry / relation |
@@ -67,6 +80,7 @@ Open a run or artifact
 | Unit workspace | Hold the current source, intent, generation, review, and version context | Teacher | From a project |
 | Evidence layer | Explain sources, specialist activity, evaluations, and recovery for the current context | Teacher, portfolio reviewer | Contextual within the unit workspace |
 | Account and usage | Show identity, private-data controls, quotas, and deletion | Teacher | Authenticated global navigation |
+| Memory and preferences | Manage teacher-confirmed workspace memory and proposals | Teacher | Account / workspace area |
 
 ## Page / Screen Map
 
@@ -78,6 +92,7 @@ Open a run or artifact
 | Unit workspace | Move through discovery, planning, generation, review, and revision | Current immutable version, confirmation state, phase progress, artifacts, findings, actions | Prepare and revise |
 | Run evidence view | Understand one run without leaving its teaching context | Sources, decisions, specialist steps, tools, metrics, evaluations, retries | Inspect evidence |
 | Account and usage | Control identity-linked data and resource use | Quotas, privacy and deletion actions | Support and safety |
+| Memory management | Manage teacher-confirmed preferences and proposals | Proposal list, confirm/edit/delete actions, applied-context indicator | Manage preferences |
 
 Feature refinement may split or combine these responsibilities, but it must preserve the information architecture and flow. This map does not define a component tree.
 
@@ -96,6 +111,7 @@ Feature refinement may split or combine these responsibilities, but it must pres
 - Show source and version context at the moment a teacher confirms or overrides a significant finding.
 - Dangerous actions: project/account deletion, supersession, and severe-finding override require explicit consequence text and confirmation; use undo only when the backend semantics truly support it.
 - Long-running actions: acknowledge quickly, show named phases and completed scope, allow safe departure, and provide a precise resume path.
+- Streaming responses: streamed Agent text can be stopped; stopping narration never silently cancels the underlying run, and the authoritative content remains the complete trace record.
 
 ## State and Feedback Principles
 
@@ -113,6 +129,8 @@ Feature refinement may split or combine these responsibilities, but it must pres
 | Partial failure | Identify the failed scope and preserved results and offer a checkpoint-aware resume action |
 | Stale / superseded | Identify the newer version and prevent stale output from appearing current |
 | Provider / quota failure | Distinguish outage, timeout, rate limit, and user quota with an appropriate retry or wait path |
+| Streaming / partial response | Present incremental Agent text with stable completion semantics; stop is available and does not cancel underlying work unless requested |
+| Proposed memory pending | Show the proposal with evidence and accept/edit/reject actions; it never applies before confirmation |
 
 ## Accessibility
 
@@ -123,6 +141,7 @@ Feature refinement may split or combine these responsibilities, but it must pres
 - Labels and errors: use specific action language and associate errors with affected controls and recovery guidance.
 - Contrast: text, controls, focus, status, findings, and evidence relationships meet AA contrast and do not depend on color alone.
 - Reduced motion: progress and transition meaning cannot depend on animation; honor user motion preferences.
+- Streaming announcements: present streamed text in throttled semantic batches so assistive technology receives meaningful chunks rather than per-token noise.
 
 ## Responsive UX
 
