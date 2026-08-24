@@ -23,6 +23,7 @@ class Settings(BaseSettings):
 
     max_projects_per_workspace: int = 5
     cors_allowed_origins: list[str] = ["http://localhost:3000"]
+    tasks_eager: bool = False
 
 
 @lru_cache

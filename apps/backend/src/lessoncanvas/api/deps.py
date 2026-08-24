@@ -33,3 +33,6 @@ def require_workspace(request: Request, session: SessionDep) -> Workspace:
     workspace = resolve_workspace(session, subject.clerk_user_id)
     session.commit()
     return workspace
+
+
+WorkspaceDep = Annotated[Workspace, Depends(require_workspace)]

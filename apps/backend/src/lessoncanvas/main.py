@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 
 from lessoncanvas.api.errors import ApiError, render_error
 from lessoncanvas.api.projects import router as projects_router
+from lessoncanvas.api.sources import router as sources_router
 from lessoncanvas.db import check_database
 from lessoncanvas.settings import get_settings
 
@@ -50,6 +51,7 @@ def create_app() -> FastAPI:
         )
 
     app.include_router(projects_router)
+    app.include_router(sources_router)
 
     @app.get("/health")
     def health() -> dict[str, str]:

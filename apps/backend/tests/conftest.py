@@ -8,6 +8,8 @@ os.environ.setdefault(
     "postgresql+psycopg://lessoncanvas:lessoncanvas_dev_only@localhost:5432/lessoncanvas_test",
 )
 os.environ["LESSONCANVAS_CLERK_JWKS_URL"] = ""
+os.environ["LESSONCANVAS_TASKS_EAGER"] = "true"
+os.environ["LESSONCANVAS_S3_BUCKET_SOURCES"] = "lessoncanvas-sources-test"
 
 import jwt as pyjwt
 import pytest
@@ -16,7 +18,7 @@ from sqlalchemy import create_engine, text
 
 from lessoncanvas.settings import get_settings
 
-TABLES = "audit_events, quota_counters, projects, workspaces"
+TABLES = "source_chunks, sources, audit_events, quota_counters, projects, workspaces"
 
 
 def _postgres_available() -> bool:
