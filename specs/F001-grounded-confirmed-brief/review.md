@@ -36,3 +36,11 @@
 ## Conclusion
 
 No Critical or High findings. Two Medium findings are external-evidence gaps with deterministic fallbacks and explicit unblock paths. Recommend `Roadmap Status: REVIEW` and `READY FOR PR` pending PR authorization.
+
+## DONE Record
+
+- Status: `DONE` / `DONE Status: PASS` — recorded 2026-08-24 by implementing agent; merge authorized and performed by `YMY / Project Owner`.
+- Delivery: PR [#2](https://github.com/MaoyuanYang/LessonCanvas/pull/2) merged as `1253ca2` (`feature/F001-grounded-confirmed-brief` → `main`).
+- Manifest: SPEC `d7ae5094c490`, UX/UI `c4cd127cb372`, TEST DESIGN `dc6978dfefc8`, PLAN `plan-f001-r1` (+ task checkboxes), review `review.md`, delivery `1253ca2`; AGENTS `2ee6dba879b1` base with in-place updates; ADRs 0001–0005 unchanged.
+- Acceptance: AC-001..AC-019 covered per traceability in test-design.md; deterministic suites green (51 backend, 11 web, 3 public E2E); live DeepSeek smoke recorded; authenticated E2E gated (external Clerk device verification) as documented Medium.
+- Documentation sync: AGENTS, README, TESTING, DESIGN_SYSTEM, ROADMAP, API/DATABASE/ARCHITECTURE/PRODUCT open items, Issue #1.
