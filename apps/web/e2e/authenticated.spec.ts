@@ -7,9 +7,9 @@ test.describe("authenticated teacher flow", () => {
 
   test("sign in, create project, upload source, confirm brief", async ({ page }) => {
     await page.goto("/sign-in");
-    await page.getByLabel(/email address/i).fill(process.env.E2E_TEACHER_EMAIL ?? "");
-    await page.getByLabel(/password/i).fill(process.env.E2E_TEACHER_PASSWORD ?? "");
-    await page.getByRole("button", { name: /continue/i }).click();
+    await page.locator("#identifier-field").fill(process.env.E2E_TEACHER_EMAIL ?? "");
+    await page.locator("#password-field").fill(process.env.E2E_TEACHER_PASSWORD ?? "");
+    await page.locator(".cl-formButtonPrimary").click();
     await page.waitForURL(/\/projects/);
 
     await page.getByRole("button", { name: "新建备课项目" }).click();
