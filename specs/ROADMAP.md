@@ -55,7 +55,7 @@ F001 -> F013
 
 ## Handoff
 
-### Current: F001 READY
+### Current: F001 DONE
 
 - Feature: `F001 Grounded Confirmed Brief`
 - Work item: [GitHub Issue #1](https://github.com/MaoyuanYang/LessonCanvas/issues/1) — writable work-status authority bound 2026-08-24; this Roadmap is the synchronized projection.
