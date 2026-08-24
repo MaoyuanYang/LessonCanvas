@@ -5,6 +5,7 @@ import ProjectsView from "../app/(authed)/projects/projects-view";
 
 vi.mock("@clerk/nextjs", () => ({
   useAuth: () => ({ getToken: async () => "test-token" }),
+  useUser: () => ({ isSignedIn: true }),
 }));
 
 let matchMediaMatches = true;

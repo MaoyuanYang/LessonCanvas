@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useState } from "react";
@@ -77,6 +77,7 @@ function ProjectCard({
 
 export default function ProjectsView() {
   const { getToken } = useAuth();
+  const { isSignedIn } = useUser();
   const queryClient = useQueryClient();
   const isDesktop = useDesktop();
 
@@ -86,6 +87,8 @@ export default function ProjectsView() {
   const projectsQuery = useQuery({
     queryKey: PROJECTS_KEY,
     queryFn: async () => listProjects(await getToken()),
+    enabled: isSignedIn === true,
+    retry: false,
   });
 
   const createMutation = useMutation({
