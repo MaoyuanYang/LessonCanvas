@@ -39,6 +39,11 @@ class ProviderTransientError(ApiError):
     code = "PROVIDER_TRANSIENT"
 
 
+class StaleVersionError(ApiError):
+    status_code = 409
+    code = "STALE_VERSION"
+
+
 def render_error(request: Request, error: ApiError) -> JSONResponse:
     return JSONResponse(
         status_code=error.status_code,

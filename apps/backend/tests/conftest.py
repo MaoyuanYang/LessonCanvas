@@ -22,7 +22,7 @@ from lessoncanvas.settings import get_settings
 
 TABLES = (
     "trace_events, interaction_messages, discovery_runs, source_chunks, sources, "
-    "audit_events, quota_counters, projects, workspaces"
+    "brief_versions, brief_drafts, audit_events, quota_counters, projects, workspaces"
 )
 
 
