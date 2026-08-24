@@ -18,8 +18,11 @@ export default async function AuthedLayout({ children }: { children: React.React
               LessonCanvas
             </Link>
             <nav aria-label="项目导航" className="flex items-center gap-4 text-sm">
-              <Link href="/projects" className="text-accent" aria-current="page">
+              <Link href="/projects" className="text-accent">
                 项目列表
+              </Link>
+              <Link href="/account" className="text-ink-secondary hover:text-ink">
+                账号与数据
               </Link>
             </nav>
           </div>

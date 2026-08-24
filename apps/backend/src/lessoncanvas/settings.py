@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     clerk_jwks_url: str = ""
     clerk_issuer: str = ""
     clerk_audience: str = ""
+    clerk_secret_key: str = ""
+    clerk_api_base: str = "https://api.clerk.com"
     auth_dev_secret: str = "lessoncanvas-dev-auth-secret-000"
     auth_dev_audience: str = "lessoncanvas-dev"
 

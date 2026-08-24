@@ -19,7 +19,8 @@ def test_project_crud_owner_scoped(client, auth):
     assert fetched.json()["name"] == "外研社必修一 Unit 3"
 
     deleted = client.delete(f"/projects/{created['id']}", headers=auth)
-    assert deleted.status_code == 204
+    assert deleted.status_code == 200
+    assert deleted.json()["deleted"] is True
 
     assert client.get("/projects", headers=auth).json() == []
     missing = client.get(f"/projects/{created['id']}", headers=auth)
@@ -64,6 +65,6 @@ def test_project_quota_enforced(client, auth):
 
 def test_deleted_project_frees_quota(client, auth):
     ids = [create_project(client, auth, name=f"项目 {i}")["id"] for i in range(5)]
-    assert client.delete(f"/projects/{ids[0]}", headers=auth).status_code == 204
+    assert client.delete(f"/projects/{ids[0]}", headers=auth).status_code == 200
     response = client.post("/projects", json={"name": "替补"}, headers=auth)
     assert response.status_code == 201

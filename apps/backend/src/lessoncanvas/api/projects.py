@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Response, status
+from fastapi import APIRouter, Depends, status
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
@@ -70,12 +70,22 @@ def get_project(project_id: uuid.UUID, workspace: WorkspaceDep, session: Session
     return to_out(project)
 
 
-@router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_project(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep) -> Response:
+@router.delete("/{project_id}")
+def delete_project(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep) -> dict:
+    from lessoncanvas.adapters.storage import StorageAdapter
+    from lessoncanvas.modules.identity_workspace.deletion import (
+        DeletionFailedError,
+        delete_project_cascade,
+    )
+
     try:
-        service.delete_project(session, workspace, project_id)
-        session.commit()
+        service.get_owned_project(session, workspace, project_id)
     except service.NotFoundError as err:
-        session.rollback()
         raise NotFoundError("project not found") from err
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    try:
+        delete_project_cascade(session, StorageAdapter(), workspace.id, project_id)
+        session.commit()
+    except DeletionFailedError:
+        session.commit()
+        return {"deleted": False, "status": "deleting"}
+    return {"deleted": True, "status": "deleted"}
