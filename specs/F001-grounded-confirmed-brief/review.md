@@ -17,7 +17,7 @@
 | --- | --- | --- |
 | Critical | none | — |
 | High | none | — |
-| Medium | Authenticated E2E (TS-024/025) cannot run while Clerk "new device verification" is enabled on the dev instance; automated sign-in blocked at client-trust. | Spec present, gated; deterministic coverage via component + API tests; unblock by disabling the Clerk setting, then run `CLERK_E2E=1`. |
+| Medium | Authenticated E2E (TS-024/025) cannot run while Clerk "new device verification" is enabled on the dev instance; automated sign-in blocked at `/sign-in/client-trust` (re-verified 2026-08-24 after locator fixes; Backend API exposes no endpoint to disable it or mint tickets/session tokens). | Spec present, gated behind `CLERK_E2E=1`; deterministic coverage via component + API tests; unblock by disabling the Clerk dashboard setting (Configure → Sign-in & Sign-up → security/device verification), then run `CLERK_E2E=1`. |
 | Medium | Capped live DeepSeek smoke (T5) not recorded; no DeepSeek API key provided. | RESOLVED 2026-08-24: key provided; live smoke recorded — `complete` 2640ms, 31 prompt + 3 completion tokens; `stream` yields tokens correctly. Two capped calls total. |
 | Low | In-progress narration buffer is process-local; reconnect after completion is durable (persisted message), mid-stream reconnect across processes is not. | Accepted for F001 single-instance dev; document before multi-worker deployment. |
 | Low | Source-count quota is checked then inserted (non-atomic under true concurrency). | Accepted for single-teacher demo; DB-level enforcement revisited with F011 quotas. |
