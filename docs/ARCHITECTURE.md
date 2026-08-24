@@ -132,7 +132,7 @@ Local and CI environments must be reproducible once scaffolding exists. The publ
 - Celery and LangGraph can overlap if responsibilities drift. Revisit if task transport begins to own semantic state or the graph begins to replace reliable task delivery.
 - MCP framework coupling. Revisit if the ecosystem or LangGraph integration destabilizes the tool boundary, or if reviewer evidence justifies exposing a read-only evidence server.
 - Applied memory biasing generation. Revisit if evaluation shows confirmed memory harms comparability or teacher outcomes; F009 pins memory state.
-- [UNKNOWN, NON_BLOCKING] Exact model, identity, cloud, and storage providers remain open. Resolve in their owning Features before implementation commitments.
+- [PARTIALLY RESOLVED, 2026-08-24] F001 providers selected: Clerk (identity), DeepSeek (model), local MinIO (object storage) (`YMY / Project Owner`, F001 refinement D1–D3). Cloud/deployment topology and hosted storage remain open until deployment refinement.
 
 ## Related ADRs
 

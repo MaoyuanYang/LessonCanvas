@@ -20,7 +20,7 @@ Phase 1 produces a publicly inspectable, multi-account LessonCanvas workflow in 
 
 | ID | Name | Goal | Business Value | Priority | Dependencies | Status | Summary |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `F001` | Grounded Confirmed Brief | Confirm a source-grounded teaching brief inside a private teacher project | First real Agent/HITL outcome and ownership proof | `P0` | None | `NEXT` | Managed sign-in, private project, allowed sources via MCP, streamed Agent questions, structured brief, and first confirmation gate |
+| `F001` | Grounded Confirmed Brief | Confirm a source-grounded teaching brief inside a private teacher project | First real Agent/HITL outcome and ownership proof | `P0` | None | `READY` | Managed sign-in, private project, allowed sources via MCP, streamed Agent questions, structured brief, and first confirmation gate |
 | `F002` | Confirmed Unit Blueprint | Confirm a complete every-lesson unit design | Makes expensive generation governable by teacher intent | `P0` | `F001` | `DRAFT` | Source-linked unit blueprint, structured revision, and second confirmation gate |
 | `F003` | Recoverable Unit Lesson Plans | Generate DOCX lesson plans for every lesson with durable recovery | First useful Office artifact and proof of long-running Agent execution | `P0` | `F002` | `DRAFT` | Version-bound asynchronous run, all-lesson plans, trace capture, progress, idempotency, checkpoints, and authorized downloads |
 | `F004` | Editable Lesson Slide Decks | Generate editable PPTX decks for every lesson | Adds the presentation deliverable and a distinct rendering boundary | `P0` | `F003` | `DRAFT` | Evidence-linked slide decks with scoped progress, file validation, and recoverable delivery |
@@ -55,14 +55,14 @@ F001 -> F013
 
 ## Handoff
 
-### Confirmed NEXT
+### Current: F001 READY
 
 - Feature: `F001 Grounded Confirmed Brief`
-- Selection: `[CONFIRMED]` by `YMY / Project Owner`, the named Roadmap Decision Authority
-- Why now: it is the smallest dependency-free slice that delivers a private, source-grounded, human-confirmed Agent outcome rather than a technical foundation alone.
-- Dependencies satisfied: no Feature dependencies; all provider choices remain bounded refinement questions inside the approved architecture.
-- Expected learning: whether ownership, source grounding, dynamic questions, structured state, teacher confirmation, and the project-centered Web flow form a credible first Agent experience.
-- Refinement still required: concrete providers, initial source formats and official sources, brief completeness and question stopping rules, deletion evidence, provider contracts, UI state detail, Acceptance Test Design, implementation planning, streaming interruption semantics, and first MCP official-source servers.
+- Work item: [GitHub Issue #1](https://github.com/MaoyuanYang/LessonCanvas/issues/1) — writable work-status authority bound 2026-08-24; this Roadmap is the synchronized projection.
+- Gates: `SPEC READY: PASS` (`d7ae5094c490`), `UI READY: PASS` (`c4cd127cb372`), `TEST DESIGN READY: PASS` (`dc6978dfefc8`), all approved by `YMY / Project Owner` on 2026-08-24.
+- Plan and Tasks: `specs/F001-grounded-confirmed-brief/plan.md` @ `0092f169df34` (`plan-f001-r1`, 13 interleaved tasks T0–T12).
+- Refinement resolved: providers (Clerk, DeepSeek, local MinIO), source formats, standards-snapshot MCP tool, UUIDv7, stop semantics, brief completeness, questioning cap, small-screen boundary, deletion evidence.
+- Next: `Roadmap Status: IN_PROGRESS` once Coding is explicitly started.
 
 ## Sequencing Notes
 

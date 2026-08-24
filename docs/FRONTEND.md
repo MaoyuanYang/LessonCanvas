@@ -82,5 +82,5 @@ Concrete directories and components are decided by the owning Features, not by t
 
 - [CONFIRMED] Follow the locale and theme Scope in `docs/PRODUCT.md` and the experience behavior in `docs/UX.md`; frontend implementation may not introduce another locale or theme implicitly.
 - [CONFIRMED] Small-screen use is intentionally reduced. Revisit if teacher evidence shows substantial preparation work occurs away from desktop.
-- [UNKNOWN, NON_BLOCKING] The query, form, schema-validation, and styling libraries are not selected. Resolve in the first frontend Feature before `UI READY`.
+- [RESOLVED, 2026-08-24] Frontend libraries selected for F001 (`YMY / Project Owner`, F001 UI refinement): TanStack Query (server state), React Hook Form + Zod (forms/validation), Tailwind CSS with a semantic token layer (styling), Radix UI (unstyled accessible primitives), lucide-react (icons).
 - [RECOMMENDED] Code-split heavy trace visualization and document previews. Revisit after bundle measurement shows where the cost actually occurs.

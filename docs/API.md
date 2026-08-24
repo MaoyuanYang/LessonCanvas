@@ -58,5 +58,5 @@ Concrete business endpoints, event names, payload fields, and frontend/backend c
 
 ## Open Items
 
-- [UNKNOWN, NON_BLOCKING] The managed identity token/session integration is not selected. Resolve before the identity and workspace Feature reaches `SPEC READY`.
-- [UNKNOWN, NON_BLOCKING] The exact SSE resume mechanism and event envelope are not selected. Resolve with the first long-running generation Feature.
+- [RESOLVED, 2026-08-24] The managed identity token/session integration: Clerk sessions validated at the FastAPI boundary (`YMY / Project Owner`, F001 refinement D1).
+- [UNKNOWN, NON_BLOCKING] The exact SSE resume mechanism and event envelope are not selected. Resolve with the first long-running generation Feature (F001 defines interview-stream semantics at behavior level only).

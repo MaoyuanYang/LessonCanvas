@@ -72,6 +72,6 @@ Redis is a non-authoritative Celery transport. No business fact, quota balance, 
 
 ## Open Items
 
-- [UNKNOWN, NON_BLOCKING] The concrete opaque ID strategy is not selected. Resolve in the first persistence-owning Feature.
-- [UNKNOWN, NON_BLOCKING] The identity provider's account-deletion callback and the object store's deletion guarantees are not selected. Resolve before public multi-account deployment.
+- [RESOLVED, 2026-08-24] The concrete opaque ID strategy: UUIDv7 primary keys, opaque string form in APIs (`YMY / Project Owner`, F001 refinement D6).
+- [UNKNOWN, NON_BLOCKING] The identity provider's account-deletion callback is resolved for F001 (Clerk user-deletion API), and local MinIO deletion is synchronous; hosted object-store deletion guarantees remain open. Resolve before public multi-account deployment.
 - [UNKNOWN, NON_BLOCKING] Minimum non-content security-audit retention is not selected. Resolve during the security and operations Feature without retaining deleted teacher content.

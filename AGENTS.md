@@ -8,6 +8,14 @@
 - Project documentation: `README.md`, `docs/`, `specs/ROADMAP.md`.
 - Decision Authority: `YMY / Project Owner` approves Scope, Roadmap, and architecture decisions.
 
+## Language Policy
+
+| Dimension | Value | Scope | Authority | Approval | Date |
+| --- | --- | --- | --- | --- | --- |
+| Documentation Language | `en` | Repository-wide default: README, AGENTS, `docs/`, `specs/`, ADRs, Gate records, Test Design, Plans, Review and delivery records | `YMY / Project Owner` (Maintainer Decision Authority) | Adopted repository-wide default during first `feature-dev` preflight (F001) | 2026-08-24 |
+| Engineering Language | `en` | Repository-wide default: code identifiers, database objects, API paths and definitions, config keys, env vars, branch names, commit messages, Issue/PR titles and descriptions, developer-facing logs | `YMY / Project Owner` (Maintainer Decision Authority) | Adopted repository-wide default during first `feature-dev` preflight (F001) | 2026-08-24 |
+| Product Content Language | `zh-Hans` | Phase-1 user-facing UI copy, per `docs/UX.md` Internationalization and Theme; generated teaching content may be Chinese, English, or bilingual per task-level teacher choice | `YMY / Project Owner` | Recorded from product requirements in `docs/UX.md` | 2026-08-24 |
+
 ## Architecture Constraints
 
 - PostgreSQL is authoritative for application ownership, business versions, run state, and checkpoints; Redis is task transport and must not become business truth.
@@ -79,10 +87,10 @@ Only deepen the selected `NEXT` Spec. Do not prematurely finalize unrelated DRAF
 
 ## Work Tracking and Delivery
 
-- Tracking mode: `TBD`. Select a remote Issue or explicit local work item during the first `feature-dev` refinement; do not infer remote authorization.
+- Tracking mode: `GitHub Issue` in `MaoyuanYang/LessonCanvas`. Adopted by `YMY / Project Owner` on 2026-08-24 during the first `feature-dev` refinement (F001); `gh` is authenticated with repository scope. Each remote Issue action still requires the authorization recorded for that action.
 - Before `feature-dev`, `specs/ROADMAP.md` owns only initial `DRAFT/NEXT/BLOCKED`. Once a work item is bound, that work item is the writable work-status authority and Roadmap is a synchronized projection.
 - A remote authority must be writable with explicit authorization before claiming a transition; otherwise adopt an explicit local work item or stop without changing status.
-- Delivery mode: `TBD`. Select PR/MR or an explicit no-PR Delivery Record before implementation delivery.
+- Delivery mode: `PR/MR`. Adopted by `YMY / Project Owner` on 2026-08-24 during the first `feature-dev` refinement (F001); each push and PR action still requires separate explicit authorization.
 - Remote Issue, commit, push, PR/MR, merge, release, and close actions each require separate explicit user authorization.
 
 ## Complete Feature Workflow

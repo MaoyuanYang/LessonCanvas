@@ -65,4 +65,5 @@ Exact families, values, and breakpoint numbers are selected and visually validat
 
 - [RECOMMENDED] Select interface and editorial type families only after testing Simplified Chinese, English teaching content, equations/phonetics, and Office-preview fallback. Revisit in the first visual foundation Feature.
 - [RECOMMENDED] Define exact semantic color values through contrast tests and representative states, not aesthetic preference alone. Revisit before `UI READY` for the first authenticated Feature.
-- [UNKNOWN, NON_BLOCKING] The specific Headless primitive package and icon set are not selected. Resolve in the first frontend Feature after accessibility and bundle review.
+- [RESOLVED, 2026-08-24] Headless primitive package and icon set selected for F001 (`YMY / Project Owner`): Radix UI primitives, lucide-react icons. Accessibility and bundle review happen during F001 implementation.
+- [RESOLVED, 2026-08-24] Font strategy (`YMY / Project Owner`): system font stacks only, no web-font downloads; interface stack includes zh-Hans faces, editorial reading voice uses a serif stack. Revisit only with measured cross-platform readability evidence.

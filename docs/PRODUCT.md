@@ -105,6 +105,6 @@ The differentiator is not one-shot content generation. LessonCanvas turns teache
 
 ## Open Items
 
-- [UNKNOWN, NON_BLOCKING] The first controlled official-source list is not selected. Resolve during the grounding Feature with the participating English teacher.
+- [PARTIALLY RESOLVED, 2026-08-24] Initial controlled official source selected for F001: curated curriculum-standards snapshot via internal MCP-compatible tool (`YMY / Project Owner`, F001 refinement D5). Participating-teacher validation of the evidence set remains open.
 - [UNKNOWN, NON_BLOCKING] Exact rubric wording and representative unit topics are not selected. Resolve before the evaluation Feature reaches `TEST DESIGN READY`.
 - [RECOMMENDED] Use existing provider or managed-service administration rather than build a custom operations console. Revisit when sustained non-demo operations require productized support workflows.
