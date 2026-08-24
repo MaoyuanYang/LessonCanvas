@@ -5,6 +5,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from lessoncanvas.api.discovery import router as discovery_router
 from lessoncanvas.api.errors import ApiError, render_error
 from lessoncanvas.api.projects import router as projects_router
 from lessoncanvas.api.sources import router as sources_router
@@ -52,6 +53,7 @@ def create_app() -> FastAPI:
 
     app.include_router(projects_router)
     app.include_router(sources_router)
+    app.include_router(discovery_router)
 
     @app.get("/health")
     def health() -> dict[str, str]:

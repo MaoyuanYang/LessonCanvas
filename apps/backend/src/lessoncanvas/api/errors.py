@@ -34,6 +34,11 @@ class QuotaExceededError(ApiError):
     code = "QUOTA_EXCEEDED"
 
 
+class ProviderTransientError(ApiError):
+    status_code = 503
+    code = "PROVIDER_TRANSIENT"
+
+
 def render_error(request: Request, error: ApiError) -> JSONResponse:
     return JSONResponse(
         status_code=error.status_code,

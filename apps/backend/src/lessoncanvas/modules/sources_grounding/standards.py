@@ -28,8 +28,7 @@ def load_snapshot() -> StandardsSnapshot:
     )
     data = json.loads(raw)
     sections = tuple(
-        StandardsSection(id=s["id"], title=s["title"], text=s["text"])
-        for s in data["sections"]
+        StandardsSection(id=s["id"], title=s["title"], text=s["text"]) for s in data["sections"]
     )
     return StandardsSnapshot(
         snapshot_version=data["snapshot_version"],

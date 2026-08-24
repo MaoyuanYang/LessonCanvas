@@ -25,6 +25,13 @@ class Settings(BaseSettings):
     cors_allowed_origins: list[str] = ["http://localhost:3000"]
     tasks_eager: bool = False
 
+    model_adapter: str = "deepseek"
+    deepseek_api_key: str = ""
+    deepseek_base_url: str = "https://api.deepseek.com"
+    deepseek_model: str = "deepseek-chat"
+    max_model_calls_per_run: int = 20
+    checkpoint_backend: str = "postgres"
+
 
 @lru_cache
 def get_settings() -> Settings:
