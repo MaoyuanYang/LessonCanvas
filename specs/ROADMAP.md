@@ -62,7 +62,7 @@ F001 -> F013
 - Gates: `SPEC READY: PASS` (`d7ae5094c490`), `UI READY: PASS` (`c4cd127cb372`), `TEST DESIGN READY: PASS` (`dc6978dfefc8`), all approved by `YMY / Project Owner` on 2026-08-24.
 - Plan and Tasks: `specs/F001-grounded-confirmed-brief/plan.md` @ `0092f169df34` (`plan-f001-r1`, 13 interleaved tasks T0–T12).
 - Refinement resolved: providers (Clerk, DeepSeek, local MinIO), source formats, standards-snapshot MCP tool, UUIDv7, stop semantics, brief completeness, questioning cap, small-screen boundary, deletion evidence.
-- Next: `Roadmap Status: IN_PROGRESS` once Coding is explicitly started.
+- Implementation: T0–T12 complete; `REVIEW`; delivery PR [#2](https://github.com/MaoyuanYang/LessonCanvas/pull/2) open (`feature/F001-grounded-confirmed-brief` → `main`), pending merge authorization.
 
 ## Sequencing Notes
 
