@@ -147,8 +147,8 @@ Live DeepSeek checks are excluded from deterministic CI (Test Design TQ-001); a 
 
 ## Interleaved Tasks
 
-- [ ] T0 Scaffold + infra: monorepo layout; docker compose (PostgreSQL+pgvector, Redis, MinIO); FastAPI app + Alembic + Celery skeletons; Next.js app skeleton; ruff/eslint/prettier/tsc; pytest/vitest/playwright configs boot; health endpoints. Exit: compose up -> backend health PASS -> web home renders; commands persisted to AGENTS/README/TESTING.
-- [ ] T1 Identity + projects: migrations (workspaces, projects, quotas, audit); Clerk validation middleware; project CRUD API; TS-001/002/003 PASS; TS-021 quota base.
+- [x] T0 Scaffold + infra: monorepo layout; docker compose (PostgreSQL+pgvector, Redis, MinIO); FastAPI app + Alembic + Celery skeletons; Next.js app skeleton; ruff/eslint/prettier/tsc; pytest/vitest/playwright configs boot; health endpoints. Exit: compose up -> backend health PASS -> web home renders; commands persisted to AGENTS/README/TESTING. — DONE 2026-08-24: 3 services healthy; `/health` live `{"status":"ok","database":"ok"}`; pytest 3 passed; vitest/tsc/eslint/prettier/build all pass; commands synced.
+- [x] T1 Identity + projects: migrations (workspaces, projects, quotas, audit); Clerk validation middleware; project CRUD API; TS-001/002/003 PASS; TS-021 quota base. — DONE 2026-08-24: migration `ef4874404c48` applied; JWT verifier adapter (Clerk JWKS when configured, signed dev tokens otherwise); 12 tests green incl. cross-account non-disclosure and quota.
 - [ ] T2 Web shell + project list: Clerk Next.js integration; public entry; project list with loading/empty/error; new preparation modal; safe not-found; token layer + 1024px guards; TS-022 (project surfaces) PASS.
 - [ ] T3 Sources: upload endpoint + MinIO storage; format/size/count policy; student-data screening; Celery parsing + states; TS-004/005/006 PASS; sources panel UI + TS-022 (source states) PASS.
 - [ ] T4 Standards snapshot + MCP tool: bundle versioned snapshot; internal MCP-compatible retrieval tool; citation records; TS-016 PASS incl. adversarial metadata.

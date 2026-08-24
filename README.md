@@ -30,34 +30,42 @@ LessonCanvas is a portfolio-first Agent application for individual mainland Chin
 
 ## Current Stage
 
-- Macro design: `MACRO DESIGN READY` (project-level direction can be documented and mapped; no Feature is ready for Coding)
-- Project documentation: macro baseline and shallow DRAFT Specs generated
-- Feature planning: `F001 Grounded Confirmed Brief` is the sole `NEXT`; every Spec remains `DRAFT`
-- Business implementation: not started
-
-### Confirmed NEXT
-
-- Feature: `F001 Grounded Confirmed Brief`
-- Selection: confirmed by `YMY / Project Owner`
-- Handoff: ready for `feature-dev` refinement
-- Constraint: `NEXT` does not mean `SPEC READY`, `UI READY`, `TEST DESIGN READY`, or permission to Code
+- Macro design: `MACRO DESIGN READY`
+- Feature planning: `F001 Grounded Confirmed Brief` is `IN_PROGRESS` with `SPEC READY`, `UI READY`, and `TEST DESIGN READY` passed (see `specs/ROADMAP.md` and [Issue #1](https://github.com/MaoyuanYang/LessonCanvas/issues/1))
+- Application scaffold: monorepo with `apps/web` (Next.js) and `apps/backend` (FastAPI + Celery) established; infrastructure via `infra/docker-compose.yml`
 
 ## Start
 
 ```text
-Not yet established: no application scaffold or business implementation exists.
+docker compose -f infra/docker-compose.yml up -d
 ```
+
+Starts PostgreSQL+pgvector, Redis, and MinIO with healthchecks.
 
 ## Build
 
 ```text
-Not yet established: no build toolchain has been created.
+# Backend (Python 3.12, uv)
+cd apps/backend
+uv sync --group dev
+uv run uvicorn lessoncanvas.main:app --reload        # API on :8000, GET /health
+
+# Frontend (Node 24, pnpm via corepack)
+corepack pnpm install
+corepack pnpm web:dev                                # Web on :3000
+corepack pnpm web:build
 ```
 
 ## Test
 
 ```text
-Not yet established: no executable test suite has been created.
+cd apps/backend
+uv run pytest
+uv run ruff check src tests migrations
+
+corepack pnpm web:test
+corepack pnpm web:lint
+corepack pnpm web:typecheck
 ```
 
 ## Documentation

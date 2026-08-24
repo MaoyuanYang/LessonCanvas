@@ -20,7 +20,7 @@ Phase 1 produces a publicly inspectable, multi-account LessonCanvas workflow in 
 
 | ID | Name | Goal | Business Value | Priority | Dependencies | Status | Summary |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `F001` | Grounded Confirmed Brief | Confirm a source-grounded teaching brief inside a private teacher project | First real Agent/HITL outcome and ownership proof | `P0` | None | `READY` | Managed sign-in, private project, allowed sources via MCP, streamed Agent questions, structured brief, and first confirmation gate |
+| `F001` | Grounded Confirmed Brief | Confirm a source-grounded teaching brief inside a private teacher project | First real Agent/HITL outcome and ownership proof | `P0` | None | `IN_PROGRESS` | Managed sign-in, private project, allowed sources via MCP, streamed Agent questions, structured brief, and first confirmation gate |
 | `F002` | Confirmed Unit Blueprint | Confirm a complete every-lesson unit design | Makes expensive generation governable by teacher intent | `P0` | `F001` | `DRAFT` | Source-linked unit blueprint, structured revision, and second confirmation gate |
 | `F003` | Recoverable Unit Lesson Plans | Generate DOCX lesson plans for every lesson with durable recovery | First useful Office artifact and proof of long-running Agent execution | `P0` | `F002` | `DRAFT` | Version-bound asynchronous run, all-lesson plans, trace capture, progress, idempotency, checkpoints, and authorized downloads |
 | `F004` | Editable Lesson Slide Decks | Generate editable PPTX decks for every lesson | Adds the presentation deliverable and a distinct rendering boundary | `P0` | `F003` | `DRAFT` | Evidence-linked slide decks with scoped progress, file validation, and recoverable delivery |

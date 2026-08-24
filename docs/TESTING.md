@@ -62,10 +62,17 @@
 ## Commands
 
 ```text
-Not yet established: no application scaffold or executable test suite exists.
+Backend unit/integration:  cd apps/backend && uv run pytest
+Backend lint:              uv run ruff check src tests migrations
+Frontend component tests:  corepack pnpm web:test          (Vitest + Testing Library)
+Frontend lint/typecheck:   corepack pnpm web:lint / corepack pnpm web:typecheck
+E2E:                       corepack pnpm --filter web test:e2e   (Playwright; suites land with T11)
+Services:                  docker compose -f infra/docker-compose.yml up -d
 ```
 
-When commands are established, update this file, `README.md`, and `AGENTS.md` in the same change.
+Deterministic suites replace DeepSeek and Clerk with scripted fakes; live-provider evidence runs separately (F001 Test Design TQ-001). Integration tests that require local services skip automatically when a service is unreachable.
+
+When commands change, update this file, `README.md`, and `AGENTS.md` in the same change.
 
 ## Feature Test Design Rule
 

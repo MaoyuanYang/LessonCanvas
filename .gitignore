@@ -34,8 +34,19 @@ out/
 
 # Cache
 .cache/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
 .npm/
 .eslintcache
+.next/
+.turbo/
+coverage/
+playwright-report/
+test-results/
 
 # Agent tooling
 .opencode/

@@ -46,9 +46,22 @@
 ## Build and Test
 
 ```text
-Start: Not yet established; no application scaffold exists.
-Build: Not yet established; no build toolchain exists.
-Test:  Not yet established; no executable test suite exists.
+Start:    docker compose -f infra/docker-compose.yml up -d
+          (PostgreSQL+pgvector, Redis, MinIO; all with healthchecks)
+
+Backend:  cd apps/backend
+          uv sync --group dev
+          uv run pytest
+          uv run ruff check src tests migrations
+          uv run uvicorn lessoncanvas.main:app --reload   (API :8000, GET /health)
+          uv run celery -A lessoncanvas.worker.celery_app worker   (worker, needs Redis)
+
+Frontend: corepack pnpm install                            (pnpm via corepack)
+          corepack pnpm web:dev                            (Web :3000)
+          corepack pnpm web:build
+          corepack pnpm web:test                           (Vitest)
+          corepack pnpm web:lint
+          corepack pnpm web:typecheck
 ```
 
 - Never invent a command. When tooling changes, update this file, `README.md`, and `docs/TESTING.md` together.
