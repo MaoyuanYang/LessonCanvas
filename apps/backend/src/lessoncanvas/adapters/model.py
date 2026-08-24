@@ -54,6 +54,39 @@ class DeepSeekAdapter:
             latency_ms=latency,
         )
 
+    def stream(self, system: str, user: str):
+        settings = get_settings()
+        with httpx.stream(
+            "POST",
+            f"{settings.deepseek_base_url}/chat/completions",
+            headers={"Authorization": f"Bearer {settings.deepseek_api_key}"},
+            json={
+                "model": settings.deepseek_model,
+                "messages": [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user},
+                ],
+                "temperature": 0.2,
+                "stream": True,
+            },
+            timeout=60,
+        ) as response:
+            response.raise_for_status()
+            for line in response.iter_lines():
+                if not line or not line.startswith("data:"):
+                    continue
+                payload_text = line[len("data:") :].strip()
+                if payload_text == "[DONE]":
+                    break
+                try:
+                    payload = json.loads(payload_text)
+                except json.JSONDecodeError:
+                    continue
+                delta = payload.get("choices", [{}])[0].get("delta", {})
+                token = delta.get("content")
+                if token:
+                    yield token
+
 
 class FakeModelAdapter:
     def complete(self, system: str, user: str) -> ModelResponse:
@@ -81,6 +114,11 @@ class FakeModelAdapter:
         if "fail" in data.get("scenario", ""):
             raise ModelProviderError("model provider unavailable")
         return ModelResponse(text=json.dumps({}), latency_ms=1)
+
+    def stream(self, system: str, user: str):
+        data = json.loads(user)
+        text = data.get("narration", "这是叙述文本。")
+        yield from (text[i : i + 4] for i in range(0, len(text), 4))
 
 
 @lru_cache
