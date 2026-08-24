@@ -13,7 +13,7 @@ test.describe("authenticated teacher flow", () => {
     await page.waitForURL(/\/projects/);
 
     await page.getByRole("button", { name: "新建备课项目" }).click();
-    await page.getByLabelText(/项目名称/).fill("E2E 单元");
+    await page.getByLabel(/项目名称/).fill("E2E 单元");
     await page.getByRole("button", { name: "创建项目" }).click();
     await expect(page.getByText("E2E 单元")).toBeVisible();
   });

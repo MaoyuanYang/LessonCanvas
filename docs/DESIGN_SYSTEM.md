@@ -24,6 +24,27 @@ Record semantic systems, not an exhaustive premature token dump.
 
 Exact families, values, and breakpoint numbers are selected and visually validated with the first UI Feature rather than frozen during macro design.
 
+### Implemented initial values (F001, 2026-08-24)
+
+Semantic color values first implemented in `apps/web/app/globals.css` (Tailwind `@theme`), per the UX/UI refinement of F001:
+
+| Token | Value | Use |
+| --- | --- | --- |
+| surface.paper | `#FBFAF7` | Reading surfaces |
+| surface.alt | `#F4F2EC` | Grouping surfaces |
+| border (line) | `#E3E0D8` | Rules and outlines |
+| ink | `#1C1B18` | Body text |
+| ink.secondary | `#55534C` | Supporting text |
+| accent (action) | `#345C74` | Primary action (white text, >=4.5:1) |
+| evidence | `#4A6741` | Source support markers |
+| warning | `#8A6D1F` | Warnings (text-safe) |
+| severe | `#A33B2E` | Rejection / severe findings |
+| success | `#2F6B45` | Confirmed / ready |
+| stale | `#6E6A5E` | Stale / superseded |
+| focus | `#2F5D8A` | Shared focus ring |
+
+Typography: system sans stack with zh-Hans faces for interface; system serif stack for the editorial reading voice; no web-font downloads. Breakpoint: 1024px separates the full desktop workspace from the canonical reduced small-screen experience. Contrast validation for these values is performed with the F001 accessibility pass; revisit with measured evidence.
+
 ## Foundational Components
 
 | Component | Required variants / states | Accessibility rule |

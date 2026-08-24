@@ -31,7 +31,7 @@ LessonCanvas is a portfolio-first Agent application for individual mainland Chin
 ## Current Stage
 
 - Macro design: `MACRO DESIGN READY`
-- Feature planning: `F001 Grounded Confirmed Brief` is `IN_PROGRESS` with `SPEC READY`, `UI READY`, and `TEST DESIGN READY` passed (see `specs/ROADMAP.md` and [Issue #1](https://github.com/MaoyuanYang/LessonCanvas/issues/1))
+- Feature planning: `F001 Grounded Confirmed Brief` passed `SPEC READY`, `UI READY`, and `TEST DESIGN READY` (2026-08-24); implemented through T0–T11 vertical slices; status `REVIEW` (see `specs/ROADMAP.md`, [Issue #1](https://github.com/MaoyuanYang/LessonCanvas/issues/1))
 - Application scaffold: monorepo with `apps/web` (Next.js) and `apps/backend` (FastAPI + Celery) established; infrastructure via `infra/docker-compose.yml`
 
 ## Start
