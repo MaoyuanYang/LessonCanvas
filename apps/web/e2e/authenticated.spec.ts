@@ -58,39 +58,53 @@ test.describe("authenticated teacher flow", () => {
     }
 
     await page.getByRole("button", { name: "新建备课项目" }).click();
-    await page.locator("#project-name").fill(`E2E 自动化单元 ${Date.now()}`);
+    const projectName = `E2E 自动化单元 ${Date.now()}`;
+    await page.locator("#project-name").fill(projectName);
     await page
       .locator("#project-hints")
       .fill(
         "单元主题：环境保护与可持续发展\n课时数：6\n学情：高二学生，英语中等水平\n教学目标：提升阅读与表达能力\n教材定位：外研社必修一 Unit 3\n输出语言：中英双语\n评估倾向：形成性评价为主",
       );
     await page.getByRole("button", { name: "创建项目" }).click();
-    await page.getByRole("link", { name: /E2E 自动化单元/ }).first().click();
+    await page.getByRole("link", { name: projectName }).first().click();
 
-    await page.getByRole("button", { name: "需求访谈" }).click();
-    await page.getByRole("button", { name: "开始访谈" }).click();
+    await page.getByRole("button", { name: "需求访谈" }).click({ timeout: 30000 });
+    await page.getByRole("button", { name: "开始访谈" }).click({ timeout: 30000 });
     await expect(page.getByText(/访谈已完成/)).toBeVisible({ timeout: 120000 });
 
-    await page.getByRole("button", { name: "教学简报" }).click();
+    await page.getByRole("button", { name: "教学简报" }).click({ timeout: 30000 });
     await expect(page.getByText("教师陈述").first()).toBeVisible({ timeout: 30000 });
-    await page.getByRole("button", { name: "确认简报" }).click();
-    await page.getByRole("button", { name: "确认", exact: true }).click();
+    await page.getByRole("button", { name: "确认简报" }).click({ timeout: 30000 });
+    await page.getByRole("button", { name: "确认", exact: true }).click({ timeout: 30000 });
     await expect(page.getByText(/已确认版本 1/)).toBeVisible({ timeout: 30000 });
 
-    await page.getByRole("button", { name: "单元蓝图" }).click();
+    await page.getByRole("button", { name: "单元蓝图" }).click({ timeout: 30000 });
     await expect(page.getByText(/尚未确认教学简报|开始单元规划/).first()).toBeVisible({
       timeout: 30000,
     });
-    await page.getByRole("button", { name: "开始单元规划" }).click();
+    await page.getByRole("button", { name: "开始单元规划" }).click({ timeout: 30000 });
 
     for (let round = 0; round < 8; round += 1) {
       const questionBox = page.locator("[id^='planning-answer-']").first();
-      const visible = await questionBox
-        .isVisible()
-        .catch(() => false);
-      if (!visible) break;
+      // Single waiter: the next question round or the finished draft, whichever
+      // comes first under live-model latency. Never leave a pending waiter
+      // behind while performing actions.
+      await questionBox
+        .or(page.getByText("完整性检查"))
+        .first()
+        .waitFor({ state: "visible", timeout: 90000 })
+        .catch(() => {});
+      if (!(await questionBox.isVisible().catch(() => false))) break;
       await questionBox.fill("共12课时，聚焦综合输出");
-      await page.getByRole("button", { name: "提交回答" }).click();
+      const submit = page.getByRole("button", { name: "提交回答" });
+      // A stale question box can be replaced by the finished draft between
+      // fill and submit; a missing submit button means the planning completed.
+      const submitReady = await submit
+        .waitFor({ state: "visible", timeout: 15000 })
+        .then(() => true)
+        .catch(() => false);
+      if (!submitReady) break;
+      await submit.click({ timeout: 30000 });
       await page.waitForTimeout(2000);
     }
 
@@ -98,27 +112,29 @@ test.describe("authenticated teacher flow", () => {
 
     const decisionButton = page.getByRole("button", { name: "记录教师决策" });
     if (await decisionButton.first().isVisible().catch(() => false)) {
-      await decisionButton.first().click();
+      await decisionButton.first().click({ timeout: 30000 });
       await page.locator("#decision-reason").fill("以教材与教师判断为准，保留当前分配");
-      await page.getByRole("button", { name: "记录决策" }).click();
+      await page.getByRole("button", { name: "记录决策" }).click({ timeout: 30000 });
       await expect(page.getByText(/决策理由：/).first()).toBeVisible({ timeout: 60000 });
     }
 
-    await page.getByRole("button", { name: "确认蓝图" }).click();
-    await page.getByRole("button", { name: "确认", exact: true }).click();
-    await expect(page.getByText(/已确认版本 1（不可变）|已确认蓝图版本/).first()).toBeVisible({
+    const confirmBlueprint = page.getByRole("button", { name: "确认蓝图" });
+    await expect(confirmBlueprint).toBeEnabled({ timeout: 30000 });
+    await confirmBlueprint.click({ timeout: 30000 });
+    await page.getByRole("button", { name: "确认", exact: true }).click({ timeout: 30000 });
+    await expect(page.getByText(/草稿修订 \d+ · 已确认版本 1/).first()).toBeVisible({
       timeout: 60000,
     });
 
-    await page.getByRole("button", { name: "教学简报" }).click();
+    await page.getByRole("button", { name: "教学简报" }).click({ timeout: 30000 });
     const themeInput = page.getByRole("textbox", { name: /编辑单元主题/ });
     await themeInput.fill("气候变化与能源");
-    await page.getByRole("button", { name: "保存修订" }).click();
-    await page.getByRole("button", { name: "确认简报" }).click();
-    await page.getByRole("button", { name: "确认", exact: true }).click();
+    await page.getByRole("button", { name: "保存修订" }).click({ timeout: 30000 });
+    await page.getByRole("button", { name: "确认简报" }).click({ timeout: 30000 });
+    await page.getByRole("button", { name: "确认", exact: true }).click({ timeout: 30000 });
     await expect(page.getByText(/已确认版本 2/)).toBeVisible({ timeout: 60000 });
 
-    await page.getByRole("button", { name: "单元蓝图" }).click();
+    await page.getByRole("button", { name: "单元蓝图" }).click({ timeout: 30000 });
     await expect(page.getByText(/已标记为过期/)).toBeVisible({ timeout: 60000 });
     await expect(page.getByText(/单元主题：/)).toBeVisible({ timeout: 30000 });
 
