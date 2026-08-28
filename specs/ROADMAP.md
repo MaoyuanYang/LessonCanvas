@@ -62,7 +62,7 @@ F001 -> F013
 - Gates: `SPEC READY: PASS` (`108178994342`), `UI READY: PASS` (`a8cfd23189ac`), `TEST DESIGN READY: PASS` (`9c997cfa2b6f`), approved by `YMY / Project Owner` on 2026-08-28. `DONE: PASS` with `Roadmap Status: DONE` recorded 2026-08-28 after PR [#4](https://github.com/MaoyuanYang/LessonCanvas/pull/4) merged as `8f90bb6` (authorized merge by `YMY / Project Owner`).
 - DONE evidence manifest (merged working tree @ `8f90bb6`): spec `841e5020239d`, ux-ui `26f5938e9f30`, test-design `67e1b50fa36f`, plan `75b2f6e6bbb3`, review `35b8ee303938`, ROADMAP pre-DONE `cce584bc5215`, AGENTS `b03a2200602b`; verification: 73 backend tests, 16 web tests, ruff/eslint/tsc/build clean, public E2E 3/3; merge re-verified on main (73 passed).
 - Refinement resolved: D1 four hard completeness checks; D2 lesson granularity; D3 blocking/waivable conflict tiers; D4 brief-diff + stale supersession; D5/D5a/D5b interview-style planning 6x3; D6 sources + standards MCP grounding wired; D7 no per-run cap with workspace quota; D8 read-only small screen. UI decisions D-NAV/D-CONVO/D-FIND.
-- Residual (non-blocking, tracked for later Features): authenticated E2E blueprint journey RESOLVED 2026-08-28 after Clerk device-verification disable and live-model JSON-contract fixes (full journey green against live DeepSeek); keyboard manual pass still pending (STAGE B-001); findings-embedding deferral (review L-2) revisited by F006/F007 if cross-version finding queries are needed.
+- Residual (non-blocking, tracked for later Features): authenticated E2E blueprint journey RESOLVED 2026-08-28 after Clerk device-verification disable and live-model JSON-contract fixes (PR [#5](https://github.com/MaoyuanYang/LessonCanvas/pull/5) merged `f6d3b4a`; full journey green against live DeepSeek, main re-verified); keyboard manual pass still pending (STAGE B-001); findings-embedding deferral (review L-2) revisited by F006/F007 if cross-version finding queries are needed.
 
 ### Previous: F001 DONE
 
@@ -72,7 +72,7 @@ F001 -> F013
 - Plan and Tasks: `specs/F001-grounded-confirmed-brief/plan.md` @ `0092f169df34` (`plan-f001-r1`, 13 interleaved tasks T0–T12).
 - Refinement resolved: providers (Clerk, DeepSeek, local MinIO), source formats, standards-snapshot MCP tool, UUIDv7, stop semantics, brief completeness, questioning cap, small-screen boundary, deletion evidence.
 - Implementation: T0–T12 complete; `DONE` 2026-08-24. Delivery PR [#2](https://github.com/MaoyuanYang/LessonCanvas/pull/2) merged as `1253ca2` (authorized and merged by `YMY / Project Owner`).
-- Residual (non-blocking, tracked for later Features): authenticated E2E unblocked 2026-08-28 (device verification disabled; journey passes with live model); Postgres LangGraph checkpointer investigation deferred to F012.
+- Residual (non-blocking, tracked for later Features): authenticated E2E unblocked 2026-08-28 (device verification disabled; journey passes with live model; PR [#5](https://github.com/MaoyuanYang/LessonCanvas/pull/5) merged `f6d3b4a`); Postgres LangGraph checkpointer investigation deferred to F012.
 
 ## Sequencing Notes
 
