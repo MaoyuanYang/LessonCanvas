@@ -21,7 +21,7 @@ Phase 1 produces a publicly inspectable, multi-account LessonCanvas workflow in 
 | ID | Name | Goal | Business Value | Priority | Dependencies | Status | Summary |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `F001` | Grounded Confirmed Brief | Confirm a source-grounded teaching brief inside a private teacher project | First real Agent/HITL outcome and ownership proof | `P0` | None | `DONE` | Managed sign-in, private project, allowed sources via MCP, streamed Agent questions, structured brief, and first confirmation gate |
-| `F002` | Confirmed Unit Blueprint | Confirm a complete every-lesson unit design | Makes expensive generation governable by teacher intent | `P0` | `F001` | `REVIEW` | Source-linked unit blueprint, structured revision, and second confirmation gate |
+| `F002` | Confirmed Unit Blueprint | Confirm a complete every-lesson unit design | Makes expensive generation governable by teacher intent | `P0` | `F001` | `DONE` | Source-linked unit blueprint, structured revision, and second confirmation gate |
 | `F003` | Recoverable Unit Lesson Plans | Generate DOCX lesson plans for every lesson with durable recovery | First useful Office artifact and proof of long-running Agent execution | `P0` | `F002` | `DRAFT` | Version-bound asynchronous run, all-lesson plans, trace capture, progress, idempotency, checkpoints, and authorized downloads |
 | `F004` | Editable Lesson Slide Decks | Generate editable PPTX decks for every lesson | Adds the presentation deliverable and a distinct rendering boundary | `P0` | `F003` | `DRAFT` | Evidence-linked slide decks with scoped progress, file validation, and recoverable delivery |
 | `F005` | Lesson Exercises and Answers | Generate DOCX exercise and answer sets for every lesson | Completes assessment material and exposes correctness risk | `P0` | `F003` | `DRAFT` | Paired, version-bound exercises and answers with validation, recovery, and authorized download |
@@ -55,15 +55,14 @@ F001 -> F013
 
 ## Handoff
 
-### Current: F002 REVIEW
+### Current: F002 DONE
 
 - Feature: `F002 Confirmed Unit Blueprint`
-- Work item: [GitHub Issue #3](https://github.com/MaoyuanYang/LessonCanvas/issues/3) — writable work-status authority bound 2026-08-28; this Roadmap is the synchronized projection.
-- Gates: `SPEC READY: PASS` (`108178994342`), `UI READY: PASS` (`a8cfd23189ac`), `TEST DESIGN READY: PASS` (`9c997cfa2b6f`), all approved by `YMY / Project Owner` on 2026-08-28.
-- Plan and Tasks: `specs/F002-confirmed-unit-blueprint/plan.md` (`plan-f002-r1`, T0–T8 complete).
-- Refinement resolved: four hard completeness checks (D1), lesson granularity (D2), blocking/waivable conflict tiers (D3), brief-diff + stale supersession (D4), interview-style planning 6x3 (D5/D5a/D5b), sources + standards MCP grounding wired (D6), no per-run cap with workspace quota (D7), read-only small screen (D8).
-- Implementation: T0–T8 complete on `feature/F002-confirmed-unit-blueprint`; review recorded (`review.md`, no Critical/High). Verification: 73 backend tests, 16 web tests, public E2E 3/3, lint/typecheck/build green. `READY FOR PR` pending delivery authorization.
-- Residual (non-blocking): authenticated E2E and keyboard manual pass gated by Clerk device-verification (B-001); live planning smoke optional before delivery.
+- Work item: [GitHub Issue #3](https://github.com/MaoyuanYang/LessonCanvas/issues/3) — writable work-status authority bound 2026-08-28; closed on delivery.
+- Gates: `SPEC READY: PASS` (`108178994342`), `UI READY: PASS` (`a8cfd23189ac`), `TEST DESIGN READY: PASS` (`9c997cfa2b6f`), approved by `YMY / Project Owner` on 2026-08-28. `DONE: PASS` with `Roadmap Status: DONE` recorded 2026-08-28 after PR [#4](https://github.com/MaoyuanYang/LessonCanvas/pull/4) merged as `8f90bb6` (authorized merge by `YMY / Project Owner`).
+- DONE evidence manifest (merged working tree @ `8f90bb6`): spec `841e5020239d`, ux-ui `26f5938e9f30`, test-design `67e1b50fa36f`, plan `75b2f6e6bbb3`, review `35b8ee303938`, ROADMAP pre-DONE `cce584bc5215`, AGENTS `b03a2200602b`; verification: 73 backend tests, 16 web tests, ruff/eslint/tsc/build clean, public E2E 3/3; merge re-verified on main (73 passed).
+- Refinement resolved: D1 four hard completeness checks; D2 lesson granularity; D3 blocking/waivable conflict tiers; D4 brief-diff + stale supersession; D5/D5a/D5b interview-style planning 6x3; D6 sources + standards MCP grounding wired; D7 no per-run cap with workspace quota; D8 read-only small screen. UI decisions D-NAV/D-CONVO/D-FIND.
+- Residual (non-blocking, tracked for later Features): authenticated E2E blueprint journey and keyboard manual pass gated by Clerk device-verification (STAGE B-001); live planning smoke optional; findings-embedding deferral (review L-2) revisited by F006/F007 if cross-version finding queries are needed.
 
 ### Previous: F001 DONE
 

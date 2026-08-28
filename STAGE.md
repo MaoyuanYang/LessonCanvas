@@ -4,11 +4,11 @@
 
 | Field | Value |
 | --- | --- |
-| Snapshot Revision | `STAGE-1` |
-| Parent Snapshot | `INITIAL` |
-| Last Reconciled At | `2026-08-28T16:03:34+08:00` |
+| Snapshot Revision | `STAGE-2` |
+| Parent Snapshot | `STAGE-1` (pre-merge working tree) |
+| Last Reconciled At | `2026-08-28T19:10:00+08:00` |
 | Reconciled By | `opencode feature-dev session (YMY / Project Owner driving)` |
-| Repository Ref | `main @ 8bf078e` |
+| Repository Ref | `main @ 8f90bb6` (post-DONE docs commit pending) |
 | Write Coordination | `SINGLE_WRITER:opencode feature-dev session` |
 | Lifecycle Path | `GREENFIELD` |
 | Project Phase | `DELIVERY` |
@@ -22,14 +22,14 @@
 | --- | --- | --- | --- |
 | Macro design and Feature Map | `COMPLETE` | `specs/ROADMAP.md`, `docs/PRODUCT.md`, `docs/ARCHITECTURE.md` | N/A |
 | F001 Grounded Confirmed Brief | `COMPLETE` | Issue #1 (closed), PR #2 merge `1253ca2`, `specs/F001-grounded-confirmed-brief/` | N/A |
-| F002 Confirmed Unit Blueprint | `ACTIVE` | Issue #3 (writable work-status authority) | `SPEC READY` Gate decision |
+| F002 planning workflow delivered | `COMPLETE` | Issue #3 (closed), PR #4 merge `8f90bb6`, `specs/F002-confirmed-unit-blueprint/` | N/A |
 | F003+ remaining Feature map | `NOT_STARTED` | `specs/ROADMAP.md` Feature Map | F002 DONE |
 
 ## Active Work
 
 | Activity ID | Work Item | Member | Type | Skill | Skill Stage | Activity State | Work Status | Branch / Worktree | Status Authority | Next Checkpoint | Updated At |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `A-001` | `F002 Confirmed Unit Blueprint` | `opencode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `DELIVERY` | `ACTIVE` | `REVIEW` | `feature/F002-confirmed-unit-blueprint` | `https://github.com/MaoyuanYang/LessonCanvas/issues/3` | PR #4 merge decision, then `DONE` transition | `2026-08-28T16:03:34+08:00` |
+| `A-002` | `F002 Confirmed Unit Blueprint (DONE reconciliation)` | `opencode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `ACTIVE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/3` | N/A - terminal | `2026-08-28T19:10:00+08:00` |
 
 ## Gate Snapshot
 
@@ -42,7 +42,7 @@
 | F002 | `SPEC READY` | `PASS` | `specs/F002-confirmed-unit-blueprint/spec.md` Gate Record @ `108178994342` |
 | F002 | `UI READY` | `PASS` | `specs/F002-confirmed-unit-blueprint/ux-ui.md` Gate Record @ `a8cfd23189ac` |
 | F002 | `TEST DESIGN READY` | `PASS` | `specs/F002-confirmed-unit-blueprint/test-design.md` Gate Record @ `9c997cfa2b6f` |
-| F002 | `DONE` | `NOT_READY` | PR [#4](https://github.com/MaoyuanYang/LessonCanvas/pull/4) opened 2026-08-28; awaiting merge authorization; review recorded in `specs/F002-confirmed-unit-blueprint/review.md` |
+| F002 | `DONE` | `PASS` | PR [#4](https://github.com/MaoyuanYang/LessonCanvas/pull/4) merged `8f90bb6`, 2026-08-28; DONE evidence manifest in `specs/ROADMAP.md` Handoff |
 
 ## Blockers and Conflicts
 
@@ -60,6 +60,7 @@
 
 | Activity ID | Work Item | Member | Outcome | Final Work Status | Final Status Authority | Delivery Evidence | Completed At |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| `A-001/A-002` | `F002 Confirmed Unit Blueprint` | `opencode feature-dev session` | Second teacher-confirmation gate delivered end to end | `DONE` | Issue #3 (closed) | PR #4 merge `8f90bb6` | `2026-08-28` |
 | `N/A (pre-STAGE)` | `F001 Grounded Confirmed Brief` | `feature-dev session` | Confirmed brief vertical slice delivered end to end | `DONE` | Issue #1 (closed) | PR #2 merge `1253ca2` | `2026-08-24` |
 
 ## Authority and Update Rules

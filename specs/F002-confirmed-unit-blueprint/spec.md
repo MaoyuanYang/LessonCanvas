@@ -1,7 +1,7 @@
 # F002: Confirmed Unit Blueprint
 
 - Spec Status: `SPEC READY`
-- Roadmap Status: `REVIEW`
+- Roadmap Status: `DONE`
 - Work item: [GitHub Issue #3](https://github.com/MaoyuanYang/LessonCanvas/issues/3)
 - Priority: `P0`
 - Owner: Implementation assignee unassigned until Coding starts
