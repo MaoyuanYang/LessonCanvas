@@ -48,7 +48,7 @@
 
 | ID | Affected Activity / Work Item | Type | Evidence | Owner | Unblock / Resolution Condition |
 | --- | --- | --- | --- | --- | --- |
-| `B-001` | F002 | `NON_BLOCKING residual from F001` | Authenticated Playwright E2E pending Clerk device-verification disable; Postgres LangGraph checkpointer investigation deferred to F012 | `YMY / Project Owner` | Revisit at F012 or when Clerk configuration changes |
+| `B-001` | F002 | `NON_BLOCKING residual from F001` | Authenticated Playwright E2E RESOLVED 2026-08-28: Clerk device verification disabled by owner; full teacher-journey spec passes against live DeepSeek after live-model JSON-contract fixes (branch `fix/live-model-integration-contracts`). Remaining: keyboard manual pass pending; Postgres LangGraph checkpointer investigation deferred to F012 | `YMY / Project Owner` | Keyboard manual pass at next UI touch; checkpointer at F012 |
 
 ## Handoffs
 
