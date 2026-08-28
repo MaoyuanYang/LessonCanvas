@@ -1,4 +1,5 @@
 import json
+import re
 import time
 from dataclasses import dataclass
 from functools import lru_cache
@@ -21,6 +22,40 @@ class ModelProviderError(Exception):
     pass
 
 
+def parse_model_json(text: str) -> dict:
+    """Parse a model response that may be bare JSON, markdown-fenced, or wrapped in prose.
+
+    Raises ValueError when no JSON object is present; the caller maps that to a
+    provider/validation error instead of crashing the workflow.
+    """
+    if not isinstance(text, str) or not text.strip():
+        raise ValueError("model response is empty")
+    candidate = text.strip()
+
+    fence = re.match(r"^```(?:json)?\s*(.*?)\s*```$", candidate, re.DOTALL)
+    if fence:
+        candidate = fence.group(1).strip()
+
+    try:
+        parsed = json.loads(candidate)
+        if isinstance(parsed, dict):
+            return parsed
+    except json.JSONDecodeError:
+        pass
+
+    start = candidate.find("{")
+    end = candidate.rfind("}")
+    if start != -1 and end > start:
+        try:
+            parsed = json.loads(candidate[start : end + 1])
+            if isinstance(parsed, dict):
+                return parsed
+        except json.JSONDecodeError:
+            pass
+
+    raise ValueError("model response contains no JSON object")
+
+
 class DeepSeekAdapter:
     def complete(self, system: str, user: str) -> ModelResponse:
         settings = get_settings()
@@ -36,6 +71,7 @@ class DeepSeekAdapter:
                         {"role": "user", "content": user},
                     ],
                     "temperature": 0.2,
+                    "response_format": {"type": "json_object"},
                 },
                 timeout=60,
             )

@@ -8,7 +8,7 @@ from langgraph.types import Command, interrupt
 from sqlalchemy import select
 from typing_extensions import TypedDict
 
-from lessoncanvas.adapters.model import ModelProviderError, get_model_adapter
+from lessoncanvas.adapters.model import ModelProviderError, get_model_adapter, parse_model_json
 from lessoncanvas.db import SessionLocal
 from lessoncanvas.models import InteractionMessage, SourceChunk, TraceEvent
 from lessoncanvas.modules.discovery_planning.fields import (
@@ -85,11 +85,13 @@ def analyze_node(state: DiscoveryState) -> dict:
         }
         started = time.monotonic()
         response = adapter.complete(
-            "You are a requirements discovery specialist. Ask only material requirement gaps.",
+            "You are a requirements discovery specialist. Ask only material requirement gaps. "
+            "Respond with a JSON object only, shaped like "
+            '\'{"questions": [{"field": "...", "question": "..."}]}\'; no prose.',
             json.dumps(user_payload, ensure_ascii=False),
         )
         latency = int((time.monotonic() - started) * 1000)
-        data = json.loads(response.text)
+        data = parse_model_json(response.text)
         questions = data.get("questions", [])
         missing = {q.get("field") for q in questions}
         filtered = [
@@ -194,11 +196,14 @@ def build_draft_node(state: DiscoveryState) -> dict:
         }
         started = time.monotonic()
         response = adapter.complete(
-            "You are a brief drafting specialist. Produce the structured requirements draft.",
+            "You are a brief drafting specialist. Produce the structured requirements draft. "
+            "Respond with a JSON object only, shaped like "
+            '\'{"draft": {"<field>": {"value": "...", "grounding": "teacher-stated", '
+            '"unresolved": false}}}\'; grounding must be "teacher-stated" or null; no prose.',
             json.dumps(user_payload, ensure_ascii=False),
         )
         latency = int((time.monotonic() - started) * 1000)
-        data = json.loads(response.text)
+        data = parse_model_json(response.text)
         draft = data.get("draft", {})
         record_trace(
             session,
