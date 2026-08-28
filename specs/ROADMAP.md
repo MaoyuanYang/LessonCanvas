@@ -21,7 +21,7 @@ Phase 1 produces a publicly inspectable, multi-account LessonCanvas workflow in 
 | ID | Name | Goal | Business Value | Priority | Dependencies | Status | Summary |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `F001` | Grounded Confirmed Brief | Confirm a source-grounded teaching brief inside a private teacher project | First real Agent/HITL outcome and ownership proof | `P0` | None | `DONE` | Managed sign-in, private project, allowed sources via MCP, streamed Agent questions, structured brief, and first confirmation gate |
-| `F002` | Confirmed Unit Blueprint | Confirm a complete every-lesson unit design | Makes expensive generation governable by teacher intent | `P0` | `F001` | `DRAFT` | Source-linked unit blueprint, structured revision, and second confirmation gate |
+| `F002` | Confirmed Unit Blueprint | Confirm a complete every-lesson unit design | Makes expensive generation governable by teacher intent | `P0` | `F001` | `REVIEW` | Source-linked unit blueprint, structured revision, and second confirmation gate |
 | `F003` | Recoverable Unit Lesson Plans | Generate DOCX lesson plans for every lesson with durable recovery | First useful Office artifact and proof of long-running Agent execution | `P0` | `F002` | `DRAFT` | Version-bound asynchronous run, all-lesson plans, trace capture, progress, idempotency, checkpoints, and authorized downloads |
 | `F004` | Editable Lesson Slide Decks | Generate editable PPTX decks for every lesson | Adds the presentation deliverable and a distinct rendering boundary | `P0` | `F003` | `DRAFT` | Evidence-linked slide decks with scoped progress, file validation, and recoverable delivery |
 | `F005` | Lesson Exercises and Answers | Generate DOCX exercise and answer sets for every lesson | Completes assessment material and exposes correctness risk | `P0` | `F003` | `DRAFT` | Paired, version-bound exercises and answers with validation, recovery, and authorized download |
@@ -55,10 +55,20 @@ F001 -> F013
 
 ## Handoff
 
-### Current: F001 DONE
+### Current: F002 REVIEW
+
+- Feature: `F002 Confirmed Unit Blueprint`
+- Work item: [GitHub Issue #3](https://github.com/MaoyuanYang/LessonCanvas/issues/3) — writable work-status authority bound 2026-08-28; this Roadmap is the synchronized projection.
+- Gates: `SPEC READY: PASS` (`108178994342`), `UI READY: PASS` (`a8cfd23189ac`), `TEST DESIGN READY: PASS` (`9c997cfa2b6f`), all approved by `YMY / Project Owner` on 2026-08-28.
+- Plan and Tasks: `specs/F002-confirmed-unit-blueprint/plan.md` (`plan-f002-r1`, T0–T8 complete).
+- Refinement resolved: four hard completeness checks (D1), lesson granularity (D2), blocking/waivable conflict tiers (D3), brief-diff + stale supersession (D4), interview-style planning 6x3 (D5/D5a/D5b), sources + standards MCP grounding wired (D6), no per-run cap with workspace quota (D7), read-only small screen (D8).
+- Implementation: T0–T8 complete on `feature/F002-confirmed-unit-blueprint`; review recorded (`review.md`, no Critical/High). Verification: 73 backend tests, 16 web tests, public E2E 3/3, lint/typecheck/build green. `READY FOR PR` pending delivery authorization.
+- Residual (non-blocking): authenticated E2E and keyboard manual pass gated by Clerk device-verification (B-001); live planning smoke optional before delivery.
+
+### Previous: F001 DONE
 
 - Feature: `F001 Grounded Confirmed Brief`
-- Work item: [GitHub Issue #1](https://github.com/MaoyuanYang/LessonCanvas/issues/1) — writable work-status authority bound 2026-08-24; this Roadmap is the synchronized projection.
+- Work item: [GitHub Issue #1](https://github.com/MaoyuanYang/LessonCanvas/issues/1) (closed 2026-08-28 after delivery).
 - Gates: `SPEC READY: PASS` (`d7ae5094c490`), `UI READY: PASS` (`c4cd127cb372`), `TEST DESIGN READY: PASS` (`dc6978dfefc8`), all approved by `YMY / Project Owner` on 2026-08-24.
 - Plan and Tasks: `specs/F001-grounded-confirmed-brief/plan.md` @ `0092f169df34` (`plan-f001-r1`, 13 interleaved tasks T0–T12).
 - Refinement resolved: providers (Clerk, DeepSeek, local MinIO), source formats, standards-snapshot MCP tool, UUIDv7, stop semantics, brief completeness, questioning cap, small-screen boundary, deletion evidence.

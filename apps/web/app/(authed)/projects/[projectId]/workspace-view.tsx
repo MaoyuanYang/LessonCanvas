@@ -1,16 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { BlueprintPanel } from "@/components/blueprint-panel";
 import { BriefPanel } from "@/components/brief-panel";
 import { DiscoveryPanel } from "@/components/discovery-panel";
 import { SourcesPanel } from "@/components/sources-panel";
 
-type Tab = "sources" | "discovery" | "brief";
+type Tab = "sources" | "discovery" | "brief" | "blueprint";
 
 const TAB_LABELS: Record<Tab, string> = {
   sources: "来源",
   discovery: "需求访谈",
   brief: "教学简报",
+  blueprint: "单元蓝图",
 };
 
 export default function WorkspaceView({ projectId }: { projectId: string }) {
@@ -38,6 +40,7 @@ export default function WorkspaceView({ projectId }: { projectId: string }) {
       {tab === "sources" ? <SourcesPanel projectId={projectId} /> : null}
       {tab === "discovery" ? <DiscoveryPanel projectId={projectId} /> : null}
       {tab === "brief" ? <BriefPanel projectId={projectId} /> : null}
+      {tab === "blueprint" ? <BlueprintPanel projectId={projectId} /> : null}
     </section>
   );
 }

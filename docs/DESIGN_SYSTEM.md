@@ -45,6 +45,10 @@ Semantic color values first implemented in `apps/web/app/globals.css` (Tailwind 
 
 Typography: system sans stack with zh-Hans faces for interface; system serif stack for the editorial reading voice; no web-font downloads. Breakpoint: 1024px separates the full desktop workspace from the canonical reduced small-screen experience. Contrast validation for these values is performed with the F001 accessibility pass; revisit with measured evidence.
 
+### Shared interaction patterns
+
+- Streaming conversation region (`apps/web/components/conversation-region.tsx`, promoted from an F001 Feature-local pattern during F002 on 2026-08-28): narrate/stop/re-ask controls plus a politely announced incremental text region over the project-scoped SSE stream. Consumers: discovery interview panel and planning interview panel. The pattern composes the foundational Button; it carries no Feature-specific copy beyond the narrate prompt passed by the caller.
+
 ## Foundational Components
 
 | Component | Required variants / states | Accessibility rule |

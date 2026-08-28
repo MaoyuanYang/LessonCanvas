@@ -6,6 +6,8 @@ from sqlalchemy import select
 from lessoncanvas.models import (
     AccountDeletionEvent,
     AuditEvent,
+    BlueprintDraft,
+    BlueprintVersion,
     BriefDraft,
     BriefVersion,
     DiscoveryRun,
@@ -53,6 +55,8 @@ def delete_project_cascade(
         session.execute(
             sql_delete(InteractionMessage).where(InteractionMessage.run_id.in_(run_ids))
         )
+    session.execute(sql_delete(BlueprintDraft).where(BlueprintDraft.project_id == project_id))
+    session.execute(sql_delete(BlueprintVersion).where(BlueprintVersion.project_id == project_id))
     session.execute(sql_delete(DiscoveryRun).where(DiscoveryRun.project_id == project_id))
     session.execute(sql_delete(BriefDraft).where(BriefDraft.project_id == project_id))
     session.execute(sql_delete(BriefVersion).where(BriefVersion.project_id == project_id))
