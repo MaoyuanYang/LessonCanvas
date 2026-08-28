@@ -2,27 +2,16 @@
 
 import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import { ConversationRegion } from "@/components/conversation-region";
 import { Alert, Button } from "@/components/ui";
-import {
-  ApiClientError,
-  discoveryAnswers,
-  discoveryStart,
-  discoveryStatus,
-  narrate,
-  reask,
-  stopNarration,
-  streamUrl,
-} from "@/lib/api";
+import { ApiClientError, discoveryAnswers, discoveryStart, discoveryStatus } from "@/lib/api";
 
 export function DiscoveryPanel({ projectId }: { projectId: string }) {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [narration, setNarration] = useState("");
-  const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const abortRef = useRef<AbortController | null>(null);
 
   const statusQuery = useQuery({
     queryKey: ["discovery", projectId],
@@ -47,61 +36,6 @@ export function DiscoveryPanel({ projectId }: { projectId: string }) {
     },
     onError: (err) => setError(err instanceof ApiClientError ? err.message : "提交失败"),
   });
-
-  const stopMutation = useMutation({
-    mutationFn: async () => stopNarration(await getToken(), projectId),
-    onSuccess: () => abortRef.current?.abort(),
-  });
-
-  async function startStream() {
-    const token = await getToken();
-    setStreaming(true);
-    setNarration("");
-    const controller = new AbortController();
-    abortRef.current = controller;
-    try {
-      const response = await fetch(streamUrl(projectId), {
-        headers: token ? { authorization: `Bearer ${token}` } : {},
-        signal: controller.signal,
-      });
-      if (!response.body) return;
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() ?? "";
-        for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            const data = JSON.parse(line.slice(6));
-            if (data.t) setNarration((current) => current + data.t);
-          }
-        }
-      }
-    } catch {
-      // stopped or closed by user
-    } finally {
-      setStreaming(false);
-      invalidate();
-    }
-  }
-
-  const narrateMutation = useMutation({
-    mutationFn: async () => narrate(await getToken(), projectId, "请叙述下一步访谈。"),
-    onSuccess: () => void startStream(),
-    onError: (err) => setError(err instanceof ApiClientError ? err.message : "叙述失败"),
-  });
-
-  const reaskMutation = useMutation({
-    mutationFn: async () => reask(await getToken(), projectId, "请重新提问。"),
-    onSuccess: () => void startStream(),
-    onError: (err) => setError(err instanceof ApiClientError ? err.message : "重问失败"),
-  });
-
-  useEffect(() => () => abortRef.current?.abort(), []);
 
   const status = statusQuery.data;
   const notFound = statusQuery.error instanceof ApiClientError && statusQuery.error.status === 404;
@@ -159,29 +93,13 @@ export function DiscoveryPanel({ projectId }: { projectId: string }) {
         <Alert tone="info">访谈已完成，请在“教学简报”页签查看并确认草稿。</Alert>
       ) : null}
 
-      <div className="flex items-center gap-3">
-        <Button
-          variant="secondary"
-          onClick={() => narrateMutation.mutate()}
-          disabled={narrateMutation.isPending || streaming || notFound}
-        >
-          生成叙述
-        </Button>
-        {streaming ? (
-          <Button variant="quiet" onClick={() => stopMutation.mutate()}>
-            停止
-          </Button>
-        ) : narration ? (
-          <Button variant="quiet" onClick={() => reaskMutation.mutate()}>
-            重新提问
-          </Button>
-        ) : null}
-      </div>
-
-      {narration ? (
-        <p aria-live="polite" className="rounded border border-line bg-paper p-4 text-sm text-ink">
-          {narration}
-        </p>
+      {!notFound ? (
+        <ConversationRegion
+          projectId={projectId}
+          kind="discovery"
+          narrateText="请叙述下一步访谈。"
+          onError={setError}
+        />
       ) : null}
     </div>
   );

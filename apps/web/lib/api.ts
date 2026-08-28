@@ -196,9 +196,16 @@ export async function discoveryAnswers(
   });
 }
 
-export async function narrate(token: string | null, projectId: string, text: string) {
+export type ConversationKind = "discovery" | "planning";
+
+export async function narrate(
+  token: string | null,
+  projectId: string,
+  text: string,
+  kind: ConversationKind = "discovery",
+) {
   return apiFetch<{ run_id: string; started: boolean }>(
-    `/projects/${projectId}/discovery/narrate`,
+    `/projects/${projectId}/${kind}/narrate`,
     {
       method: "POST",
       body: { text },
@@ -207,19 +214,31 @@ export async function narrate(token: string | null, projectId: string, text: str
   );
 }
 
-export async function stopNarration(token: string | null, projectId: string) {
-  return apiFetch<{ stopped: boolean }>(`/projects/${projectId}/discovery/stop-narration`, {
+export async function stopNarration(
+  token: string | null,
+  projectId: string,
+  kind: ConversationKind = "discovery",
+) {
+  return apiFetch<{ stopped: boolean }>(`/projects/${projectId}/${kind}/stop-narration`, {
     method: "POST",
     token,
   });
 }
 
-export async function reask(token: string | null, projectId: string, text: string) {
-  return apiFetch<{ run_id: string; started: boolean }>(`/projects/${projectId}/discovery/reask`, {
-    method: "POST",
-    body: { text },
-    token,
-  });
+export async function reask(
+  token: string | null,
+  projectId: string,
+  text: string,
+  kind: ConversationKind = "discovery",
+) {
+  return apiFetch<{ run_id: string; started: boolean }>(
+    `/projects/${projectId}/${kind}/reask`,
+    {
+      method: "POST",
+      body: { text },
+      token,
+    },
+  );
 }
 
 export interface BriefState {
@@ -259,6 +278,165 @@ export async function confirmBrief(token: string | null, projectId: string) {
   );
 }
 
-export function streamUrl(projectId: string, offset = 0): string {
-  return `${apiBaseUrl()}/projects/${projectId}/discovery/stream?offset=${offset}`;
+export function streamUrl(projectId: string, offset = 0, kind: ConversationKind = "discovery") {
+  return `${apiBaseUrl()}/projects/${projectId}/${kind}/stream?offset=${offset}`;
+}
+
+export interface PlanningStatus {
+  run_id: string;
+  status: string;
+  round_count: number;
+  questions: { field: string; question: string }[];
+  draft: BlueprintPayload | null;
+}
+
+export async function planningStart(token: string | null, projectId: string) {
+  return apiFetch<PlanningStatus>(`/projects/${projectId}/planning/start`, {
+    method: "POST",
+    token,
+  });
+}
+
+export async function planningStatus(token: string | null, projectId: string) {
+  return apiFetch<PlanningStatus>(`/projects/${projectId}/planning`, { token });
+}
+
+export async function planningAnswers(
+  token: string | null,
+  projectId: string,
+  answers: Record<string, string>,
+) {
+  return apiFetch<PlanningStatus>(`/projects/${projectId}/planning/answers`, {
+    method: "POST",
+    body: { answers },
+    token,
+  });
+}
+
+export async function planningRetry(token: string | null, projectId: string) {
+  return apiFetch<PlanningStatus>(`/projects/${projectId}/planning/retry`, {
+    method: "POST",
+    token,
+  });
+}
+
+export interface BlueprintCitation {
+  type: "source" | "standards";
+  source_id?: string | null;
+  filename?: string | null;
+  section_id?: string | null;
+  snapshot_version?: string | null;
+}
+
+export interface BlueprintObjective {
+  id: string;
+  text: string;
+  citations: BlueprintCitation[];
+}
+
+export interface BlueprintLesson {
+  index: number;
+  title: string | null;
+  objective_ids: string[];
+  assessment_intent: string | null;
+  period_count: number | null;
+  activity_outline: string | null;
+  material_notes: string | null;
+  citations: BlueprintCitation[];
+}
+
+export interface BlueprintFinding {
+  id: string;
+  tier: "blocking" | "waivable";
+  kind: string;
+  message: string;
+  evidence: string | null;
+  status: "open" | "resolved" | "decided";
+  reason: string | null;
+}
+
+export interface BlueprintPayload {
+  unit: {
+    title: string | null;
+    objectives: BlueprintObjective[];
+    assessment_intent: string | null;
+    citations: BlueprintCitation[];
+  };
+  lessons: BlueprintLesson[];
+  findings: BlueprintFinding[];
+}
+
+export interface BlueprintCheck {
+  id: string;
+  label: string;
+  passed: boolean;
+  affected: Record<string, unknown>[];
+}
+
+export interface BriefDiffEntry {
+  field: string;
+  label: string;
+  old: string | null;
+  new: string | null;
+}
+
+export interface BlueprintState {
+  available: boolean;
+  draft_revision: number | null;
+  draft: BlueprintPayload | null;
+  checks: BlueprintCheck[];
+  findings: BlueprintFinding[];
+  confirmed_version: number | null;
+  confirmed_payload: BlueprintPayload | null;
+  confirmed_stale: boolean | null;
+  stale: boolean;
+  brief_diff: BriefDiffEntry[] | null;
+  impact_summary: {
+    lesson_structure_changed: boolean;
+    objectives_changed: boolean;
+    details_changed: boolean;
+    summary: string;
+  } | null;
+}
+
+export async function getBlueprint(token: string | null, projectId: string) {
+  return apiFetch<BlueprintState>(`/projects/${projectId}/blueprint`, { token });
+}
+
+export async function patchBlueprintDraft(
+  token: string | null,
+  projectId: string,
+  payload: BlueprintPayload,
+  baseRevision: number,
+) {
+  return apiFetch<BlueprintState>(`/projects/${projectId}/blueprint/draft`, {
+    method: "PATCH",
+    body: { payload, base_revision: baseRevision },
+    token,
+  });
+}
+
+export async function recordBlueprintDecision(
+  token: string | null,
+  projectId: string,
+  findingId: string,
+  reason: string,
+  baseRevision: number,
+) {
+  return apiFetch<BlueprintState>(`/projects/${projectId}/blueprint/decisions`, {
+    method: "POST",
+    body: { finding_id: findingId, reason, base_revision: baseRevision },
+    token,
+  });
+}
+
+export async function confirmBlueprint(
+  token: string | null,
+  projectId: string,
+  baseRevision: number,
+) {
+  return apiFetch<{ version: number; payload: BlueprintPayload }>(
+    `/projects/${projectId}/blueprint/confirm`,
+    { method: "POST", body: { base_revision: baseRevision }, token },
+  );
 }

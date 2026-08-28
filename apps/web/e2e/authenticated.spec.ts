@@ -77,6 +77,51 @@ test.describe("authenticated teacher flow", () => {
     await page.getByRole("button", { name: "确认", exact: true }).click();
     await expect(page.getByText(/已确认版本 1/)).toBeVisible({ timeout: 30000 });
 
+    await page.getByRole("button", { name: "单元蓝图" }).click();
+    await expect(page.getByText(/尚未确认教学简报|开始单元规划/).first()).toBeVisible({
+      timeout: 30000,
+    });
+    await page.getByRole("button", { name: "开始单元规划" }).click();
+
+    for (let round = 0; round < 8; round += 1) {
+      const questionBox = page.locator("[id^='planning-answer-']").first();
+      const visible = await questionBox
+        .isVisible()
+        .catch(() => false);
+      if (!visible) break;
+      await questionBox.fill("共12课时，聚焦综合输出");
+      await page.getByRole("button", { name: "提交回答" }).click();
+      await page.waitForTimeout(2000);
+    }
+
+    await expect(page.getByText("完整性检查")).toBeVisible({ timeout: 180000 });
+
+    const decisionButton = page.getByRole("button", { name: "记录教师决策" });
+    if (await decisionButton.first().isVisible().catch(() => false)) {
+      await decisionButton.first().click();
+      await page.locator("#decision-reason").fill("以教材与教师判断为准，保留当前分配");
+      await page.getByRole("button", { name: "记录决策" }).click();
+      await expect(page.getByText(/决策理由：/).first()).toBeVisible({ timeout: 60000 });
+    }
+
+    await page.getByRole("button", { name: "确认蓝图" }).click();
+    await page.getByRole("button", { name: "确认", exact: true }).click();
+    await expect(page.getByText(/已确认版本 1（不可变）|已确认蓝图版本/).first()).toBeVisible({
+      timeout: 60000,
+    });
+
+    await page.getByRole("button", { name: "教学简报" }).click();
+    const themeInput = page.getByRole("textbox", { name: /编辑单元主题/ });
+    await themeInput.fill("气候变化与能源");
+    await page.getByRole("button", { name: "保存修订" }).click();
+    await page.getByRole("button", { name: "确认简报" }).click();
+    await page.getByRole("button", { name: "确认", exact: true }).click();
+    await expect(page.getByText(/已确认版本 2/)).toBeVisible({ timeout: 60000 });
+
+    await page.getByRole("button", { name: "单元蓝图" }).click();
+    await expect(page.getByText(/已标记为过期/)).toBeVisible({ timeout: 60000 });
+    await expect(page.getByText(/单元主题：/)).toBeVisible({ timeout: 30000 });
+
     await context.close();
   });
 });
