@@ -6,9 +6,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from lessoncanvas.api.account import router as account_router
+from lessoncanvas.api.blueprint import router as blueprint_router
 from lessoncanvas.api.brief import router as brief_router
 from lessoncanvas.api.discovery import router as discovery_router
 from lessoncanvas.api.errors import ApiError, render_error
+from lessoncanvas.api.planning import router as planning_router
 from lessoncanvas.api.projects import router as projects_router
 from lessoncanvas.api.sources import router as sources_router
 from lessoncanvas.api.trace import router as trace_router
@@ -58,6 +60,8 @@ def create_app() -> FastAPI:
     app.include_router(sources_router)
     app.include_router(discovery_router)
     app.include_router(brief_router)
+    app.include_router(planning_router)
+    app.include_router(blueprint_router)
     app.include_router(account_router)
     app.include_router(trace_router)
 

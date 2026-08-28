@@ -111,6 +111,16 @@ class FakeModelAdapter:
                     "unresolved": not value,
                 }
             return ModelResponse(text=json.dumps({"draft": draft}), latency_ms=1)
+        if kind == "planning_gap_analysis":
+            if "课时分配" in data.get("corpus_excerpt", ""):
+                return ModelResponse(text=json.dumps({"questions": []}), latency_ms=1)
+            known = set(data.get("known_fields", []))
+            gaps = data.get("planning_gaps", [])
+            missing = [g for g in gaps if g not in known]
+            questions = [{"field": m, "question": f"请说明规划缺口：{m}"} for m in missing[:3]]
+            return ModelResponse(text=json.dumps({"questions": questions}), latency_ms=1)
+        if kind == "planning_build_draft":
+            return ModelResponse(text=json.dumps(_fake_planning_blueprint(data)), latency_ms=1)
         if "fail" in data.get("scenario", ""):
             raise ModelProviderError("model provider unavailable")
         return ModelResponse(text=json.dumps({}), latency_ms=1)
@@ -119,6 +129,86 @@ class FakeModelAdapter:
         data = json.loads(user)
         text = data.get("narration", "这是叙述文本。")
         yield from (text[i : i + 4] for i in range(0, len(text), 4))
+
+
+def _fake_planning_blueprint(data: dict) -> dict:
+    import re
+
+    brief = data.get("brief", {})
+    known = data.get("known", {})
+    corpus = data.get("corpus_excerpt", "")
+    standards = data.get("standards", [])
+
+    raw_count = str(brief.get("lesson_count") or "")
+    match = re.search(r"\d+", raw_count)
+    lesson_count = int(match.group()) if match else 1
+
+    objectives_text = str(brief.get("teaching_objectives") or "")
+    objective_texts = [t.strip() for t in re.split(r"[；;，,]", objectives_text) if t.strip()]
+    if not objective_texts:
+        objective_texts = [brief.get("unit_theme") or "理解单元主题"]
+
+    objectives = [
+        {"id": f"obj-{i}", "text": text} for i, text in enumerate(objective_texts, start=1)
+    ]
+
+    period_plan = known.get("period_plan") or ""
+    period_match = re.search(r"\d+", period_plan)
+    per_lesson_periods = None
+    if period_match:
+        per_lesson_periods = max(1, int(period_match.group()) // max(1, lesson_count))
+
+    lessons = []
+    for index in range(1, lesson_count + 1):
+        lessons.append(
+            {
+                "index": index,
+                "title": f"第{index}课 {brief.get('unit_theme') or '单元'}",
+                "objective_ids": [objectives[(index - 1) % len(objectives)]["id"]],
+                "assessment_intent": brief.get("assessment_orientation") or "形成性评价",
+                "period_count": per_lesson_periods,
+                "activity_outline": None,
+                "material_notes": None,
+            }
+        )
+
+    findings = []
+    if "冲突" in corpus:
+        findings.append(
+            {
+                "kind": "source_conflict",
+                "message": "来源材料之间存在内容冲突",
+                "evidence": "来源内容标记了冲突",
+            }
+        )
+    if not standards:
+        findings.append(
+            {
+                "kind": "standards_warning",
+                "message": "课标快照中未检索到与单元主题直接对应的条目",
+                "evidence": None,
+            }
+        )
+    if not period_plan and lesson_count > 1:
+        findings.append(
+            {
+                "kind": "period_warning",
+                "message": "未提供课时分配意图，课时分布可能不合理",
+                "evidence": None,
+            }
+        )
+
+    return {
+        "blueprint": {
+            "unit": {
+                "title": brief.get("unit_theme") or "未命名单元",
+                "objectives": objectives,
+                "assessment_intent": brief.get("assessment_orientation"),
+            },
+            "lessons": lessons,
+            "findings": findings,
+        }
+    }
 
 
 @lru_cache

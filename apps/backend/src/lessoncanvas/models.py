@@ -115,6 +115,10 @@ class DiscoveryRun(Base):
     workspace_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=False, index=True
     )
+    kind: Mapped[str] = mapped_column(String(16), nullable=False, default="discovery")
+    brief_version_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("brief_versions.id"), nullable=True
+    )
     status: Mapped[str] = mapped_column(String(24), nullable=False, default="initializing")
     round_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     model_calls: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
@@ -185,6 +189,57 @@ class BriefVersion(Base):
     version: Mapped[int] = mapped_column(Integer, nullable=False)
     source_revision: Mapped[int] = mapped_column(Integer, nullable=False)
     fields_json: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class BlueprintDraft(Base):
+    __tablename__ = "blueprint_drafts"
+    __table_args__ = (
+        UniqueConstraint("project_id", "revision", name="uq_blueprint_draft_revision"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("projects.id"), nullable=False, index=True
+    )
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=False
+    )
+    brief_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("brief_versions.id"), nullable=False
+    )
+    revision: Mapped[int] = mapped_column(Integer, nullable=False)
+    source_run_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("discovery_runs.id"), nullable=True
+    )
+    payload_json: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class BlueprintVersion(Base):
+    __tablename__ = "blueprint_versions"
+    __table_args__ = (
+        UniqueConstraint("project_id", "version", name="uq_blueprint_version_number"),
+        UniqueConstraint("project_id", "source_revision", name="uq_blueprint_version_source"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("projects.id"), nullable=False, index=True
+    )
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=False
+    )
+    brief_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("brief_versions.id"), nullable=False
+    )
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+    source_revision: Mapped[int] = mapped_column(Integer, nullable=False)
+    payload_json: Mapped[str] = mapped_column(Text, nullable=False)
+    stale: Mapped[bool] = mapped_column(nullable=False, default=False)
+    stale_brief_version_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("brief_versions.id"), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 

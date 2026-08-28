@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     auth_dev_audience: str = "lessoncanvas-dev"
 
     max_projects_per_workspace: int = 5
+    max_planning_runs_per_workspace: int = 50
     cors_allowed_origins: list[str] = ["http://localhost:3000"]
     tasks_eager: bool = False
 

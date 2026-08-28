@@ -98,7 +98,7 @@ def start_narration(run_id: str, narration_text: str) -> NarrationState:
         run = session.get(DiscoveryRun, uuid.UUID(run_id))
         if run is None:
             raise KeyError(run_id)
-        if run.model_calls >= get_settings().max_model_calls_per_run:
+        if run.kind != "planning" and run.model_calls >= get_settings().max_model_calls_per_run:
             raise NarrationQuotaError("model call quota exhausted for this run")
     finally:
         session.close()

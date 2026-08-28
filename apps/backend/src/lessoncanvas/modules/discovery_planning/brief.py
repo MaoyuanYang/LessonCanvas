@@ -164,4 +164,7 @@ def confirm_brief(session, project_id: uuid.UUID) -> BriefVersion:
                 BriefVersion.source_revision == draft.revision,
             )
         )
+    from lessoncanvas.modules.discovery_planning.blueprint import on_brief_version_confirmed
+
+    on_brief_version_confirmed(session, project_id, version.id)
     return version
