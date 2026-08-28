@@ -125,3 +125,19 @@ def test_concurrent_confirm_yields_single_version(client, auth):
         thread.join()
     assert not errors
     assert sorted(results) == [1, 1]
+
+
+def test_normalize_fields_coerces_unknown_grounding_to_teacher_stated():
+    from lessoncanvas.modules.discovery_planning.brief import _normalize_fields
+
+    normalized = _normalize_fields(
+        {
+            "unit_theme": {"value": "环境保护", "grounding": "教师陈述"},
+            "lesson_count": {"value": "6", "grounding": "unit-hints"},
+            "student_context": {"value": None, "grounding": "anything"},
+        }
+    )
+    assert normalized["unit_theme"]["grounding"] == "teacher-stated"
+    assert normalized["lesson_count"]["grounding"] == "teacher-stated"
+    assert normalized["student_context"]["grounding"] is None
+    assert normalized["student_context"]["unresolved"] is True

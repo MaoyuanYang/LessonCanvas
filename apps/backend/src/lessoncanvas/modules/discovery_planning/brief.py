@@ -24,9 +24,15 @@ def _normalize_fields(raw: dict) -> dict:
     for field in REQUIRED_FIELDS:
         entry = raw.get(field)
         if isinstance(entry, dict):
+            # The Phase-1 draft contract has no citation structure, so the only
+            # truthful grounding marker is "teacher-stated"; anything else a model
+            # returns must not be shown to the teacher as a source citation.
+            grounding = entry.get("grounding")
+            if grounding != "teacher-stated":
+                grounding = "teacher-stated" if entry.get("value") else None
             fields[field] = {
                 "value": entry.get("value"),
-                "grounding": entry.get("grounding"),
+                "grounding": grounding,
                 "unresolved": bool(entry.get("unresolved", not entry.get("value"))),
             }
         elif entry is None:

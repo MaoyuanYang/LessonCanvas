@@ -8,7 +8,7 @@ from langgraph.types import Command, interrupt
 from sqlalchemy import func, select
 from typing_extensions import TypedDict
 
-from lessoncanvas.adapters.model import ModelProviderError, get_model_adapter
+from lessoncanvas.adapters.model import ModelProviderError, get_model_adapter, parse_model_json
 from lessoncanvas.db import SessionLocal
 from lessoncanvas.models import DiscoveryRun, InteractionMessage, Source, SourceChunk
 from lessoncanvas.modules.discovery_planning.fields import (
@@ -84,11 +84,14 @@ def analyze_node(state: PlanningState) -> dict:
         }
         started = time.monotonic()
         response = adapter.complete(
-            "You are a unit planning specialist. Ask only material planning gaps as JSON.",
+            "You are a unit planning specialist. Given the planning-gap task, ask only material "
+            'planning gaps. Respond with a JSON object only, shaped like {"questions": '
+            '[{"field": "period_plan", "question": "..."}]}; return {"questions": []} when '
+            "nothing is missing; never repeat the input payload.",
             json.dumps(user_payload, ensure_ascii=False),
         )
         latency = int((time.monotonic() - started) * 1000)
-        data = json.loads(response.text)
+        data = parse_model_json(response.text)
         questions = [
             q
             for q in data.get("questions", [])
@@ -199,11 +202,17 @@ def build_draft_node(state: PlanningState) -> dict:
         }
         started = time.monotonic()
         response = adapter.complete(
-            "You are a unit planning specialist. Produce the structured blueprint as JSON.",
+            "You are a unit planning specialist. Given the confirmed brief, produce the complete "
+            'unit blueprint. Respond with a JSON object only, shaped like {"blueprint": {"unit": '
+            '{"title": "...", "objectives": [{"id": "obj-1", "text": "..."}], '
+            '"assessment_intent": "..."}, "lessons": [{"index": 1, "title": "...", '
+            '"objective_ids": ["obj-1"], "assessment_intent": "...", "period_count": 1}], '
+            '"findings": []}}; create exactly as many lessons as the brief lesson_count; '
+            "never repeat the input payload.",
             json.dumps(user_payload, ensure_ascii=False),
         )
         latency = int((time.monotonic() - started) * 1000)
-        data = json.loads(response.text)
+        data = parse_model_json(response.text)
         record_trace(
             session,
             run_id,
