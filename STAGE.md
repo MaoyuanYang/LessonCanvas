@@ -29,7 +29,7 @@
 
 | Activity ID | Work Item | Member | Type | Skill | Skill Stage | Activity State | Work Status | Branch / Worktree | Status Authority | Next Checkpoint | Updated At |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `A-001` | `F002 Confirmed Unit Blueprint` | `opencode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `DELIVERY` | `ACTIVE` | `REVIEW` | `feature/F002-confirmed-unit-blueprint` | `https://github.com/MaoyuanYang/LessonCanvas/issues/3` | Delivery decision (commit/push/PR authorization) | `2026-08-28T16:03:34+08:00` |
+| `A-001` | `F002 Confirmed Unit Blueprint` | `opencode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `DELIVERY` | `ACTIVE` | `REVIEW` | `feature/F002-confirmed-unit-blueprint` | `https://github.com/MaoyuanYang/LessonCanvas/issues/3` | PR #4 merge decision, then `DONE` transition | `2026-08-28T16:03:34+08:00` |
 
 ## Gate Snapshot
 
@@ -42,7 +42,7 @@
 | F002 | `SPEC READY` | `PASS` | `specs/F002-confirmed-unit-blueprint/spec.md` Gate Record @ `108178994342` |
 | F002 | `UI READY` | `PASS` | `specs/F002-confirmed-unit-blueprint/ux-ui.md` Gate Record @ `a8cfd23189ac` |
 | F002 | `TEST DESIGN READY` | `PASS` | `specs/F002-confirmed-unit-blueprint/test-design.md` Gate Record @ `9c997cfa2b6f` |
-| F002 | `DONE` | `NOT_READY` | Delivery pending PR authorization; review recorded in `specs/F002-confirmed-unit-blueprint/review.md` |
+| F002 | `DONE` | `NOT_READY` | PR [#4](https://github.com/MaoyuanYang/LessonCanvas/pull/4) opened 2026-08-28; awaiting merge authorization; review recorded in `specs/F002-confirmed-unit-blueprint/review.md` |
 
 ## Blockers and Conflicts
 
