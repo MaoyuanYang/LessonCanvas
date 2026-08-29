@@ -11,3 +11,24 @@ celery_app.conf.task_track_started = True
 @celery_app.task(name="lessoncanvas.health_check")
 def health_check() -> str:
     return "ok"
+
+
+@celery_app.task(name="lessoncanvas.generate_unit", max_retries=2)
+def generate_unit(run_id: str) -> str:
+    """Execute one generation run to a settled status.
+
+    Bounded retries resume the same run from per-lesson checkpoints (F003 D2/D5);
+    cap exhaustion and supersession are settled inside the workflow itself.
+    """
+
+    from lessoncanvas.modules.artifact_production.graph import (
+        execute_generation,
+        mark_provider_exhausted,
+    )
+
+    try:
+        return execute_generation(run_id)
+    except Exception as error:
+        if generate_unit.request.retries >= generate_unit.max_retries:
+            return mark_provider_exhausted(run_id)
+        raise generate_unit.retry(exc=error) from error

@@ -11,6 +11,7 @@ from lessoncanvas.models import (
     BlueprintVersion,
     BriefVersion,
     DiscoveryRun,
+    GenerationRun,
 )
 from lessoncanvas.modules.discovery_planning.fields import FIELD_LABELS
 from lessoncanvas.modules.identity_workspace.service import NotFoundError
@@ -588,7 +589,29 @@ def confirm_blueprint(
                 BlueprintVersion.source_revision == draft.revision,
             )
         )
+    supersede_active_generation_runs(session, project_id, version.id)
     return version
+
+
+ACTIVE_GENERATION_STATUSES = ("queued", "generating", "validating")
+
+
+def supersede_active_generation_runs(
+    session, project_id: uuid.UUID, blueprint_version_id: uuid.UUID
+) -> None:
+    """F003 safe-checkpoint supersession: active generation runs bound to an older
+    confirmed version pair stop and can never publish over the newer version."""
+
+    stale_runs = session.scalars(
+        select(GenerationRun).where(
+            GenerationRun.project_id == project_id,
+            GenerationRun.status.in_(ACTIVE_GENERATION_STATUSES),
+            GenerationRun.blueprint_version_id != blueprint_version_id,
+        )
+    ).all()
+    for run in stale_runs:
+        run.status = "superseded"
+    session.flush()
 
 
 def on_brief_version_confirmed(session, project_id: uuid.UUID, brief_version_id: uuid.UUID) -> None:
@@ -614,4 +637,21 @@ def on_brief_version_confirmed(session, project_id: uuid.UUID, brief_version_id:
     for version in dependent_versions:
         version.stale = True
         version.stale_brief_version_id = brief_version_id
+    session.flush()
+
+    supersede_active_generation_runs_by_brief(session, project_id)
+
+
+def supersede_active_generation_runs_by_brief(session, project_id: uuid.UUID) -> None:
+    """A newly confirmed brief supersedes every active generation run: its bound
+    input version pair can no longer be current."""
+
+    active_runs = session.scalars(
+        select(GenerationRun).where(
+            GenerationRun.project_id == project_id,
+            GenerationRun.status.in_(ACTIVE_GENERATION_STATUSES),
+        )
+    ).all()
+    for run in active_runs:
+        run.status = "superseded"
     session.flush()

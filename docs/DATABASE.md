@@ -73,5 +73,6 @@ Redis is a non-authoritative Celery transport. No business fact, quota balance, 
 ## Open Items
 
 - [RESOLVED, 2026-08-24] The concrete opaque ID strategy: UUIDv7 primary keys, opaque string form in APIs (`YMY / Project Owner`, F001 refinement D6).
+- [RESOLVED, 2026-08-29] Trace events reference runs polymorphically across discovery, planning, and generation runs (F003 migration `e7a2c50b9d31` drops the discovery-only foreign key on `trace_events.run_id`); generation runs, per-lesson artifacts, and the authoritative run-event log live in their own tables (F003 Spec Data Changes).
 - [UNKNOWN, NON_BLOCKING] The identity provider's account-deletion callback is resolved for F001 (Clerk user-deletion API), and local MinIO deletion is synchronous; hosted object-store deletion guarantees remain open. Resolve before public multi-account deployment.
 - [UNKNOWN, NON_BLOCKING] Minimum non-content security-audit retention is not selected. Resolve during the security and operations Feature without retaining deleted teacher content.

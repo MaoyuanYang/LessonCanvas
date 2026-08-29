@@ -11,8 +11,11 @@ from lessoncanvas.models import (
     BriefDraft,
     BriefVersion,
     DiscoveryRun,
+    GenerationRun,
     InteractionMessage,
+    LessonPlanArtifact,
     Project,
+    RunEvent,
     Source,
     SourceChunk,
     TraceEvent,
@@ -55,6 +58,37 @@ def delete_project_cascade(
         session.execute(
             sql_delete(InteractionMessage).where(InteractionMessage.run_id.in_(run_ids))
         )
+
+    generation_runs = session.scalars(
+        select(GenerationRun).where(GenerationRun.project_id == project_id)
+    ).all()
+    if generation_runs:
+        generation_run_ids = [run.id for run in generation_runs]
+        artifact_keys = [
+            key
+            for (key,) in session.execute(
+                select(LessonPlanArtifact.object_key).where(
+                    LessonPlanArtifact.run_id.in_(generation_run_ids),
+                    LessonPlanArtifact.object_key.is_not(None),
+                )
+            )
+        ]
+        from lessoncanvas.adapters.storage import StorageAdapter
+        from lessoncanvas.settings import get_settings
+
+        artifact_storage = StorageAdapter(bucket=get_settings().s3_bucket_artifacts)
+        for key in artifact_keys:
+            try:
+                artifact_storage.delete(key)
+            except Exception:
+                failures.append(f"object:{key}")
+        session.execute(sql_delete(TraceEvent).where(TraceEvent.run_id.in_(generation_run_ids)))
+        session.execute(sql_delete(RunEvent).where(RunEvent.run_id.in_(generation_run_ids)))
+        session.execute(
+            sql_delete(LessonPlanArtifact).where(LessonPlanArtifact.run_id.in_(generation_run_ids))
+        )
+        session.execute(sql_delete(GenerationRun).where(GenerationRun.id.in_(generation_run_ids)))
+
     session.execute(sql_delete(BlueprintDraft).where(BlueprintDraft.project_id == project_id))
     session.execute(sql_delete(BlueprintVersion).where(BlueprintVersion.project_id == project_id))
     session.execute(sql_delete(DiscoveryRun).where(DiscoveryRun.project_id == project_id))
