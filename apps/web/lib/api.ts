@@ -440,3 +440,86 @@ export async function confirmBlueprint(
     { method: "POST", body: { base_revision: baseRevision }, token },
   );
 }
+
+export interface GenerationArtifact {
+  id: string;
+  lesson_index: number;
+  status: string;
+  language_mode: string;
+  failure_reason: string | null;
+  retry_count: number;
+  download_url: string | null;
+}
+
+export interface GenerationSnapshot {
+  run_id: string;
+  status: string;
+  brief_version: number | null;
+  blueprint_version: number | null;
+  language_mode: string;
+  model_calls: number;
+  model_call_cap: number;
+  artifacts: GenerationArtifact[];
+  complete_count: number;
+  total_count: number;
+}
+
+export async function generationStart(
+  token: string | null,
+  projectId: string,
+): Promise<GenerationSnapshot> {
+  return apiFetch<GenerationSnapshot>(`/projects/${projectId}/generation/start`, {
+    method: "POST",
+    token,
+  });
+}
+
+export async function generationStatus(
+  token: string | null,
+  projectId: string,
+): Promise<GenerationSnapshot> {
+  return apiFetch<GenerationSnapshot>(`/projects/${projectId}/generation`, { token });
+}
+
+export async function generationResume(
+  token: string | null,
+  projectId: string,
+): Promise<{ status: string }> {
+  return apiFetch<{ status: string }>(`/projects/${projectId}/generation/resume`, {
+    method: "POST",
+    token,
+  });
+}
+
+export async function downloadLessonPlan(
+  token: string | null,
+  projectId: string,
+  artifactId: string,
+): Promise<Blob> {
+  const response = await fetch(
+    `${apiBaseUrl()}/projects/${projectId}/lesson-plans/${artifactId}/download`,
+    { headers: token ? { Authorization: `Bearer ${token}` } : {} },
+  );
+  if (!response.ok) {
+    throw new ApiClientError(
+      "UNEXPECTED_SYSTEM" as ApiErrorCode,
+      "下载失败，请稍后重试。",
+      response.status,
+      null,
+      {},
+    );
+  }
+  return response.blob();
+}
+
+export interface GenerationStreamEvent {
+  run_id: string;
+  seq: number;
+  event_type: string;
+  payload: Record<string, unknown>;
+  created_at: string;
+}
+
+export function generationStreamUrl(projectId: string): string {
+  return `${apiBaseUrl()}/projects/${projectId}/generation/events`;
+}

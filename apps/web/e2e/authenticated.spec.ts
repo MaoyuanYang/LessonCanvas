@@ -126,6 +126,21 @@ test.describe("authenticated teacher flow", () => {
       timeout: 60000,
     });
 
+    // F003: generate all lesson plans from the confirmed blueprint, then download one.
+    await page.getByRole("button", { name: "教案生成" }).click({ timeout: 30000 });
+    await page.getByRole("button", { name: "开始生成" }).click({ timeout: 30000 });
+    await expect(page.getByText(/全部 \d+ 课教案已生成/)).toBeVisible({ timeout: 240000 });
+    await expect(page.getByRole("button", { name: "下载 DOCX" }).first()).toBeVisible({
+      timeout: 30000,
+    });
+    const [download] = await Promise.all([
+      page.waitForEvent("download", { timeout: 60000 }),
+      page.getByRole("button", { name: "下载 DOCX" }).first().click({ timeout: 30000 }),
+    ]);
+    const downloadPath = await download.path();
+    if (!downloadPath) throw new Error("lesson plan download produced no file");
+    await expect(download.suggestedFilename()).toMatch(/\.docx$/);
+
     await page.getByRole("button", { name: "教学简报" }).click({ timeout: 30000 });
     const themeInput = page.getByRole("textbox", { name: /编辑单元主题/ });
     await themeInput.fill("气候变化与能源");
