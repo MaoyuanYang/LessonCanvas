@@ -1,7 +1,7 @@
 # F003: Recoverable Unit Lesson Plans
 
 - Spec Status: `SPEC READY`
-- Roadmap Status: `NEXT`
+- Roadmap Status: `DONE`
 - Priority: `P0`
 - Owner: Implementation assignee unassigned until Coding starts
 - Work item: [GitHub Issue #6](https://github.com/MaoyuanYang/LessonCanvas/issues/6)
@@ -206,3 +206,23 @@ All DRAFT open questions are resolved by D1–D8 above. Non-blocking residuals:
 - [CONFIRMED] Observed recovery gap (2026-08-28 live testing): a crashed model call can strand a run in an initializing state with no recovery path; F003's run state machine, bounded retry, and teacher resume close this gap for generation runs.
 - [ASSUMED] `python-docx` structural validation is sufficient evidence of openability for the portfolio's Phase-1 claims; F009 may add stronger file evidence.
 - [ASSUMED] Per-run model-call cap plus idempotency and supersession adequately bounds cost for Phase 1 (D3 owner decision); revisit with F011 guardrails.
+
+## Gate Record: DONE
+
+- Status: `PASS`
+- Validation time: 2026-08-29
+- Decision Authority: `YMY / Project Owner` — full delivery authorized in the interactive session (complete M-1 evidence, then merge and DONE)
+- Conditions met:
+  - All 16 ACs satisfied with automated evidence (102 backend tests incl. 22 generation; 22 web tests incl. 6 panel; migrations applied to test and dev DBs)
+  - Seven full-stack E2E journeys green: authenticated primary journey (1.3m live stack) + TS-024..TS-029 across live (real DeepSeek + real Worker) and deterministic fault stacks
+  - Review: no Critical/High findings; M-1 RESOLVED with evidence; M-2 mitigated with root cause deferred to F006
+  - Documentation sync: API/DATABASE/TESTING updated; ROADMAP/STAGE/Issue synchronized
+  - Delivery: PR [#7](https://github.com/MaoyuanYang/LessonCanvas/pull/7) merged `ad81c82` (authorized merge); main re-verified 102 tests + ruff clean
+- DONE evidence manifest (working-tree SHA-256 prefixes at gate time):
+  - `spec.md` @ `ea5efb32e94e`
+  - `ux-ui.md` @ `7b2630aad7ee`
+  - `test-design.md` @ `e72245eb84e4`
+  - `plan.md` @ `afc78ad33896`
+  - `review.md` @ `a23c67784a9d`
+  - `specs/ROADMAP.md` @ `199045fe4928`
+  - `AGENTS.md` @ `b03a2200602b`

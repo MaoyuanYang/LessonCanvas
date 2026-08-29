@@ -4,8 +4,8 @@
 
 | Field | Value |
 | --- | --- |
-| Snapshot Revision | `STAGE-7` |
-| Parent Snapshot | `STAGE-6` @ `cf3a80bb16c0` |
+| Snapshot Revision | `STAGE-8` |
+| Parent Snapshot | `STAGE-7` @ `db8014eea081` |
 | Last Reconciled At | `2026-08-29T00:24:37+08:00` |
 | Reconciled By | `ZCode feature-dev session (YMY / Project Owner driving)` |
 | Repository Ref | `main @ 4ccc4ef` |
@@ -13,7 +13,7 @@
 | Lifecycle Path | `GREENFIELD` |
 | Project Phase | `DELIVERY` |
 | Overall State | `ACTIVE` |
-| Current Milestone | F003 Recoverable Unit Lesson Plans selected as NEXT; refinement starting |
+| Current Milestone | F003 Recoverable Unit Lesson Plans delivered as the first artifact-production vertical slice |
 | Tracking Mode | `REMOTE` |
 
 ## Lifecycle Progress
@@ -23,15 +23,17 @@
 | Macro design and Feature Map | `COMPLETE` | `specs/ROADMAP.md`, `docs/PRODUCT.md`, `docs/ARCHITECTURE.md` | N/A |
 | F001 Grounded Confirmed Brief | `COMPLETE` | Issue #1 (closed), PR #2 merge `1253ca2`, `specs/F001-grounded-confirmed-brief/` | N/A |
 | F002 planning workflow delivered | `COMPLETE` | Issue #3 (closed), PR #4 merge `8f90bb6`, `specs/F002-confirmed-unit-blueprint/` | N/A |
-| F003 Recoverable Unit Lesson Plans | `READY` | Issue [#6](https://github.com/MaoyuanYang/LessonCanvas/issues/6) (writable authority), `specs/F003-recoverable-unit-lesson-plans/` | `IN_PROGRESS` at coding start |
-| F004+ remaining Feature map | `NOT_STARTED` | `specs/ROADMAP.md` Feature Map | F003 DONE |
+| F003 Recoverable Unit Lesson Plans | `DONE` | Issue #6 (closed), PR #7 merge `ad81c82`, `specs/F003-recoverable-unit-lesson-plans/` | F004/F005 refinement |
+| F004+ remaining Feature map | `NOT_STARTED` | `specs/ROADMAP.md` Feature Map | F004 selection |
 
 ## Active Work
 
 | Activity ID | Work Item | Member | Type | Skill | Skill Stage | Activity State | Work Status | Branch / Worktree | Status Authority | Next Checkpoint | Updated At |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `A-003` | `F003 Recoverable Unit Lesson Plans` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `REVIEW` | `ACTIVE` | `REVIEW` | N/A (issue-tracked) | `https://github.com/MaoyuanYang/LessonCanvas/issues/6` | READY FOR PR (DONE blocked by review M-1: remaining E2E journeys) | `2026-08-29T00:24:37+08:00` |
+| `A-003` | `F003 Recoverable Unit Lesson Plans` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/6` | N/A - terminal (PR #7 merge `ad81c82`) | `2026-08-29T00:24:37+08:00` |
 | `A-002` | `F002 Confirmed Unit Blueprint (DONE reconciliation)` | `opencode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `ACTIVE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/3` | N/A - terminal | `2026-08-28T19:10:00+08:00` |
+
+| `A-003` | `F003 Recoverable Unit Lesson Plans` | `ZCode feature-dev session` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | Issue #6 (closed) | PR #7 merge `ad81c82` | 2026-08-29 |
 
 ## Gate Snapshot
 
