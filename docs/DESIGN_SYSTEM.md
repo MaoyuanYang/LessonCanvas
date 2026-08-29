@@ -58,6 +58,7 @@ Typography: system sans stack with zh-Hans faces for interface; system serif sta
 | Navigation item | Global, project-context, current, unavailable | Current location exposed semantically; unavailable reason does not rely on color |
 | Status marker | Draft, waiting, active, partial failure, stale, superseded, technically validated, product validated/failed | Text label accompanies visual treatment; distinct statuses are not merged by color alone |
 | Progress / phase tracker | Queued, active phase, completed scope, paused, failed, superseded | Announces meaningful changes without overwhelming assistive technology |
+| Artifact run surfaces (shared) | Per-lesson artifact progress list and run outcome banners, promoted from F003 feature-local compositions with F004 as the recorded trigger (F004 D-DECKDS); consumed by 教案生成 and 课件生成, available to F005 | Same status language and semantics across artifact kinds; no Feature-local visual variants |
 | List / table | Project, version, run, artifact, finding, and trace density modes | Correct headings, reading order, keyboard access to interactive rows, responsive alternative |
 | Disclosure / evidence panel | Teacher summary, expanded sources, technical details | Programmatic expanded state, named trigger, preserved focus and reading context |
 | Modal / drawer | Confirmation, destructive action, focused evidence | Focus containment and return, Escape when safe, labelled title and consequence |

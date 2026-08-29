@@ -523,3 +523,79 @@ export interface GenerationStreamEvent {
 export function generationStreamUrl(projectId: string): string {
   return `${apiBaseUrl()}/projects/${projectId}/generation/events`;
 }
+
+export interface DeckArtifact {
+  id: string;
+  lesson_index: number;
+  status: string;
+  language_mode: string;
+  slide_count: number | null;
+  failure_reason: string | null;
+  retry_count: number;
+  download_url: string | null;
+}
+
+export interface DeckGenerationSnapshot {
+  run_id: string;
+  status: string;
+  brief_version: number | null;
+  blueprint_version: number | null;
+  language_mode: string;
+  model_calls: number;
+  model_call_cap: number;
+  artifacts: DeckArtifact[];
+  complete_count: number;
+  total_count: number;
+}
+
+export async function deckGenerationStart(
+  token: string | null,
+  projectId: string,
+): Promise<DeckGenerationSnapshot> {
+  return apiFetch<DeckGenerationSnapshot>(`/projects/${projectId}/decks/generation/start`, {
+    method: "POST",
+    token,
+  });
+}
+
+export async function deckGenerationStatus(
+  token: string | null,
+  projectId: string,
+): Promise<DeckGenerationSnapshot> {
+  return apiFetch<DeckGenerationSnapshot>(`/projects/${projectId}/decks/generation`, { token });
+}
+
+export async function deckGenerationResume(
+  token: string | null,
+  projectId: string,
+): Promise<{ status: string }> {
+  return apiFetch<{ status: string }>(`/projects/${projectId}/decks/generation/resume`, {
+    method: "POST",
+    token,
+  });
+}
+
+export async function downloadSlideDeck(
+  token: string | null,
+  projectId: string,
+  artifactId: string,
+): Promise<Blob> {
+  const response = await fetch(
+    `${apiBaseUrl()}/projects/${projectId}/slide-decks/${artifactId}/download`,
+    { headers: token ? { Authorization: `Bearer ${token}` } : {} },
+  );
+  if (!response.ok) {
+    throw new ApiClientError(
+      "UNEXPECTED_SYSTEM" as ApiErrorCode,
+      "下载失败，请稍后重试。",
+      response.status,
+      null,
+      {},
+    );
+  }
+  return response.blob();
+}
+
+export function deckGenerationStreamUrl(projectId: string): string {
+  return `${apiBaseUrl()}/projects/${projectId}/decks/generation/events`;
+}

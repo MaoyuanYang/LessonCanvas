@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { BlueprintPanel } from "@/components/blueprint-panel";
 import { BriefPanel } from "@/components/brief-panel";
+import { DeckPanel } from "@/components/deck-panel";
 import { DiscoveryPanel } from "@/components/discovery-panel";
 import { GenerationPanel } from "@/components/generation-panel";
 import { SourcesPanel } from "@/components/sources-panel";
 
-type Tab = "sources" | "discovery" | "brief" | "blueprint" | "generation";
+type Tab = "sources" | "discovery" | "brief" | "blueprint" | "generation" | "decks";
 
 const TAB_LABELS: Record<Tab, string> = {
   sources: "来源",
@@ -15,6 +16,7 @@ const TAB_LABELS: Record<Tab, string> = {
   brief: "教学简报",
   blueprint: "单元蓝图",
   generation: "教案生成",
+  decks: "课件生成",
 };
 
 export default function WorkspaceView({ projectId }: { projectId: string }) {
@@ -44,6 +46,7 @@ export default function WorkspaceView({ projectId }: { projectId: string }) {
       {tab === "brief" ? <BriefPanel projectId={projectId} /> : null}
       {tab === "blueprint" ? <BlueprintPanel projectId={projectId} /> : null}
       {tab === "generation" ? <GenerationPanel projectId={projectId} /> : null}
+      {tab === "decks" ? <DeckPanel projectId={projectId} onNavigate={setTab} /> : null}
     </section>
   );
 }
