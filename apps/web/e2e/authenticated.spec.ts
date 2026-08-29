@@ -1,10 +1,27 @@
-﻿import { chromium, expect, test } from "@playwright/test";
+﻿import { chromium, expect, test, type Locator } from "@playwright/test";
 import * as fs from "node:fs";
 import * as path from "node:path";
 
 const CODE_FILE = process.env.E2E_CODE_FILE ?? "";
 const enabled = process.env.CLERK_E2E === "1";
 const PROFILE_DIR = path.join(__dirname, ".auth", "profile");
+
+// React-controlled programmatic fill: bypasses actionability races with
+// continuously re-rendered question boxes (native setter + input event).
+async function domFill(locator: Locator, value: string): Promise<void> {
+  await locator.evaluate(
+    (el: HTMLTextAreaElement | HTMLInputElement, val: string) => {
+      const proto = el instanceof HTMLTextAreaElement
+        ? window.HTMLTextAreaElement.prototype
+        : window.HTMLInputElement.prototype;
+      const setter = Object.getOwnPropertyDescriptor(proto, "value")?.set;
+      setter?.call(el, val);
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+    },
+    value,
+  );
+}
+
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -95,7 +112,11 @@ test.describe("authenticated teacher flow", () => {
         .waitFor({ state: "visible", timeout: 90000 })
         .catch(() => {});
       if (!(await questionBox.isVisible().catch(() => false))) break;
-      await questionBox.fill("共12课时，聚焦综合输出");
+      const boxes = page.locator("[id^='planning-answer-']");
+      const boxCount = await boxes.count();
+      for (let i = 0; i < boxCount; i += 1) {
+        await domFill(boxes.nth(i), "共12课时，聚焦综合输出");
+      }
       const submit = page.getByRole("button", { name: "提交回答" });
       // A stale question box can be replaced by the finished draft between
       // fill and submit; a missing submit button means the planning completed.
@@ -104,8 +125,15 @@ test.describe("authenticated teacher flow", () => {
         .then(() => true)
         .catch(() => false);
       if (!submitReady) break;
-      await submit.click({ timeout: 30000 });
-      await page.waitForTimeout(2000);
+      await submit.evaluate((element) => (element as HTMLButtonElement).click());
+      // The answer POST synchronously drives the graph (next analysis or a full
+      // blueprint draft under the live model); wait until it settles.
+      await page
+        .getByRole("button", { name: "提交回答" })
+        .or(page.getByText("完整性检查"))
+        .first()
+        .waitFor({ state: "visible", timeout: 240000 })
+        .catch(() => {});
     }
 
     await expect(page.getByText("完整性检查")).toBeVisible({ timeout: 180000 });

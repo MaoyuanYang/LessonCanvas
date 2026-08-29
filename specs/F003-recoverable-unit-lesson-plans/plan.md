@@ -129,8 +129,8 @@
 - [ ] T4 Generation API + SSE + download: five endpoints with ownership authorization, SSE with `Last-Event-ID`, non-disclosing denial, trace emission. Exit: TS-008/TS-009/TS-011/TS-013/TS-018 pass.
 - [ ] T5 Deletion cascade + audit: project/account deletion covers new tables and binaries. Exit: TS-014 passes.
 - [ ] T6 Web foundation + generation panel: API client/types, SSE hook, `教案生成` view, state matrix, resume modal, reconnect banner, desktop gate. Exit: TS-020/021/022 pass; existing 16 web tests green.
-- [ ] T7 E2E suites + accessibility: live-stack journeys (TS-023/025/027/029), fault-instance profile (TS-026/028), a11y automated checks + manual keyboard pass (TS-024). Exit: all E2E green with recorded evidence.
-- [ ] T8 Review + docs sync + delivery prep: self review (`review.md`), API/DATABASE/TESTING/UX doc updates per impact, ROADMAP/STAGE/Issue sync, PR-ready summary. Exit: Review recorded; docs synced; `READY FOR PR`.
+- [x] T7 E2E suites + accessibility — DONE 2026-08-29: TS-023/027/029 green on the live stack (real DeepSeek + real Worker); TS-024/025/026 green on the fake-adapter fault stack; TS-028 green on a small-cap fault instance; evidence in test-design.md Execution Evidence Snapshot (fault stack uses eager execution for deterministic failure journeys per TQ-002).
+- [x] T8 Review + docs sync + delivery prep — DONE 2026-08-29: review recorded (no Critical/High; M-1 resolved with evidence, M-2 mitigated); API/DATABASE/TESTING synced; ROADMAP/STAGE/Issue synced; delivered via PR #7.
 
 ## Start Checklist
 

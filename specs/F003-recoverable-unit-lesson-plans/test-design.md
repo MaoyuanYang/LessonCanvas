@@ -438,3 +438,21 @@ No Critical Test Question is `OPEN` or `DEFERRED`.
 - Decision Authority (named human + role): `YMY / Project Owner`
 - Approval source: interactive session, 2026-08-29 (r1 revision requested: full code-path E2E coverage; r2 approved)
 - Approval scope: F003 Test Design at `test-design-f003-r2`
+
+## Execution Evidence Snapshot (2026-08-29)
+
+All 29 scenarios executed and passed:
+
+| Suite | Evidence |
+| --- | --- |
+| TS-001..TS-019 | `apps/backend/tests/test_generation.py` — 22 tests green within the 102-test backend suite (real renderer + MinIO + PostgreSQL; concurrency via parallel transactions) |
+| TS-020..TS-022 | `apps/web/__tests__/generation-panel.test.tsx` — 6 tests green within the 22-test web suite |
+| TS-023 | `e2e/authenticated.spec.ts` extended journey — 1 passed (1.3m, live DeepSeek + real Celery Worker + MinIO, DOCX download asserted) |
+| TS-024 | `e2e/generation-journeys.spec.ts` scripted keyboard pass (agent-driven keyboard events: tab navigation to the generation tab, Enter start, focus-verified download) — passed |
+| TS-025 | blocked start E2E (gate message asserted) — passed |
+| TS-026 | partial failure -> scoped resume -> complete on the fault stack (scripted TRANSIENT_FAIL exhausting bounded retries, then teacher resume completing the run) — passed |
+| TS-027 | mid-run supersession on the live stack (new brief confirmed during active live-model generation; superseded banner asserted) — passed (4.0m) |
+| TS-028 | cap exhaustion on the small-cap fault stack (cap banner + lesson 1 downloadable) — passed (17.2s) |
+| TS-029 | leave/reconnect/reload progress restoration on the live stack — passed (1.1m) |
+
+Execution profile note (recorded per TQ-002): the fault stack ran with `LESSONCANVAS_MODEL_ADAPTER=fake` and eager task execution for deterministic failure/cap journeys; the live stack ran real DeepSeek with the real Celery Worker for TS-023/027/029. Clerk E2E uses the `@clerk/testing` token to bypass dev-instance rate limits.

@@ -180,7 +180,9 @@ class FakeModelAdapter:
 def _fake_generation_plan(data: dict) -> dict:
     """Deterministic lesson plans for generation tests, scripted by title markers.
 
-    TRANSIENT_FAIL -> provider error on the first attempt for that lesson only;
+    TRANSIENT_FAIL -> provider error on the first three attempts for that
+    lesson (exhausting the Worker's bounded retries), then succeeds so an
+    explicit teacher resume completes the run;
     PROVIDER_FAIL  -> persistent provider error; any content (including
     injection payloads) is returned verbatim so tests can prove it stays inert.
     """
@@ -194,7 +196,7 @@ def _fake_generation_plan(data: dict) -> dict:
         raise ModelProviderError("model provider unavailable")
     if "TRANSIENT_FAIL" in title:
         seen = FakeModelAdapter._transient_failures.get(fail_key, 0)
-        if seen == 0:
+        if seen < 3:
             FakeModelAdapter._transient_failures[fail_key] = seen + 1
             raise ModelProviderError("model provider unavailable")
 

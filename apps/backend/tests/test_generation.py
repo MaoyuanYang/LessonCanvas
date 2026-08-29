@@ -312,15 +312,16 @@ def test_transient_failure_resume_skips_completed_lessons(client, auth, db_sessi
     patch_lesson_titles(client, auth, project_id, {3: "第3课 TRANSIENT_FAIL 环境问题"})
     run = start_run(client, auth, db_session, project_id)
 
-    with pytest.raises(ProviderTransientError):
-        execute_generation(str(run.id))
+    for _ in range(3):
+        with pytest.raises(ProviderTransientError):
+            execute_generation(str(run.id))
     db_session.expire_all()
     artifacts = run_service.artifacts_of(db_session, run.id)
     assert [a.status for a in artifacts][:2] == ["complete", "complete"]
     assert artifacts[2].status == "failed"
     keys_before = {a.id: a.object_key for a in artifacts[:2]}
 
-    status = execute_generation(str(run.id))
+    status = execute_generation(str(run.id))  # scripted fault now cleared
     db_session.expire_all()
     assert status == "complete"
     artifacts = run_service.artifacts_of(db_session, run.id)
@@ -328,7 +329,7 @@ def test_transient_failure_resume_skips_completed_lessons(client, auth, db_sessi
     assert {a.id: a.object_key for a in artifacts[:2]} == keys_before
 
     db_session.refresh(run)
-    assert run.model_calls == 7  # 6 lessons + one failed attempt on lesson 3
+    assert run.model_calls == 9  # 6 lessons + three failed attempts on lesson 3
 
 
 def test_persistent_provider_failure_settles_with_completed_work(client, auth, db_session):
@@ -429,11 +430,22 @@ def test_worker_task_dispatch_resumes_same_run(client, auth, db_session):
     patch_lesson_titles(client, auth, project_id, {4: "第4课 TRANSIENT_FAIL 写作训练"})
     run = start_run(client, auth, db_session, project_id)
 
-    result = generate_unit.apply(args=[str(run.id)])
+    # Bounded retries exhaust against the scripted fault; completed lessons survive.
+    first = generate_unit.apply(args=[str(run.id)])
     db_session.expire_all()
-    assert result.successful()
-    assert result.result == "complete"
+    assert first.successful()
+    assert first.result == "partial_failure"
+    artifacts = run_service.artifacts_of(db_session, run.id)
+    assert [artifact.status for artifact in artifacts][:3] == ["complete"] * 3
+    assert artifacts[3].status == "failed"
 
+    # Teacher resume re-dispatches the same run; the scripted fault has cleared.
+    run_service.resume_run(db_session, run)
+    db_session.commit()
+    second = generate_unit.apply(args=[str(run.id)])
+    db_session.expire_all()
+    assert second.successful()
+    assert second.result == "complete"
     artifacts = run_service.artifacts_of(db_session, run.id)
     assert {artifact.status for artifact in artifacts} == {"complete"}
     assert len({artifact.id for artifact in artifacts}) == 6
