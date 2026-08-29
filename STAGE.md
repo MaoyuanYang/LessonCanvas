@@ -4,9 +4,9 @@
 
 | Field | Value |
 | --- | --- |
-| Snapshot Revision | `STAGE-15` |
-| Parent Snapshot | `STAGE-14` @ `69644b57be8e` |
-| Last Reconciled At | `2026-08-29T19:08:21+08:00` |
+| Snapshot Revision | `STAGE-16` |
+| Parent Snapshot | `STAGE-15` @ `c4edcd267d5a` |
+| Last Reconciled At | `2026-08-30T00:59:28+08:00` |
 | Reconciled By | `ZCode feature-dev session (YMY / Project Owner driving)` |
 | Repository Ref | `main @ b727734` |
 | Write Coordination | `SINGLE_WRITER:ZCode feature-dev session` |
@@ -30,7 +30,7 @@
 
 | Activity ID | Work Item | Member | Type | Skill | Skill Stage | Activity State | Work Status | Branch / Worktree | Status Authority | Next Checkpoint | Updated At |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `A-004` | `F004 Editable Lesson Slide Decks` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `CODING_TESTING` | `ACTIVE` | `IN_PROGRESS` | `feature/F004-editable-lesson-slide-decks` | `https://github.com/MaoyuanYang/LessonCanvas/issues/8` | T0..T8 interleaved tasks (plan @ `a11c7281a557`) | `2026-08-29T19:08:21+08:00` |
+| `A-004` | `F004 Editable Lesson Slide Decks` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `REVIEW` | `ACTIVE` | `REVIEW` | `feature/F004-editable-lesson-slide-decks` | `https://github.com/MaoyuanYang/LessonCanvas/issues/8` | Delivery decision on M-1 residual (two env-blocked deck E2E journeys) | `2026-08-30T00:59:28+08:00` |
 | `A-003` | `F003 Recoverable Unit Lesson Plans` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/6` | N/A - terminal (PR #7 merge `ad81c82`) | `2026-08-29T00:24:37+08:00` |
 | `A-002` | `F002 Confirmed Unit Blueprint (DONE reconciliation)` | `opencode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `ACTIVE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/3` | N/A - terminal | `2026-08-28T19:10:00+08:00` |
 
