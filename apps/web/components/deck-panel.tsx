@@ -3,74 +3,90 @@
 import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DesktopRequiredNotice, useDesktop } from "@/components/desktop-gate";
 import {
   ArtifactProgressList,
   NarrationRegion,
   ReconnectBanner,
-  RUN_STATUS_LABELS as STATUS_LABELS,
   RunOutcomeBanners,
+  RUN_STATUS_LABELS,
   TERMINAL_RUN_STATUSES,
 } from "@/components/artifact-run";
+import { DesktopRequiredNotice, useDesktop } from "@/components/desktop-gate";
 import { Alert, Button, ConfirmModal, EmptyState, SkeletonRows, StatusBadge } from "@/components/ui";
 import {
   ApiClientError,
-  downloadLessonPlan,
-  generationStart,
+  deckGenerationResume,
+  deckGenerationStart,
+  deckGenerationStatus,
+  deckGenerationStreamUrl,
+  downloadSlideDeck,
   generationStatus,
-  generationResume,
-  generationStreamUrl,
-  type GenerationArtifact,
+  type DeckArtifact,
+  type DeckGenerationSnapshot,
   type GenerationSnapshot,
   type GenerationStreamEvent,
 } from "@/lib/api";
 
-
-function narrationText(event: GenerationStreamEvent): string | null {
+function deckNarrationText(event: GenerationStreamEvent): string | null {
   if (event.event_type === "run") {
     const status = String(event.payload.status ?? "");
-    if (status === "queued") return "生成任务已创建，正在排队。";
+    if (status === "queued") return "课件生成任务已创建，正在排队。";
     if (status === "superseded") return "检测到更新的已确认版本，本任务已安全停止。";
     if (TERMINAL_RUN_STATUSES.has(status)) {
-      return `任务结束：${STATUS_LABELS[status] ?? status}`;
+      return `任务结束：${RUN_STATUS_LABELS[status] ?? status}`;
     }
     return null;
   }
   if (event.event_type === "phase") {
     const phase = String(event.payload.phase ?? "");
-    if (phase === "generating") return "开始逐课生成教案。";
-    if (phase === "validating") return "正在校验全部教案文件。";
+    if (phase === "generating") return "开始逐课生成课件。";
+    if (phase === "validating") return "正在校验全部课件文件。";
     return null;
   }
   if (event.event_type === "lesson") {
     const index = event.payload.lesson_index as number;
     const status = String(event.payload.status ?? "");
-    if (status === "drafting") return `正在起草第 ${index} 课教案……`;
-    if (status === "rendering") return `正在渲染第 ${index} 课 DOCX 文件……`;
-    if (status === "complete") return `第 ${index} 课教案已完成并通过校验。`;
-    if (status === "failed") return `第 ${index} 课失败：${event.payload.reason ?? "未知原因"}`;
+    if (status === "drafting") return `正在起草第 ${index} 课课件……`;
+    if (status === "rendering") return `正在渲染第 ${index} 课 PPTX 文件……`;
+    if (status === "complete") {
+      const slideCount = event.payload.slide_count as number | undefined;
+      return `第 ${index} 课课件已完成并通过校验${slideCount ? `（共 ${slideCount} 页）` : ""}。`;
+    }
+    if (status === "failed") return `第 ${index} 课课件失败：${event.payload.reason ?? "未知原因"}`;
   }
   return null;
 }
 
-export function GenerationPanel({ projectId }: { projectId: string }) {
+export function DeckPanel({
+  projectId,
+  onNavigate,
+}: {
+  projectId: string;
+  onNavigate?: (tab: "sources" | "discovery" | "brief" | "blueprint" | "generation" | "decks") => void;
+}) {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const isDesktop = useDesktop();
   const [error, setError] = useState<string | null>(null);
-  const [gateBlocked, setGateBlocked] = useState(false);
+  const [gateBlocked, setGateBlocked] = useState<"blueprint" | "lesson_plans" | null>(null);
   const [narrationLines, setNarrationLines] = useState<string[]>([]);
   const [connected, setConnected] = useState(false);
   const [resumeOpen, setResumeOpen] = useState(false);
   const lastSeqRef = useRef(0);
   const abortRef = useRef<AbortController | null>(null);
 
-  const snapshotQuery = useQuery({
+  // Prerequisite probe: deck generation requires a complete lesson-plan run for
+  // the current confirmed versions (Spec D3 / D-DECKGEN).
+  const planQuery = useQuery({
     queryKey: ["generation", projectId],
     queryFn: async () => generationStatus(await getToken(), projectId),
     retry: false,
-    // Polling fallback: the SSE stream is the fast path, but the authoritative
-    // snapshot must converge even if the stream drops (D-RECN).
+  });
+
+  const snapshotQuery = useQuery({
+    queryKey: ["deckGeneration", projectId],
+    queryFn: async () => deckGenerationStatus(await getToken(), projectId),
+    retry: false,
     refetchInterval: (query) => {
       const status = query.state.data?.status;
       return status && !TERMINAL_RUN_STATUSES.has(status) ? 3000 : false;
@@ -78,28 +94,29 @@ export function GenerationPanel({ projectId }: { projectId: string }) {
   });
 
   const invalidate = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: ["generation", projectId] });
+    void queryClient.invalidateQueries({ queryKey: ["deckGeneration", projectId] });
   }, [projectId, queryClient]);
 
   const startMutation = useMutation({
-    mutationFn: async () => generationStart(await getToken(), projectId),
+    mutationFn: async () => deckGenerationStart(await getToken(), projectId),
     onSuccess: () => {
-      setGateBlocked(false);
+      setGateBlocked(null);
       setNarrationLines([]);
       lastSeqRef.current = 0;
       invalidate();
     },
     onError: (err) => {
       if (err instanceof ApiClientError && err.code === "REQUIREMENT") {
-        setGateBlocked(true);
+        const gate = (err.details as { gate?: string }).gate;
+        setGateBlocked(gate === "blueprint" ? "blueprint" : "lesson_plans");
       } else {
-        setError(err instanceof ApiClientError ? err.message : "启动生成失败");
+        setError(err instanceof ApiClientError ? err.message : "启动课件生成失败");
       }
     },
   });
 
   const resumeMutation = useMutation({
-    mutationFn: async () => generationResume(await getToken(), projectId),
+    mutationFn: async () => deckGenerationResume(await getToken(), projectId),
     onSuccess: () => {
       setResumeOpen(false);
       invalidate();
@@ -107,7 +124,10 @@ export function GenerationPanel({ projectId }: { projectId: string }) {
     onError: (err) => setError(err instanceof ApiClientError ? err.message : "恢复失败"),
   });
 
-  const snapshot: GenerationSnapshot | null = snapshotQuery.data ?? null;
+  const snapshot: DeckGenerationSnapshot | null = snapshotQuery.data ?? null;
+  const planSnapshot: GenerationSnapshot | null = planQuery.data ?? null;
+  const planMissing = planQuery.isError;
+  const planIncomplete = planSnapshot !== null && planSnapshot.status !== "complete";
 
   const consumeStream = useCallback(
     async (token: string | null) => {
@@ -116,7 +136,7 @@ export function GenerationPanel({ projectId }: { projectId: string }) {
       abortRef.current = controller;
       setConnected(true);
       try {
-        const response = await fetch(generationStreamUrl(projectId), {
+        const response = await fetch(deckGenerationStreamUrl(projectId), {
           headers: {
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
             ...(lastSeqRef.current > 0 ? { "Last-Event-ID": String(lastSeqRef.current) } : {}),
@@ -138,9 +158,7 @@ export function GenerationPanel({ projectId }: { projectId: string }) {
           while (boundary !== -1) {
             const rawEvent = buffer.slice(0, boundary);
             buffer = buffer.slice(boundary + 2);
-            const idLine = rawEvent
-              .split("\n")
-              .find((line) => line.startsWith("id: "));
+            const idLine = rawEvent.split("\n").find((line) => line.startsWith("id: "));
             if (idLine) lastSeqRef.current = Number(idLine.slice(4));
             if (rawEvent.includes("event: end")) {
               invalidate();
@@ -151,7 +169,7 @@ export function GenerationPanel({ projectId }: { projectId: string }) {
             if (dataLine) {
               try {
                 const parsed = JSON.parse(dataLine.slice(6)) as GenerationStreamEvent;
-                const line = narrationText(parsed);
+                const line = deckNarrationText(parsed);
                 if (line) {
                   setNarrationLines((prev) => [...prev.slice(-40), line]);
                 }
@@ -202,10 +220,10 @@ export function GenerationPanel({ projectId }: { projectId: string }) {
 
   useEffect(() => () => abortRef.current?.abort(), []);
 
-  if (snapshotQuery.isLoading) {
+  if (snapshotQuery.isLoading || planQuery.isLoading) {
     return (
       <div>
-        <h2 className="text-lg font-semibold">教案生成</h2>
+        <h2 className="text-lg font-semibold">课件生成</h2>
         <SkeletonRows />
       </div>
     );
@@ -215,22 +233,80 @@ export function GenerationPanel({ projectId }: { projectId: string }) {
     const notFound =
       snapshotQuery.error instanceof ApiClientError && snapshotQuery.error.code === "NOT_FOUND";
     if (notFound) {
+      if (planMissing) {
+        // No lesson-plan run exists for the current confirmed versions.
+        return (
+          <div>
+            <h2 className="text-lg font-semibold">课件生成</h2>
+            <p className="mb-4 mt-2 text-sm text-ink-secondary">
+              课件与已确认教案逐课对齐。需要先确认单元蓝图并生成全部教案，才能开始生成课件。
+            </p>
+            {gateBlocked === "blueprint" ? (
+              <Alert tone="warning">
+                需要先确认教学简报与单元蓝图。请前往「单元蓝图」页签完成确认。
+              </Alert>
+            ) : null}
+            {gateBlocked === "lesson_plans" ? (
+              <Alert tone="warning">
+                尚无已完成的教案任务。请前往「教案生成」先生成并完成全部教案。
+              </Alert>
+            ) : null}
+            {error ? <Alert tone="error">{error}</Alert> : null}
+            <div className="mt-4 flex gap-2">
+              {onNavigate ? (
+                <Button variant="secondary" onClick={() => onNavigate("generation")}>
+                  前往「教案生成」
+                </Button>
+              ) : null}
+            </div>
+          </div>
+        );
+      }
+      if (planIncomplete) {
+        return (
+          <div>
+            <h2 className="text-lg font-semibold">课件生成</h2>
+            <p className="mb-4 mt-2 text-sm text-ink-secondary">
+              当前已确认版本的教案任务尚未全部完成（状态：{planSnapshot ? RUN_STATUS_LABELS[planSnapshot.status] ?? planSnapshot.status : "未知"}）。完成全部教案后即可开始生成课件。
+            </p>
+            {gateBlocked === "lesson_plans" ? (
+              <Alert tone="warning">
+                教案任务尚未全部完成。请前往「教案生成」完成或恢复剩余教案。
+              </Alert>
+            ) : null}
+            {error ? <Alert tone="error">{error}</Alert> : null}
+            <div className="mt-4 flex gap-2">
+              {onNavigate ? (
+                <Button variant="secondary" onClick={() => onNavigate("generation")}>
+                  前往「教案生成」
+                </Button>
+              ) : null}
+            </div>
+          </div>
+        );
+      }
+      // Prerequisite met: show the start surface with the bound versions.
       return (
         <div>
-          <h2 className="text-lg font-semibold">教案生成</h2>
+          <h2 className="text-lg font-semibold">课件生成</h2>
           <p className="mb-4 mt-2 text-sm text-ink-secondary">
-            将已确认的单元蓝图转化为每课可编辑的 DOCX 教案。确认单元蓝图后即可开始生成全部教案。
+            基于已完成的确认版教案，逐课生成可编辑 PPTX 课件；教师备注与来源引用写入演讲者备注。
           </p>
+          {planSnapshot ? (
+            <p className="mb-4 text-sm text-ink-secondary">{`绑定版本：教学简报 v${planSnapshot.brief_version} · 单元蓝图 v${planSnapshot.blueprint_version} · 输出语言：${planSnapshot.language_mode} · 共 ${planSnapshot.total_count} 课`}</p>
+          ) : null}
           {gateBlocked ? (
             <Alert tone="warning">
-              需要先确认教学简报与单元蓝图，才能开始生成。请前往「单元蓝图」页签完成确认。
+              {gateBlocked === "blueprint"
+                ? "需要先确认教学简报与单元蓝图，才能开始生成课件。"
+                : "教案任务尚未全部完成，无法开始生成课件。"}
             </Alert>
           ) : null}
           {error ? <Alert tone="error">{error}</Alert> : null}
-          {!isDesktop ? <DesktopRequiredNotice task="开始生成教案" /> : null}
+          {!isDesktop ? <DesktopRequiredNotice task="开始生成课件" /> : null}
           {isDesktop ? (
             <Button onClick={() => startMutation.mutate()} disabled={startMutation.isPending}>
-              {startMutation.isPending ? "正在启动……" : "开始生成"}
+              {startMutation.isPending ? "正在启动……" : "开始生成课件"}
             </Button>
           ) : null}
         </div>
@@ -238,11 +314,11 @@ export function GenerationPanel({ projectId }: { projectId: string }) {
     }
     return (
       <div>
-        <h2 className="text-lg font-semibold">教案生成</h2>
+        <h2 className="text-lg font-semibold">课件生成</h2>
         <Alert tone="error">
           {snapshotQuery.error instanceof ApiClientError
             ? snapshotQuery.error.message
-            : "无法加载生成状态"}
+            : "无法加载课件生成状态"}
         </Alert>
       </div>
     );
@@ -251,21 +327,21 @@ export function GenerationPanel({ projectId }: { projectId: string }) {
   if (!snapshot) {
     return (
       <div>
-        <h2 className="text-lg font-semibold">教案生成</h2>
-        <EmptyState title="暂无生成任务" hint="确认单元蓝图后即可开始生成全部教案。" />
+        <h2 className="text-lg font-semibold">课件生成</h2>
+        <EmptyState title="暂无课件任务" hint="完成全部教案后即可开始生成逐课课件。" />
       </div>
     );
   }
 
   const resumable = snapshot.status === "partial_failure" || snapshot.status === "capped_failure";
   const failedLessons = snapshot.artifacts.filter(
-    (artifact: GenerationArtifact) => artifact.status === "failed",
+    (artifact: DeckArtifact) => artifact.status === "failed",
   );
 
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold">教案生成</h2>
+        <h2 className="text-lg font-semibold">课件生成</h2>
         <StatusBadge status={snapshot.status} />
       </div>
       <p className="mb-4 text-sm text-ink-secondary">{`绑定版本：教学简报 v${snapshot.brief_version} · 单元蓝图 v${snapshot.blueprint_version} · 输出语言：${snapshot.language_mode} · 模型调用 ${snapshot.model_calls}/${snapshot.model_call_cap}`}</p>
@@ -277,7 +353,7 @@ export function GenerationPanel({ projectId }: { projectId: string }) {
         totalCount={snapshot.total_count}
         modelCallCap={snapshot.model_call_cap}
         failedLessonIndexes={failedLessons.map((a) => a.lesson_index)}
-        noun="教案"
+        noun="课件"
         error={error}
       />
 
@@ -287,25 +363,30 @@ export function GenerationPanel({ projectId }: { projectId: string }) {
         completeCount={snapshot.complete_count}
         totalCount={snapshot.total_count}
         artifacts={snapshot.artifacts}
-        renderActions={(artifact) =>
-          artifact.status === "complete" && artifact.download_url ? (
-            <DownloadButton projectId={projectId} artifactId={artifact.id} />
-          ) : null
-        }
+        renderActions={(artifact) => (
+          <>
+            {artifact.status === "complete" && (artifact as DeckArtifact).slide_count ? (
+              <span className="text-xs text-ink-secondary">共 {(artifact as DeckArtifact).slide_count} 页</span>
+            ) : null}
+            {artifact.status === "complete" && artifact.download_url ? (
+              <DownloadDeckButton projectId={projectId} artifactId={artifact.id} />
+            ) : null}
+          </>
+        )}
       />
 
-      {!isDesktop ? <DesktopRequiredNotice task="恢复失败课程" /> : null}
+      {!isDesktop ? <DesktopRequiredNotice task="恢复失败课件" /> : null}
       {resumable && isDesktop ? (
         <Button variant="secondary" onClick={() => setResumeOpen(true)}>
-          恢复未完成课程
+          恢复未完成课件
         </Button>
       ) : null}
 
       <ConfirmModal
         open={resumeOpen}
         onOpenChange={setResumeOpen}
-        title="恢复生成"
-        description={`将重新派发同一任务，仅继续失败或未完成的课程（${failedLessons.length + (snapshot.total_count - snapshot.complete_count - failedLessons.length)} 课），已完成教案不会重跑。`}
+        title="恢复课件生成"
+        description={`将重新派发同一任务，仅继续失败或未完成的课程（${failedLessons.length + (snapshot.total_count - snapshot.complete_count - failedLessons.length)} 课），已完成课件不会重跑。`}
         confirmLabel="确认恢复"
         onConfirm={() => resumeMutation.mutate()}
         busy={resumeMutation.isPending}
@@ -314,7 +395,7 @@ export function GenerationPanel({ projectId }: { projectId: string }) {
   );
 }
 
-function DownloadButton({ projectId, artifactId }: { projectId: string; artifactId: string }) {
+function DownloadDeckButton({ projectId, artifactId }: { projectId: string; artifactId: string }) {
   const { getToken } = useAuth();
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -328,11 +409,11 @@ function DownloadButton({ projectId, artifactId }: { projectId: string; artifact
           setBusy(true);
           setFailed(false);
           try {
-            const blob = await downloadLessonPlan(await getToken(), projectId, artifactId);
+            const blob = await downloadSlideDeck(await getToken(), projectId, artifactId);
             const url = URL.createObjectURL(blob);
             const anchor = document.createElement("a");
             anchor.href = url;
-            anchor.download = `lesson-plan-${artifactId.slice(0, 8)}.docx`;
+            anchor.download = `deck-${artifactId.slice(0, 8)}.pptx`;
             anchor.click();
             URL.revokeObjectURL(url);
           } catch {
@@ -342,7 +423,7 @@ function DownloadButton({ projectId, artifactId }: { projectId: string; artifact
           }
         }}
       >
-        下载 DOCX
+        下载 PPTX
       </Button>
     </span>
   );
