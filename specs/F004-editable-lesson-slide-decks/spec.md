@@ -1,7 +1,7 @@
 # F004: Editable Lesson Slide Decks
 
 - Spec Status: `SPEC READY`
-- Roadmap Status: `NEXT`
+- Roadmap Status: `DONE`
 - Priority: `P0`
 - Owner: Implementation assignee unassigned until Coding starts
 - Work item: [GitHub Issue #8](https://github.com/MaoyuanYang/LessonCanvas/issues/8)
@@ -211,3 +211,23 @@ All DRAFT open questions are resolved by D1–D9 above. Non-blocking residuals:
 - [CONFIRMED] Complete traces are required for every deck run despite storage and privacy cost (ADR-0003).
 - [ASSUMED] `python-pptx` structural validation plus one controlled manual Office open smoke is sufficient evidence of openability and editability for Phase-1 claims; F009 may add stronger file evidence.
 - [ASSUMED] The complete-lesson-plan prerequisite (D3) does not create a blocking UX bottleneck in Phase 1 because lesson-plan generation precedes deck generation in the natural teacher flow.
+
+## Gate Record: DONE
+
+- Status: `PASS`
+- Validation time: 2026-08-30
+- Decision Authority: `YMY / Project Owner` — merge authorized in the interactive session (M-1 residual accepted for delivery)
+- Conditions met:
+  - All 18 ACs satisfied with automated evidence (124 backend tests incl. 22 deck; 30 web tests incl. 8 deck-panel; migrations applied to test and dev DBs)
+  - Deck E2E: five journeys green across stacks — TS-024/TS-025 (fault), TS-030/TS-027/TS-029 (live, real DeepSeek + real Worker) — plus TS-031 PowerPoint 16.0 COM smoke (opens without repair); TS-026/TS-028 environment-blocked with owner-accepted M-1 residual and automated substitute coverage
+  - Review: no Critical/High findings; M-1 tracked with resume condition; M-2/M-3/L-1 recorded
+  - Documentation sync: DATABASE/TESTING/DESIGN_SYSTEM updated; ROADMAP/STAGE/Issue synchronized
+  - Delivery: PR [#9](https://github.com/MaoyuanYang/LessonCanvas/pull/9) merged `123523a` (authorized merge by `YMY / Project Owner`); main re-verified (124 backend passed + ruff clean + 30 web tests passed)
+- DONE evidence manifest (working-tree SHA-256 prefixes at gate time):
+  - `spec.md` @ `b0ecf7c28df0`
+  - `ux-ui.md` @ `475e56ba6e18`
+  - `test-design.md` @ `2e2a704263d4`
+  - `plan.md` @ `9647ab81974e`
+  - `review.md` @ `137184659551`
+  - `specs/ROADMAP.md` @ `3ea38b6d4e1b`
+  - `AGENTS.md` @ `b03a2200602b`

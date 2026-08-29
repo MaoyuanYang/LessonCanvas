@@ -23,7 +23,7 @@ Phase 1 produces a publicly inspectable, multi-account LessonCanvas workflow in 
 | `F001` | Grounded Confirmed Brief | Confirm a source-grounded teaching brief inside a private teacher project | First real Agent/HITL outcome and ownership proof | `P0` | None | `DONE` | Managed sign-in, private project, allowed sources via MCP, streamed Agent questions, structured brief, and first confirmation gate |
 | `F002` | Confirmed Unit Blueprint | Confirm a complete every-lesson unit design | Makes expensive generation governable by teacher intent | `P0` | `F001` | `DONE` | Source-linked unit blueprint, structured revision, and second confirmation gate |
 | `F003` | Recoverable Unit Lesson Plans | Generate DOCX lesson plans for every lesson with durable recovery | First useful Office artifact and proof of long-running Agent execution | `P0` | `F002` | `DONE` | Version-bound asynchronous run, all-lesson plans, trace capture, progress, idempotency, checkpoints, and authorized downloads; delivered via PR [#7](https://github.com/MaoyuanYang/LessonCanvas/pull/7) |
-| `F004` | Editable Lesson Slide Decks | Generate editable PPTX decks for every lesson | Adds the presentation deliverable and a distinct rendering boundary | `P0` | `F003` | `REVIEW` | Evidence-linked slide decks with scoped progress, file validation, and recoverable delivery; selected 2026-08-29 by `YMY / Project Owner`; SPEC/UI/TEST DESIGN Gates PASS; implementation complete with review residual M-1 (two env-blocked deck E2E journeys, automated substitute coverage green) awaiting delivery decision |
+| `F004` | Editable Lesson Slide Decks | Generate editable PPTX decks for every lesson | Adds the presentation deliverable and a distinct rendering boundary | `P0` | `F003` | `DONE` | Evidence-linked slide decks with scoped progress, file validation, and recoverable delivery; delivered via PR [#9](https://github.com/MaoyuanYang/LessonCanvas/pull/9) |
 | `F005` | Lesson Exercises and Answers | Generate DOCX exercise and answer sets for every lesson | Completes assessment material and exposes correctness risk | `P0` | `F003` | `DRAFT` | Paired, version-bound exercises and answers with validation, recovery, and authorized download |
 | `F006` | Layered Run Evidence | Explain each run to teachers and technical reviewers | Turns hidden telemetry into credible portfolio evidence | `P0` | `F003`, `F004`, `F005` | `DRAFT` | Teacher-readable explanation with owner-authorized sources, specialist steps, tools, cost, latency, retries, and currently available validation details |
 | `F007` | Versioned Targeted Regeneration | Rebuild only affected work after confirmed intent changes | Preserves valid work and demonstrates safe concurrency and cost control | `P0` | `F003`, `F004`, `F005` | `DRAFT` | Impact preview, immutable revisions, stale conflict handling, supersession, selective regeneration, and version comparison |
@@ -55,7 +55,16 @@ F001 -> F013
 
 ## Handoff
 
-### Current: F003 DONE
+### Current: F004 DONE
+
+- Feature: `F004 Editable Lesson Slide Decks`
+- Work item: [GitHub Issue #8](https://github.com/MaoyuanYang/LessonCanvas/issues/8) — bound 2026-08-29; closed on delivery.
+- Gates: `SPEC READY: PASS` (`b913da61ec40`), `UI READY: PASS` (`ux-ui-f004-r1` / `05e5748c9a4d`), `TEST DESIGN READY: PASS` (`test-design-f004-r1` / `4afef155b09f`), approved by `YMY / Project Owner` on 2026-08-29. `DONE: PASS` recorded 2026-08-30 after PR [#9](https://github.com/MaoyuanYang/LessonCanvas/pull/9) merged as `123523a` (authorized merge by `YMY / Project Owner`).
+- DONE evidence manifest (working tree @ gate time): spec `b0ecf7c28df0`, ux-ui `475e56ba6e18`, test-design `2e2a704263d4`, plan `9647ab81974e`, review `137184659551`; verification: 124 backend tests, 30 web tests, ruff/eslint/tsc/build clean, deck E2E 5 journeys green (TS-024/TS-025 fault stack; TS-030/TS-027/TS-029 live stack with real DeepSeek + real Worker), TS-031 PowerPoint COM smoke passed; main re-verified (124 passed).
+- Refinement resolved: D1 fixed deck skeleton with bounded stage slides (renderer-owned structural titles); D2 per-deck checkpoint inherited; D3 complete-lesson-plan prerequisite + own deck-run cap; D4/D5/D6 contracts inherited; D7 deterministic structural validation + controlled Office smoke; D8 python-pptx behind MCP-compatible definitions; D9 download + structure summary, no browser preview. UI decisions D-DECKGEN/D-DECKPROG/D-DECKNARR/D-DECKART/D-DECKRECN/D-DECKDS (Design System promotion of artifact progress list + outcome banners).
+- Residual (owner-accepted M-1): deck E2E TS-026 (partial failure + scoped resume) and TS-028 (cap exhaustion) environment-blocked by intermittent Clerk dev-instance session failure (F003's unchanged journeys showed the same hang); automated substitute coverage green; resume condition: re-run under stable auth and append evidence to the Test Design Execution Evidence Snapshot.
+
+### Previous: F003 DONE
 
 - Feature: `F003 Recoverable Unit Lesson Plans`
 - Work item: [GitHub Issue #6](https://github.com/MaoyuanYang/LessonCanvas/issues/6) — bound 2026-08-29; closed on delivery.
