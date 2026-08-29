@@ -137,8 +137,8 @@ lesson-plan run COMPLETE for (brief vN + blueprint vM)
 - [x] T4 Deck API + SSE + download: five endpoints with ownership authorization, SSE with `Last-Event-ID`, non-disclosing denial, trace emission. Exit: TS-008/TS-009/TS-011/TS-018 pass.
 - [x] T5 Deletion cascade: project/account deletion covers `slide_deck_artifacts` rows and PPTX binaries. Exit: TS-014 passes.
 - [x] T6 Design System promotion + deck panel: extract shared artifact-progress-list and run-outcome-banner; refactor `generation-panel.tsx` (behavior-preserving, F003 suite green unchanged); API client/types; `课件生成` view + `deck-panel.tsx` state matrix; desktop gate. Exit: TS-020/021/022/023 pass; existing 22 web tests green.
-- [ ] T7 Deck E2E + accessibility: `deck-journeys.spec.ts` six journeys per TQ-002 profiles; keyboard/a11y pass; manual Office smoke evidence (TS-031). Exit: TS-024..TS-031 recorded in test-design.md Execution Evidence Snapshot.
-- [ ] T8 Review + docs sync + delivery prep: review.md findings; docs sync (DATABASE slide-deck artifact note, TESTING suite names, DESIGN_SYSTEM D-DECKDS promotion, UX/UI if affected); ROADMAP/STAGE/Issue sync; PR-ready summary. Exit: review recorded; documentation sync complete; `READY FOR PR` or authorized delivery.
+- [x] T7 Deck E2E + accessibility: `deck-journeys.spec.ts` six journeys per TQ-002 profiles; keyboard/a11y pass; manual Office smoke evidence (TS-031). Exit: TS-024..TS-031 recorded in test-design.md Execution Evidence Snapshot.
+- [x] T8 Review + docs sync + delivery prep: review.md findings; docs sync (DATABASE slide-deck artifact note, TESTING suite names, DESIGN_SYSTEM D-DECKDS promotion, UX/UI if affected); ROADMAP/STAGE/Issue sync; PR-ready summary. Exit: review recorded; documentation sync complete; `READY FOR PR` or authorized delivery.
 
 ## Start Checklist
 

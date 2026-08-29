@@ -467,3 +467,21 @@ No Critical Test Question is `OPEN` or `DEFERRED`.
 - Decision Authority (named human + role): `YMY / Project Owner`
 - Approval source: interactive session, 2026-08-29
 - Approval scope: F004 Test Design at `test-design-f004-r1`
+
+## Execution Evidence Snapshot (2026-08-30)
+
+| Suite | Evidence |
+| --- | --- |
+| TS-001..TS-019 | `apps/backend/tests/test_deck_generation.py` — 22 tests green within the 124-test backend suite (real python-pptx renderer + MinIO + PostgreSQL; concurrency via parallel transactions; prerequisite gate, idempotency, checkpoint resume with model-call accounting, cap, supersession, SSE replay, downloads, injection inertness, deletion cascade) |
+| TS-020..TS-022 | `apps/web/__tests__/deck-panel.test.tsx` — 8 tests green within the 30-test web suite |
+| TS-023 | `apps/web/__tests__/generation-panel.test.tsx` unchanged and green (6/6) — behavior-preserving D-DECKDS promotion; the five passing deck E2E journeys also drive the extracted shared helpers end to end |
+| TS-024 | scripted keyboard pass on the deck flow (fault stack) — passed |
+| TS-025 | deck prerequisite gate E2E (fault stack; both unavailable kinds + start after plans complete) — passed |
+| TS-026 | ENVIRONMENT-BLOCKED 2026-08-29/30 night runs: the journey and F003's unchanged TS-026 both hang at the shared blueprint decision-modal stage under degraded Clerk dev-instance sessions (page-level auth alert; empty project list also observed). Substitute coverage green: backend `test_transient_failure_deck_resume_skips_completed` (checkpoint resume + model-call accounting) and deck-panel partial-failure/resume component test. Re-run when auth is stable |
+| TS-027 | mid-run supersession of the active deck run (live stack, real DeepSeek + real Worker) — passed |
+| TS-028 | ENVIRONMENT-BLOCKED (same cause as TS-026; F003's unchanged TS-028 also blocked tonight). Substitute coverage green: backend `test_deck_cap_exhaustion_settles_capped_with_completed_work` and the capped-banner component test |
+| TS-029 | leave/reconnect/reload progress restoration on the live stack — passed |
+| TS-030 | full happy path on the live stack (real DeepSeek + real Worker + MinIO; complete plans -> decks -> structure summaries + PPTX download) — passed |
+| TS-031 | PowerPoint 16.0 COM open smoke — deck opens without repair; 8 slides; 15 non-empty editable text frames; speaker notes present (title slide; parser-verified) |
+
+Execution profile note: fault stack = `LESSONCANVAS_MODEL_ADAPTER=fake` + real Worker (solo pool on Windows); live stack = real DeepSeek + real Worker; web served from a production build (`next start`) after dev-server hot-reload interference was diagnosed; Clerk E2E uses the `@clerk/testing` token. One live-model defect was found and fixed during execution: the renderer now owns the structural 教学过程 slide-title prefix (mirroring DOCX section headings), after which live decks validate.

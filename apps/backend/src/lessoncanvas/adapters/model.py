@@ -262,7 +262,7 @@ def _fake_deck_plan(data: dict) -> dict:
 
     stage_slides = [
         {
-            "heading": f"教学过程·{stage.get('name') or '环节'}",
+            "heading": str(stage.get("name") or "环节"),
             "bullets": [
                 str(stage.get("activities") or "（待补充）"),
                 *marker_lines,

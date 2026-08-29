@@ -1,0 +1,145 @@
+```yaml
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - link "LessonCanvas" [ref=e7] [cursor=pointer]:
+            - /url: /projects
+          - navigation "项目导航" [ref=e8]:
+            - link "项目列表" [ref=e9] [cursor=pointer]:
+              - /url: /projects
+            - link "账号与数据" [ref=e10] [cursor=pointer]:
+              - /url: /account
+        - button "Open user menu" [ref=e12] [cursor=pointer]:
+          - img "Deep Tester's logo" [ref=e15]
+    - region "单元备课工作区" [ref=e18]:
+      - navigation "工作区导航" [ref=e19]:
+        - button "来源" [ref=e20]
+        - button "需求访谈" [ref=e21]
+        - button "教学简报" [ref=e22]
+        - button "单元蓝图" [ref=e23]
+        - button "教案生成" [ref=e24]
+        - button "课件生成" [ref=e25]
+      - generic [ref=e26]:
+        - generic [ref=e27]:
+          - heading "单元蓝图" [level=2] [ref=e28]
+          - paragraph [ref=e29]: 将已确认简报分配到每一课，确认后作为后续生成的唯一授权输入。
+        - button "生成叙述" [ref=e32]
+        - generic [ref=e33]:
+          - generic [ref=e34]:
+            - heading "环境保护与可持续发展" [level=3] [ref=e35]
+            - generic [ref=e36]: 草稿修订 1
+          - list [ref=e37]:
+            - listitem [ref=e38]: obj-1提升阅读与表达能力
+        - region "完整性检查" [ref=e39]:
+          - heading "完整性检查" [level=3] [ref=e40]
+          - list [ref=e41]:
+            - listitem [ref=e42]: ✓ 课时数与已确认简报一致
+            - listitem [ref=e43]: ✓ 每课必填字段完整（标题/课时目标/评估意图）
+            - listitem [ref=e44]: ✓ 每个单元目标至少被一课覆盖
+        - region "规划发现" [ref=e45]:
+          - heading "规划发现" [level=3] [ref=e46]
+          - generic [ref=e47]:
+            - generic [ref=e48]:
+              - generic [ref=e49]: 可决策 · 课标对齐警示
+              - generic [ref=e50]: 待处理
+            - paragraph [ref=e51]: 课标快照中未检索到与单元主题直接对应的条目
+            - button "记录教师决策" [ref=e52]
+        - region "课程列表" [ref=e53]:
+          - heading "课程安排（6 课）" [level=3] [ref=e54]
+          - generic [ref=e55]:
+            - generic [ref=e56]:
+              - generic [ref=e57]: 第 1 课
+              - generic [ref=e58]: 2 课时
+            - generic [ref=e59]:
+              - textbox "第1课标题" [ref=e60]: 第1课 环境保护与可持续发展
+              - group "覆盖的单元目标" [ref=e61]:
+                - generic [ref=e64]:
+                  - checkbox "obj-1" [checked] [ref=e65]
+                  - text: obj-1
+              - textbox "第1课评估意图" [ref=e66]:
+                - /placeholder: 评估意图
+                - text: 形成性评价为主
+              - textbox "第1课活动提纲" [ref=e67]:
+                - /placeholder: 活动提纲（可选）
+          - generic [ref=e68]:
+            - generic [ref=e69]:
+              - generic [ref=e70]: 第 2 课
+              - generic [ref=e71]: 2 课时
+            - generic [ref=e72]:
+              - textbox "第2课标题" [ref=e73]: 第2课 环境保护与可持续发展
+              - group "覆盖的单元目标" [ref=e74]:
+                - generic [ref=e77]:
+                  - checkbox "obj-1" [checked] [ref=e78]
+                  - text: obj-1
+              - textbox "第2课评估意图" [ref=e79]:
+                - /placeholder: 评估意图
+                - text: 形成性评价为主
+              - textbox "第2课活动提纲" [ref=e80]:
+                - /placeholder: 活动提纲（可选）
+          - generic [ref=e81]:
+            - generic [ref=e82]:
+              - generic [ref=e83]: 第 3 课
+              - generic [ref=e84]: 2 课时
+            - generic [ref=e85]:
+              - textbox "第3课标题" [ref=e86]: 第3课 环境保护与可持续发展
+              - group "覆盖的单元目标" [ref=e87]:
+                - generic [ref=e90]:
+                  - checkbox "obj-1" [checked] [ref=e91]
+                  - text: obj-1
+              - textbox "第3课评估意图" [ref=e92]:
+                - /placeholder: 评估意图
+                - text: 形成性评价为主
+              - textbox "第3课活动提纲" [ref=e93]:
+                - /placeholder: 活动提纲（可选）
+          - generic [ref=e94]:
+            - generic [ref=e95]:
+              - generic [ref=e96]: 第 4 课
+              - generic [ref=e97]: 2 课时
+            - generic [ref=e98]:
+              - textbox "第4课标题" [ref=e99]: 第4课 环境保护与可持续发展
+              - group "覆盖的单元目标" [ref=e100]:
+                - generic [ref=e103]:
+                  - checkbox "obj-1" [checked] [ref=e104]
+                  - text: obj-1
+              - textbox "第4课评估意图" [ref=e105]:
+                - /placeholder: 评估意图
+                - text: 形成性评价为主
+              - textbox "第4课活动提纲" [ref=e106]:
+                - /placeholder: 活动提纲（可选）
+          - generic [ref=e107]:
+            - generic [ref=e108]:
+              - generic [ref=e109]: 第 5 课
+              - generic [ref=e110]: 2 课时
+            - generic [ref=e111]:
+              - textbox "第5课标题" [ref=e112]: 第5课 环境保护与可持续发展
+              - group "覆盖的单元目标" [ref=e113]:
+                - generic [ref=e116]:
+                  - checkbox "obj-1" [checked] [ref=e117]
+                  - text: obj-1
+              - textbox "第5课评估意图" [ref=e118]:
+                - /placeholder: 评估意图
+                - text: 形成性评价为主
+              - textbox "第5课活动提纲" [ref=e119]:
+                - /placeholder: 活动提纲（可选）
+          - generic [ref=e120]:
+            - generic [ref=e121]:
+              - generic [ref=e122]: 第 6 课
+              - generic [ref=e123]: 2 课时
+            - generic [ref=e124]:
+              - textbox "第6课标题" [ref=e125]: 第6课 环境保护与可持续发展
+              - group "覆盖的单元目标" [ref=e126]:
+                - generic [ref=e129]:
+                  - checkbox "obj-1" [checked] [ref=e130]
+                  - text: obj-1
+              - textbox "第6课评估意图" [ref=e131]:
+                - /placeholder: 评估意图
+                - text: 形成性评价为主
+              - textbox "第6课活动提纲" [ref=e132]:
+                - /placeholder: 活动提纲（可选）
+        - generic [ref=e133]:
+          - button "确认蓝图" [disabled] [ref=e134]
+          - button "保存修订" [disabled] [ref=e135]
+          - generic [ref=e136]: 1 项可决策发现待处理。

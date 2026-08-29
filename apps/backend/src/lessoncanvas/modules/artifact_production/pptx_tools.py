@@ -110,10 +110,13 @@ def render_lesson_deck_pptx(slide_deck: dict, lesson_index: int, language_mode: 
         if not isinstance(stage, dict):
             continue
         stage_number += 1
-        heading = str(stage.get("heading") or f"{STAGE_SLIDE_TITLE_PREFIX}（{stage_number}）")
+        # Structural chrome is owned by the renderer (like DOCX section
+        # headings): every stage slide carries the fixed 教学过程 prefix so the
+        # grammar stays valid regardless of the writer's natural heading style.
+        heading = str(stage.get("heading") or "").strip() or f"环节 {stage_number}"
         _add_content_slide(
             presentation,
-            heading,
+            f"{STAGE_SLIDE_TITLE_PREFIX}·{heading}",
             _clean_lines(stage.get("bullets")),
             None,
         )
