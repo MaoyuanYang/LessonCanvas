@@ -34,6 +34,9 @@ class Settings(BaseSettings):
     deepseek_base_url: str = "https://api.deepseek.com"
     deepseek_model: str = "deepseek-chat"
     max_model_calls_per_run: int = 20
+    max_model_calls_per_deck_run: int = 20
+    deck_max_slides: int = 16
+    deck_max_stage_slides: int = 2
     checkpoint_backend: str = "postgres"
 
 

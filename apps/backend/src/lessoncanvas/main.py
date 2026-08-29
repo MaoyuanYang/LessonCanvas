@@ -8,6 +8,8 @@ from fastapi.responses import JSONResponse
 from lessoncanvas.api.account import router as account_router
 from lessoncanvas.api.blueprint import router as blueprint_router
 from lessoncanvas.api.brief import router as brief_router
+from lessoncanvas.api.decks import deck_router as decks_artifact_router
+from lessoncanvas.api.decks import router as decks_router
 from lessoncanvas.api.discovery import router as discovery_router
 from lessoncanvas.api.errors import ApiError, render_error
 from lessoncanvas.api.generation import lesson_router as generation_lesson_router
@@ -66,6 +68,8 @@ def create_app() -> FastAPI:
     app.include_router(blueprint_router)
     app.include_router(generation_router)
     app.include_router(generation_lesson_router)
+    app.include_router(decks_router)
+    app.include_router(decks_artifact_router)
     app.include_router(account_router)
     app.include_router(trace_router)
 

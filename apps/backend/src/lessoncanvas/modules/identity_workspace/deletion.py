@@ -16,6 +16,7 @@ from lessoncanvas.models import (
     LessonPlanArtifact,
     Project,
     RunEvent,
+    SlideDeckArtifact,
     Source,
     SourceChunk,
     TraceEvent,
@@ -73,6 +74,15 @@ def delete_project_cascade(
                 )
             )
         ]
+        artifact_keys += [
+            key
+            for (key,) in session.execute(
+                select(SlideDeckArtifact.object_key).where(
+                    SlideDeckArtifact.run_id.in_(generation_run_ids),
+                    SlideDeckArtifact.object_key.is_not(None),
+                )
+            )
+        ]
         from lessoncanvas.adapters.storage import StorageAdapter
         from lessoncanvas.settings import get_settings
 
@@ -84,6 +94,11 @@ def delete_project_cascade(
                 failures.append(f"object:{key}")
         session.execute(sql_delete(TraceEvent).where(TraceEvent.run_id.in_(generation_run_ids)))
         session.execute(sql_delete(RunEvent).where(RunEvent.run_id.in_(generation_run_ids)))
+        session.execute(
+            sql_delete(SlideDeckArtifact).where(
+                SlideDeckArtifact.run_id.in_(generation_run_ids)
+            )
+        )
         session.execute(
             sql_delete(LessonPlanArtifact).where(LessonPlanArtifact.run_id.in_(generation_run_ids))
         )

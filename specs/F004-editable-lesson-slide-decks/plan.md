@@ -130,12 +130,12 @@ lesson-plan run COMPLETE for (brief vN + blueprint vM)
 
 ## Interleaved Tasks
 
-- [ ] T0 Contracts + persistence base: Zod/Pydantic deck DTOs and SSE envelope frozen; migration (`artifact_kind`, `prerequisite_run_id`, identity constraint swap, `slide_deck_artifacts`); ORM models; atomic idempotent deck-start primitive with prerequisite check; deck cap + slide-bounds settings. Exit: migration applies; TS-001/TS-015 integration proofs pass.
-- [ ] T1 Deck run orchestration: kind-aware run service (start/snapshot with structure summaries/resume), event-log reuse, supersession covering deck runs. Exit: TS-005/TS-006/TS-007/TS-010 pass.
-- [ ] T2 PPTX tools + deck workflow: `pptx_tools.py` render/validate with MCP-compatible definitions; deck LangGraph graph with per-lesson checkpoints and lesson-plan content as primary input (AC-018 trace evidence); FakeModelAdapter deck scripts incl. injection payloads. Exit: TS-002/TS-003/TS-012/TS-013/TS-016/TS-017/TS-019 pass.
-- [ ] T3 Celery deck dispatch + bounded retry: `generate_decks` task, retry policy, eager redelivery crash simulation. Exit: TS-004 passes; `generate_unit` unaffected.
-- [ ] T4 Deck API + SSE + download: five endpoints with ownership authorization, SSE with `Last-Event-ID`, non-disclosing denial, trace emission. Exit: TS-008/TS-009/TS-011/TS-018 pass.
-- [ ] T5 Deletion cascade: project/account deletion covers `slide_deck_artifacts` rows and PPTX binaries. Exit: TS-014 passes.
+- [x] T0 Contracts + persistence base: Zod/Pydantic deck DTOs and SSE envelope frozen; migration (`artifact_kind`, `prerequisite_run_id`, identity constraint swap, `slide_deck_artifacts`); ORM models; atomic idempotent deck-start primitive with prerequisite check; deck cap + slide-bounds settings. Exit: migration applies; TS-001/TS-015 integration proofs pass.
+- [x] T1 Deck run orchestration: kind-aware run service (start/snapshot with structure summaries/resume), event-log reuse, supersession covering deck runs. Exit: TS-005/TS-006/TS-007/TS-010 pass.
+- [x] T2 PPTX tools + deck workflow: `pptx_tools.py` render/validate with MCP-compatible definitions; deck LangGraph graph with per-lesson checkpoints and lesson-plan content as primary input (AC-018 trace evidence); FakeModelAdapter deck scripts incl. injection payloads. Exit: TS-002/TS-003/TS-012/TS-013/TS-016/TS-017/TS-019 pass.
+- [x] T3 Celery deck dispatch + bounded retry: `generate_decks` task, retry policy, eager redelivery crash simulation. Exit: TS-004 passes; `generate_unit` unaffected.
+- [x] T4 Deck API + SSE + download: five endpoints with ownership authorization, SSE with `Last-Event-ID`, non-disclosing denial, trace emission. Exit: TS-008/TS-009/TS-011/TS-018 pass.
+- [x] T5 Deletion cascade: project/account deletion covers `slide_deck_artifacts` rows and PPTX binaries. Exit: TS-014 passes.
 - [ ] T6 Design System promotion + deck panel: extract shared artifact-progress-list and run-outcome-banner; refactor `generation-panel.tsx` (behavior-preserving, F003 suite green unchanged); API client/types; `课件生成` view + `deck-panel.tsx` state matrix; desktop gate. Exit: TS-020/021/022/023 pass; existing 22 web tests green.
 - [ ] T7 Deck E2E + accessibility: `deck-journeys.spec.ts` six journeys per TQ-002 profiles; keyboard/a11y pass; manual Office smoke evidence (TS-031). Exit: TS-024..TS-031 recorded in test-design.md Execution Evidence Snapshot.
 - [ ] T8 Review + docs sync + delivery prep: review.md findings; docs sync (DATABASE slide-deck artifact note, TESTING suite names, DESIGN_SYSTEM D-DECKDS promotion, UX/UI if affected); ROADMAP/STAGE/Issue sync; PR-ready summary. Exit: review recorded; documentation sync complete; `READY FOR PR` or authorized delivery.

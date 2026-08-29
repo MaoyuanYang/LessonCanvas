@@ -13,12 +13,22 @@ from lessoncanvas.models import (
     GenerationRun,
     LessonPlanArtifact,
     RunEvent,
+    SlideDeckArtifact,
 )
 from lessoncanvas.settings import get_settings
+
+LESSON_PLAN_KIND = "lesson_plan"
+SLIDE_DECK_KIND = "slide_deck"
 
 
 class MissingVersionsError(Exception):
     pass
+
+
+class PrerequisiteNotMetError(Exception):
+    def __init__(self, reason: str) -> None:
+        super().__init__(reason)
+        self.reason = reason
 
 
 class ResumeNotAllowedError(Exception):
@@ -47,6 +57,16 @@ def current_run(session: Session, project_id: uuid.UUID) -> GenerationRun | None
     return session.scalar(
         select(GenerationRun)
         .where(GenerationRun.project_id == project_id)
+        .where(GenerationRun.artifact_kind == LESSON_PLAN_KIND)
+        .order_by(GenerationRun.created_at.desc())
+    )
+
+
+def current_deck_run(session: Session, project_id: uuid.UUID) -> GenerationRun | None:
+    return session.scalar(
+        select(GenerationRun)
+        .where(GenerationRun.project_id == project_id)
+        .where(GenerationRun.artifact_kind == SLIDE_DECK_KIND)
         .order_by(GenerationRun.created_at.desc())
     )
 
@@ -55,6 +75,23 @@ def _language_mode(brief: BriefVersion) -> str:
     fields = json.loads(brief.fields_json)
     raw = (fields.get("output_language_mode") or {}).get("value") or "zh-Hans"
     return str(raw)[:16]
+
+
+def _run_for_versions(
+    session: Session,
+    project_id: uuid.UUID,
+    brief_version_id: uuid.UUID,
+    blueprint_version_id: uuid.UUID,
+    artifact_kind: str,
+) -> GenerationRun | None:
+    return session.scalar(
+        select(GenerationRun).where(
+            GenerationRun.project_id == project_id,
+            GenerationRun.brief_version_id == brief_version_id,
+            GenerationRun.blueprint_version_id == blueprint_version_id,
+            GenerationRun.artifact_kind == artifact_kind,
+        )
+    )
 
 
 def start_generation(
@@ -68,13 +105,7 @@ def start_generation(
     if brief is None or blueprint is None:
         raise MissingVersionsError("confirmed brief and blueprint versions are required")
 
-    existing = session.scalar(
-        select(GenerationRun).where(
-            GenerationRun.project_id == project_id,
-            GenerationRun.brief_version_id == brief.id,
-            GenerationRun.blueprint_version_id == blueprint.id,
-        )
-    )
+    existing = _run_for_versions(session, project_id, brief.id, blueprint.id, LESSON_PLAN_KIND)
     if existing is not None:
         return existing, False
 
@@ -88,6 +119,7 @@ def start_generation(
         workspace_id=workspace_id,
         brief_version_id=brief.id,
         blueprint_version_id=blueprint.id,
+        artifact_kind=LESSON_PLAN_KIND,
         status="queued",
         model_call_cap=get_settings().max_model_calls_per_run,
     )
@@ -96,12 +128,8 @@ def start_generation(
         session.flush()
     except IntegrityError:
         session.rollback()
-        existing = session.scalar(
-            select(GenerationRun).where(
-                GenerationRun.project_id == project_id,
-                GenerationRun.brief_version_id == brief.id,
-                GenerationRun.blueprint_version_id == blueprint.id,
-            )
+        existing = _run_for_versions(
+            session, project_id, brief.id, blueprint.id, LESSON_PLAN_KIND
         )
         return existing, False
 
@@ -127,6 +155,85 @@ def start_generation(
             "blueprint_version": blueprint.version,
             "lesson_count": len(lessons),
             "language_mode": language_mode,
+        },
+    )
+    session.flush()
+    return run, True
+
+
+def start_deck_generation(
+    session: Session, workspace_id: uuid.UUID, project_id: uuid.UUID
+) -> tuple[GenerationRun, bool]:
+    """Atomically create (or return) the idempotent slide-deck run for the current
+    confirmed brief/blueprint version pair. Requires a complete lesson-plan run
+    bound to the same versions (Spec D3). Returns (run, created)."""
+
+    brief = current_brief_version(session, project_id)
+    blueprint = current_blueprint_version(session, project_id)
+    if brief is None or blueprint is None:
+        raise MissingVersionsError("confirmed brief and blueprint versions are required")
+
+    plan_run = _run_for_versions(session, project_id, brief.id, blueprint.id, LESSON_PLAN_KIND)
+    if plan_run is None or plan_run.status != "complete":
+        reason = (
+            "lesson plans are incomplete; finish lesson-plan generation first"
+            if plan_run is not None
+            else "no lesson-plan run exists for the current confirmed versions"
+        )
+        raise PrerequisiteNotMetError(reason)
+
+    existing = _run_for_versions(session, project_id, brief.id, blueprint.id, SLIDE_DECK_KIND)
+    if existing is not None:
+        return existing, False
+
+    payload = json.loads(blueprint.payload_json)
+    lessons = payload.get("lessons") or []
+    if not lessons:
+        raise MissingVersionsError("confirmed blueprint contains no lessons")
+
+    run = GenerationRun(
+        project_id=project_id,
+        workspace_id=workspace_id,
+        brief_version_id=brief.id,
+        blueprint_version_id=blueprint.id,
+        artifact_kind=SLIDE_DECK_KIND,
+        prerequisite_run_id=plan_run.id,
+        status="queued",
+        model_call_cap=get_settings().max_model_calls_per_deck_run,
+    )
+    session.add(run)
+    try:
+        session.flush()
+    except IntegrityError:
+        session.rollback()
+        existing = _run_for_versions(
+            session, project_id, brief.id, blueprint.id, SLIDE_DECK_KIND
+        )
+        return existing, False
+
+    language_mode = _language_mode(brief)
+    for lesson in lessons:
+        session.add(
+            SlideDeckArtifact(
+                run_id=run.id,
+                project_id=project_id,
+                workspace_id=workspace_id,
+                lesson_index=int(lesson.get("index") or 0),
+                language_mode=language_mode,
+                status="pending",
+            )
+        )
+    append_event(
+        session,
+        run.id,
+        "run",
+        {
+            "status": "queued",
+            "brief_version": brief.version,
+            "blueprint_version": blueprint.version,
+            "lesson_count": len(lessons),
+            "language_mode": language_mode,
+            "prerequisite_run": str(plan_run.id),
         },
     )
     session.flush()
@@ -192,10 +299,39 @@ def artifacts_of(session: Session, run_id: uuid.UUID) -> list[LessonPlanArtifact
     )
 
 
+def deck_artifacts_of(session: Session, run_id: uuid.UUID) -> list[SlideDeckArtifact]:
+    return list(
+        session.scalars(
+            select(SlideDeckArtifact)
+            .where(SlideDeckArtifact.run_id == run_id)
+            .order_by(SlideDeckArtifact.lesson_index)
+        )
+    )
+
+
 def run_snapshot(session: Session, run: GenerationRun) -> dict:
     brief = session.get(BriefVersion, run.brief_version_id)
     blueprint = session.get(BlueprintVersion, run.blueprint_version_id)
     artifacts = artifacts_of(session, run.id)
+    complete = sum(1 for artifact in artifacts if artifact.status == "complete")
+    return {
+        "run_id": str(run.id),
+        "status": run.status,
+        "brief_version": brief.version if brief else None,
+        "blueprint_version": blueprint.version if blueprint else None,
+        "language_mode": artifacts[0].language_mode if artifacts else "zh-Hans",
+        "model_calls": run.model_calls,
+        "model_call_cap": run.model_call_cap,
+        "artifacts": artifacts,
+        "complete_count": complete,
+        "total_count": len(artifacts),
+    }
+
+
+def deck_run_snapshot(session: Session, run: GenerationRun) -> dict:
+    brief = session.get(BriefVersion, run.brief_version_id)
+    blueprint = session.get(BlueprintVersion, run.blueprint_version_id)
+    artifacts = deck_artifacts_of(session, run.id)
     complete = sum(1 for artifact in artifacts if artifact.status == "complete")
     return {
         "run_id": str(run.id),
