@@ -65,9 +65,10 @@
 Backend unit/integration:  cd apps/backend && uv run pytest
 Backend lint:              uv run ruff check src tests migrations
 Frontend component tests:  corepack pnpm web:test          (Vitest + Testing Library)
-Frontend lint/typecheck:   corepack pnpm web:lint / corepack pnpm web:typecheck
-E2E:                       corepack pnpm --filter web test:e2e   (Playwright; suites land with T11)
+Frontend lint/typecheck:   corepack pnpm web:lint / web:typecheck
+E2E:                       corepack pnpm --filter web test:e2e   (Playwright; authenticated spec gated by CLERK_E2E=1)
 Services:                  docker compose -f infra/docker-compose.yml up -d
+Dev DB migration:          cd apps/backend && uv run alembic upgrade head   (run after pulling new migrations; the test DB upgrades automatically)
 ```
 
 Deterministic suites replace DeepSeek and Clerk with scripted fakes; live-provider evidence runs separately (F001 Test Design TQ-001). Integration tests that require local services skip automatically when a service is unreachable.

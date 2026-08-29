@@ -4,16 +4,16 @@
 
 | Field | Value |
 | --- | --- |
-| Snapshot Revision | `STAGE-2` |
-| Parent Snapshot | `STAGE-1` (pre-merge working tree) |
-| Last Reconciled At | `2026-08-28T19:10:00+08:00` |
-| Reconciled By | `opencode feature-dev session (YMY / Project Owner driving)` |
-| Repository Ref | `main @ 8f90bb6` (post-DONE docs commit pending) |
-| Write Coordination | `SINGLE_WRITER:opencode feature-dev session` |
+| Snapshot Revision | `STAGE-7` |
+| Parent Snapshot | `STAGE-6` @ `cf3a80bb16c0` |
+| Last Reconciled At | `2026-08-29T00:24:37+08:00` |
+| Reconciled By | `ZCode feature-dev session (YMY / Project Owner driving)` |
+| Repository Ref | `main @ 4ccc4ef` |
+| Write Coordination | `SINGLE_WRITER:ZCode feature-dev session` |
 | Lifecycle Path | `GREENFIELD` |
 | Project Phase | `DELIVERY` |
 | Overall State | `ACTIVE` |
-| Current Milestone | F002 Confirmed Unit Blueprint delivered as the second teacher authority gate |
+| Current Milestone | F003 Recoverable Unit Lesson Plans selected as NEXT; refinement starting |
 | Tracking Mode | `REMOTE` |
 
 ## Lifecycle Progress
@@ -23,12 +23,14 @@
 | Macro design and Feature Map | `COMPLETE` | `specs/ROADMAP.md`, `docs/PRODUCT.md`, `docs/ARCHITECTURE.md` | N/A |
 | F001 Grounded Confirmed Brief | `COMPLETE` | Issue #1 (closed), PR #2 merge `1253ca2`, `specs/F001-grounded-confirmed-brief/` | N/A |
 | F002 planning workflow delivered | `COMPLETE` | Issue #3 (closed), PR #4 merge `8f90bb6`, `specs/F002-confirmed-unit-blueprint/` | N/A |
-| F003+ remaining Feature map | `NOT_STARTED` | `specs/ROADMAP.md` Feature Map | F002 DONE |
+| F003 Recoverable Unit Lesson Plans | `READY` | Issue [#6](https://github.com/MaoyuanYang/LessonCanvas/issues/6) (writable authority), `specs/F003-recoverable-unit-lesson-plans/` | `IN_PROGRESS` at coding start |
+| F004+ remaining Feature map | `NOT_STARTED` | `specs/ROADMAP.md` Feature Map | F003 DONE |
 
 ## Active Work
 
 | Activity ID | Work Item | Member | Type | Skill | Skill Stage | Activity State | Work Status | Branch / Worktree | Status Authority | Next Checkpoint | Updated At |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `A-003` | `F003 Recoverable Unit Lesson Plans` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `REVIEW` | `ACTIVE` | `REVIEW` | N/A (issue-tracked) | `https://github.com/MaoyuanYang/LessonCanvas/issues/6` | READY FOR PR (DONE blocked by review M-1: remaining E2E journeys) | `2026-08-29T00:24:37+08:00` |
 | `A-002` | `F002 Confirmed Unit Blueprint (DONE reconciliation)` | `opencode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `ACTIVE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/3` | N/A - terminal | `2026-08-28T19:10:00+08:00` |
 
 ## Gate Snapshot
@@ -43,6 +45,9 @@
 | F002 | `UI READY` | `PASS` | `specs/F002-confirmed-unit-blueprint/ux-ui.md` Gate Record @ `a8cfd23189ac` |
 | F002 | `TEST DESIGN READY` | `PASS` | `specs/F002-confirmed-unit-blueprint/test-design.md` Gate Record @ `9c997cfa2b6f` |
 | F002 | `DONE` | `PASS` | PR [#4](https://github.com/MaoyuanYang/LessonCanvas/pull/4) merged `8f90bb6`, 2026-08-28; DONE evidence manifest in `specs/ROADMAP.md` Handoff |
+| F003 | `SPEC READY` | `PASS` | `specs/F003-recoverable-unit-lesson-plans/spec.md` Gate Record @ `193e90d10b68` |
+| F003 | `UI READY` | `PASS` | `specs/F003-recoverable-unit-lesson-plans/ux-ui.md` UI READY Record @ `ux-ui-f003-r1` / `43f93abc6ed3` |
+| F003 | `TEST DESIGN READY` | `PASS` | `specs/F003-recoverable-unit-lesson-plans/test-design.md` Record @ `test-design-f003-r2` / `880a6a4a418c` |
 
 ## Blockers and Conflicts
 

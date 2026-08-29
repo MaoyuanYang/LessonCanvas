@@ -59,4 +59,4 @@ Concrete business endpoints, event names, payload fields, and frontend/backend c
 ## Open Items
 
 - [RESOLVED, 2026-08-24] The managed identity token/session integration: Clerk sessions validated at the FastAPI boundary (`YMY / Project Owner`, F001 refinement D1).
-- [UNKNOWN, NON_BLOCKING] The exact SSE resume mechanism and event envelope are not selected. Resolve with the first long-running generation Feature (F001 defines interview-stream semantics at behavior level only).
+- [RESOLVED, 2026-08-29] The SSE resume mechanism and event envelope: PostgreSQL run-event table is authoritative; events carry per-run monotonic ids; reconnect replays from `Last-Event-ID`; replay triggers no model work (`YMY / Project Owner`, F003 refinement D4; implemented in the F003 generation stream).
