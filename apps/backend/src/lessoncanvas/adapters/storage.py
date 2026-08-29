@@ -7,9 +7,9 @@ from lessoncanvas.settings import get_settings
 
 
 class StorageAdapter:
-    def __init__(self) -> None:
+    def __init__(self, bucket: str | None = None) -> None:
         settings = get_settings()
-        self._bucket = settings.s3_bucket_sources
+        self._bucket = bucket or settings.s3_bucket_sources
         self._client = boto3.client(
             "s3",
             endpoint_url=settings.s3_endpoint_url,

@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     s3_access_key: str = "lessoncanvas"
     s3_secret_key: str = "lessoncanvas_dev_only"
     s3_bucket_sources: str = "lessoncanvas-sources"
+    s3_bucket_artifacts: str = "lessoncanvas-artifacts"
 
     clerk_jwks_url: str = ""
     clerk_issuer: str = ""

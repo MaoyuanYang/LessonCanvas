@@ -287,13 +287,13 @@ def test_replan_appends_new_draft_after_stale(client, auth):
     assert state["draft"]["unit"]["title"] == "气候变化"
 
 
-def test_no_generation_surface_exists(client, auth):
+def test_generation_surface_is_gated_not_absent(client, auth):
+    # F002 asserted no generation surface existed; F003 delivers it. The durable
+    # boundary is that generation starts only from a confirmed blueprint.
     project_id, _ = blueprint_ready(client, auth)
     openapi = client.get("/openapi.json").json()
-    generation_paths = [
-        path for path in openapi["paths"] if "generate" in path or "artifact" in path
-    ]
-    assert generation_paths == []
+    generation_paths = [path for path in openapi["paths"] if "/generation" in path]
+    assert generation_paths, "F003 generation surface should be registered"
 
 
 def test_blueprint_trace_and_deletion_cascade(client, auth, db_session):

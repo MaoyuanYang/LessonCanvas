@@ -125,6 +125,12 @@ class DeepSeekAdapter:
 
 
 class FakeModelAdapter:
+    _transient_failures: dict[str, int] = {}
+
+    @classmethod
+    def reset_transient_failures(cls) -> None:
+        cls._transient_failures.clear()
+
     def complete(self, system: str, user: str) -> ModelResponse:
         data = json.loads(user)
         kind = data.get("kind")
@@ -157,6 +163,10 @@ class FakeModelAdapter:
             return ModelResponse(text=json.dumps({"questions": questions}), latency_ms=1)
         if kind == "planning_build_draft":
             return ModelResponse(text=json.dumps(_fake_planning_blueprint(data)), latency_ms=1)
+        if kind == "generation_write_lesson":
+            return ModelResponse(
+                text=json.dumps(_fake_generation_plan(data)), latency_ms=1
+            )
         if "fail" in data.get("scenario", ""):
             raise ModelProviderError("model provider unavailable")
         return ModelResponse(text=json.dumps({}), latency_ms=1)
@@ -165,6 +175,50 @@ class FakeModelAdapter:
         data = json.loads(user)
         text = data.get("narration", "这是叙述文本。")
         yield from (text[i : i + 4] for i in range(0, len(text), 4))
+
+
+def _fake_generation_plan(data: dict) -> dict:
+    """Deterministic lesson plans for generation tests, scripted by title markers.
+
+    TRANSIENT_FAIL -> provider error on the first attempt for that lesson only;
+    PROVIDER_FAIL  -> persistent provider error; any content (including
+    injection payloads) is returned verbatim so tests can prove it stays inert.
+    """
+
+    lesson = data.get("lesson") or {}
+    index = lesson.get("lesson_index")
+    title = str(lesson.get("lesson_title") or f"第{index}课")
+    fail_key = f"{index}:{title}"
+
+    if "PROVIDER_FAIL" in title:
+        raise ModelProviderError("model provider unavailable")
+    if "TRANSIENT_FAIL" in title:
+        seen = FakeModelAdapter._transient_failures.get(fail_key, 0)
+        if seen == 0:
+            FakeModelAdapter._transient_failures[fail_key] = seen + 1
+            raise ModelProviderError("model provider unavailable")
+
+    objectives = [
+        f"掌握与「{title}」相关的核心词汇与表达",
+        "通过阅读与讨论获取关键信息并表达观点",
+        *(lesson.get("unit_objectives") or []),
+    ]
+    stages = [
+        {"name": "导入", "duration_minutes": 5, "activities": "图片与问题导入，激活已知词汇"},
+        {"name": "阅读与输入", "duration_minutes": 15, "activities": "阅读课文，完成信息提取任务"},
+        {"name": "输出活动", "duration_minutes": 15, "activities": "小组讨论并汇报观点"},
+        {"name": "总结", "duration_minutes": 5, "activities": "梳理本课语言点与结构"},
+    ]
+    return {
+        "lesson_plan": {
+            "title": title,
+            "objectives": objectives,
+            "key_points": ["核心词汇与句型", "篇章结构与主旨概括"],
+            "difficulties": ["长难句理解", "观点表达的逻辑衔接"],
+            "stages": stages,
+            "homework": "完成课后练习并根据本课主题写一段 80 词短文",
+        }
+    }
 
 
 def _fake_planning_blueprint(data: dict) -> dict:
