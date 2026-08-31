@@ -1,7 +1,7 @@
 # F007: Versioned Targeted Regeneration
 
 - Spec Status: `SPEC READY`
-- Roadmap Status: `REVIEW`
+- Roadmap Status: `DONE`
 - Priority: `P0`
 - Owner: Implementation assignee unassigned until Coding starts
 - Work item: [GitHub Issue #14](https://github.com/MaoyuanYang/LessonCanvas/issues/14) — bound 2026-08-31 (authorized)
@@ -201,3 +201,22 @@ All DRAFT open questions and the three blocking refinement questions are resolve
 - Scope-column representation, indexes, and migration steps (Implementation Plan)
 - Components, packages, and internal functions (Implementation Plan)
 - Pixel-level UI and complete Test Design (`ux-ui.md`, `test-design.md`)
+
+## Gate Record: DONE
+
+- Status: `PASS`
+- Validation time: 2026-09-01
+- Decision Authority: `YMY / Project Owner` — full delivery flow (commit/push/PR/merge) explicitly authorized in the interactive session ("全部授权"); merge performed as merge commit `2b36d73`
+- Conditions met:
+  - All 14 ACs satisfied with automated or E2E evidence (backend full suite exit-0 incl. 11 regeneration tests; web 51/51; see test-design Execution Evidence Snapshot)
+  - E2E green across stacks: fault TS-014/TS-016 (keyboard pass) and live TS-015 (real DeepSeek + real Worker)
+  - Review: no Critical/High findings; delivery-found M-1..M-3 fixed with tests before delivery; L-1..L-3 recorded
+  - Documentation sync: API/DATABASE/DESIGN_SYSTEM/TESTING/README updated; ROADMAP/STAGE/Issue synchronized (Issue #14 auto-closed by merge)
+  - Delivery: PR [#15](https://github.com/MaoyuanYang/LessonCanvas/pull/15) merged `2b36d73`; main re-verified (backend exit-0 + ruff clean + web 51/51)
+- DONE evidence manifest (working-tree SHA-256 prefixes at gate time):
+  - `spec.md` @ `4ea6f227ed55`
+  - `ux-ui.md` @ `92e90e6e7cdf`
+  - `test-design.md` @ `402f001db60f`
+  - `plan.md` @ `c35bfd12e495`
+  - `review.md` @ `251e53f96b31`
+  - `specs/ROADMAP.md` @ `636d8f141a87` (pre-DONE)
