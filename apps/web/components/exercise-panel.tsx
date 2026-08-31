@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ArtifactProgressList,
+  RetainedList,
   NarrationRegion,
   ReconnectBanner,
   RunOutcomeBanners,
@@ -417,6 +418,17 @@ export function ExercisePanel({
       />
 
       <NarrationRegion lines={narrationLines} />
+
+      <RetainedList
+        retained={snapshot.retained_artifacts ?? []}
+        noun="练习"
+        renderActions={(retained) => (
+          <>
+            <DownloadPairButton projectId={projectId} artifactId={retained.id} file="exercise" />
+            <DownloadPairButton projectId={projectId} artifactId={retained.id} file="answer" />
+          </>
+        )}
+      />
 
       <ArtifactProgressList
         completeCount={snapshot.complete_count}

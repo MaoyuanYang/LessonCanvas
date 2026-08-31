@@ -457,6 +457,8 @@ export interface GenerationSnapshot {
   brief_version: number | null;
   blueprint_version: number | null;
   language_mode: string;
+  scope_lesson_indexes?: number[] | null;
+  retained_artifacts?: RetainedArtifact[];
   model_calls: number;
   model_call_cap: number;
   artifacts: GenerationArtifact[];
@@ -541,6 +543,8 @@ export interface DeckGenerationSnapshot {
   brief_version: number | null;
   blueprint_version: number | null;
   language_mode: string;
+  scope_lesson_indexes?: number[] | null;
+  retained_artifacts?: RetainedArtifact[];
   model_calls: number;
   model_call_cap: number;
   artifacts: DeckArtifact[];
@@ -634,6 +638,8 @@ export interface ExerciseGenerationSnapshot {
   blueprint_version: number | null;
   language_mode: string;
   difficulty: ExerciseDifficulty | null;
+  scope_lesson_indexes?: number[] | null;
+  retained_artifacts?: RetainedArtifact[];
   model_calls: number;
   model_call_cap: number;
   artifacts: ExerciseArtifact[];
@@ -870,4 +876,50 @@ export async function evidenceNarrateStop(
 
 export function evidenceNarrateStreamUrl(projectId: string, runId: string): string {
   return `${apiBaseUrl()}/projects/${projectId}/evidence/${runId}/narrate/stream`;
+}
+
+export interface RetainedArtifact {
+  id: string;
+  lesson_index: number;
+  source_brief_version: number | null;
+  source_blueprint_version: number | null;
+  source_run_id: string;
+  checksum: string | null;
+  download_available: boolean;
+}
+
+export interface ImpactPreview {
+  affected_lessons: number[] | null;
+  affected_families: string[];
+  reasons: { field: string; scope: string; detail: string }[];
+  structural: { added: number[]; removed: number[] };
+  uncertain: boolean;
+  no_delta: boolean;
+}
+
+export interface VersionTransition {
+  first_version: boolean;
+  from: { brief_version: number; blueprint_version: number } | null;
+  to: { brief_version: number; blueprint_version: number } | null;
+  intent_diff: { field: string; old: string | null; new: string | null }[];
+  verdicts?: { lesson_index: number; family: string; verdict: string; reason: string | null }[];
+  artifacts?: {
+    lesson_index: number;
+    family: string;
+    old: { status: string | null; download_available: boolean };
+    new: { status: string | null; download_available: boolean };
+  }[];
+}
+
+export async function getImpact(token: string | null, projectId: string): Promise<ImpactPreview> {
+  return apiFetch<ImpactPreview>(`/projects/${projectId}/impact`, { token });
+}
+
+export async function getCurrentTransition(
+  token: string | null,
+  projectId: string,
+): Promise<VersionTransition> {
+  return apiFetch<VersionTransition>(`/projects/${projectId}/versions/current-transition`, {
+    token,
+  });
 }

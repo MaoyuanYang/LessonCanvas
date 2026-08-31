@@ -8,6 +8,7 @@ import {
   ArtifactProgressList,
   NarrationRegion,
   ReconnectBanner,
+  RetainedList,
   RUN_STATUS_LABELS as STATUS_LABELS,
   RunOutcomeBanners,
   TERMINAL_RUN_STATUSES,
@@ -282,6 +283,12 @@ export function GenerationPanel({ projectId }: { projectId: string }) {
       />
 
       <NarrationRegion lines={narrationLines} />
+
+      <RetainedList
+        retained={snapshot.retained_artifacts ?? []}
+        noun="教案"
+        renderActions={(retained) => <DownloadButton projectId={projectId} artifactId={retained.id} />}
+      />
 
       <ArtifactProgressList
         completeCount={snapshot.complete_count}

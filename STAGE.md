@@ -4,16 +4,16 @@
 
 | Field | Value |
 | --- | --- |
-| Snapshot Revision | `STAGE-34` |
-| Parent Snapshot | `STAGE-33` @ `17368f03358f` |
-| Last Reconciled At | `2026-08-31T20:15:00+08:00` |
+| Snapshot Revision | `STAGE-41` |
+| Parent Snapshot | `STAGE-40` @ `77638b50b6ab` |
+| Last Reconciled At | `2026-08-31T23:55:00+08:00` |
 | Reconciled By | `ZCode feature-dev session (YMY / Project Owner driving)` |
 | Repository Ref | `main @ 21bef27` |
 | Write Coordination | `SINGLE_WRITER:ZCode feature-dev session` |
 | Lifecycle Path | `GREENFIELD` |
-| Project Phase | `COMPLETE` |
+| Project Phase | `REVIEW` |
 | Overall State | `ACTIVE` |
-| Current Milestone | F006 DONE (PR #13 merge `21bef27`); next actionable is F007 refinement |
+| Current Milestone | F007 REVIEW: implementation + verification + review + docs complete; delivery pending authorization |
 | Tracking Mode | `REMOTE` |
 
 ## Lifecycle Progress
@@ -30,6 +30,7 @@
 
 | Activity ID | Work Item | Member | Type | Skill | Skill Stage | Activity State | Work Status | Branch / Worktree | Status Authority | Next Checkpoint | Updated At |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `A-007` | `F007 Versioned Targeted Regeneration` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `REVIEW` | `ACTIVE` | `REVIEW` | `feature/F007-versioned-targeted-regeneration` | `https://github.com/MaoyuanYang/LessonCanvas/issues/14` | authorized commit/push/PR -> DONE | `2026-08-31T23:55:00+08:00` |
 | `A-003` | `F003 Recoverable Unit Lesson Plans` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/6` | N/A - terminal (PR #7 merge `ad81c82`) | `2026-08-29T00:24:37+08:00` |
 | `A-002` | `F002 Confirmed Unit Blueprint (DONE reconciliation)` | `opencode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `ACTIVE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/3` | N/A - terminal | `2026-08-28T19:10:00+08:00` |
 
@@ -60,11 +61,15 @@
 | F006 | `UI READY` | `PASS` | `specs/F006-layered-run-evidence/ux-ui.md` UI READY Record @ `ux-ui-f006-r1` / `4bff46959bb0` |
 | F006 | `TEST DESIGN READY` | `PASS` | `specs/F006-layered-run-evidence/test-design.md` Record @ `test-design-f006-r1` / `e2e261591bd8` |
 | F006 | `DONE` | `PASS` | PR #13 merge `21bef27`; DONE evidence manifest in `specs/F006-layered-run-evidence/spec.md` Gate Record |
+| F007 | `SPEC READY` | `PASS` | `specs/F007-versioned-targeted-regeneration/spec.md` Gate Record @ `fb351456a2ee` |
+| F007 | `UI READY` | `PASS` | `specs/F007-versioned-targeted-regeneration/ux-ui.md` UI READY Record @ `ux-ui-f007-r1` / `97597ad3c608` |
+| F007 | `TEST DESIGN READY` | `PASS` | `specs/F007-versioned-targeted-regeneration/test-design.md` Record @ `test-design-f007-r1` / `69c9d0532f7a` |
 
 ## Blockers and Conflicts
 
 | ID | Affected Activity / Work Item | Type | Evidence | Owner | Unblock / Resolution Condition |
 | --- | --- | --- | --- | --- | --- |
+| `B-002` | F007 (`A-007`) | `RESOLVED 2026-08-31` | Owner answered interactively: Issue creation authorized (Issue #14 bound); D1 = field-level conservative matrix; D2 = teacher-triggered per family. Spec finalized with D1..D7 resolved. | `YMY / Project Owner` | Resolved |
 | `B-001` | F002 | `NON_BLOCKING residual from F001` | Authenticated Playwright E2E RESOLVED 2026-08-28: Clerk device verification disabled by owner; full teacher-journey spec passes against live DeepSeek after live-model JSON-contract fixes (PR [#5](https://github.com/MaoyuanYang/LessonCanvas/pull/5) merged `f6d3b4a`, authorized merge by `YMY / Project Owner`; main re-verified 80 backend tests + ruff). Remaining: keyboard manual pass pending; Postgres LangGraph checkpointer investigation deferred to F012 | `YMY / Project Owner` | Keyboard manual pass at next UI touch; checkpointer at F012 |
 
 ## Handoffs

@@ -18,7 +18,10 @@ from lessoncanvas.modules.identity_workspace.service import (
 )
 from lessoncanvas.modules.identity_workspace.service import get_owned_project
 from lessoncanvas.modules.run_orchestration import service as run_service
-from lessoncanvas.modules.run_orchestration.schemas import GenerationSnapshot
+from lessoncanvas.modules.run_orchestration.schemas import (
+    GenerationSnapshot,
+    RetainedArtifactOut,
+)
 from lessoncanvas.settings import get_settings
 
 router = APIRouter(prefix="/projects/{project_id}/generation", tags=["generation"])
@@ -64,6 +67,10 @@ def _snapshot(session, run: GenerationRun) -> GenerationSnapshot:
         brief_version=data["brief_version"],
         blueprint_version=data["blueprint_version"],
         language_mode=data["language_mode"],
+        scope_lesson_indexes=data["scope_lesson_indexes"],
+        retained_artifacts=[
+            RetainedArtifactOut(**entry) for entry in data["retained_artifacts"]
+        ],
         model_calls=data["model_calls"],
         model_call_cap=data["model_call_cap"],
         artifacts=[artifact_out(artifact) for artifact in data["artifacts"]],
@@ -90,6 +97,11 @@ def start(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep):
         raise RequirementError(
             "confirmed brief and blueprint versions are required before generation",
             {"gate": "blueprint"},
+        ) from err
+    except run_service.NothingToRegenerateError as err:
+        raise RequirementError(
+            "the current version transition affects no lesson plans; nothing to regenerate",
+            {"affected_lessons": []},
         ) from err
     session.commit()
     if created:
