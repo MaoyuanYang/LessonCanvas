@@ -55,14 +55,43 @@ def build_corpus(session, project_id) -> str:
     return "\n".join(parts)
 
 
-def record_trace(session, run_id: str, event_type: str, payload: dict, latency_ms: int) -> None:
+def record_trace(
+    session,
+    run_id: str,
+    event_type: str,
+    payload: dict,
+    latency_ms: int,
+    usage=None,
+    model: str | None = None,
+) -> None:
+    """Append one trace event. `usage` is the model adapter's ModelResponse;
+    when absent (tool calls, streams without usage) token/cost fields stay NULL
+    and display as not recorded instead of zero (F006 Spec D2/D9)."""
+
+    from lessoncanvas.modules.run_orchestration.evidence import (
+        estimated_cost_usd,
+        trace_model_label,
+    )
+
+    prompt_tokens = getattr(usage, "prompt_tokens", None) if usage is not None else None
+    completion_tokens = (
+        getattr(usage, "completion_tokens", None) if usage is not None else None
+    )
+    cost = None
+    model_label = None
+    if prompt_tokens is not None and completion_tokens is not None:
+        cost = estimated_cost_usd(prompt_tokens, completion_tokens)
+        model_label = model or trace_model_label()
     session.add(
         TraceEvent(
             run_id=run_id,
             event_type=event_type,
             payload_json=json.dumps(payload, ensure_ascii=False),
             latency_ms=latency_ms,
-            cost_usd=0.0,
+            cost_usd=cost,
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
+            model=model_label,
         )
     )
 
@@ -106,6 +135,7 @@ def analyze_node(state: DiscoveryState) -> dict:
             "model.gap_analysis",
             {"prompt": user_payload, "response": data},
             latency,
+            usage=response,
         )
         run.model_calls += 1
         new_round = state.get("round_count", 0) + (1 if filtered else 0)
@@ -211,6 +241,7 @@ def build_draft_node(state: DiscoveryState) -> dict:
             "model.build_draft",
             {"prompt": user_payload, "response": data},
             latency,
+            usage=response,
         )
 
         from lessoncanvas.models import DiscoveryRun

@@ -44,6 +44,13 @@ class Settings(BaseSettings):
     exercise_max_categories_per_lesson: int = 4
     checkpoint_backend: str = "postgres"
 
+    model_price_prompt_per_mtok: float = 0.27
+    model_price_completion_per_mtok: float = 1.10
+    evidence_events_page_default: int = 50
+    evidence_events_page_max: int = 200
+    evidence_inventory_page_default: int = 50
+    evidence_narration_quota_per_workspace: int = 50
+
 
 @lru_cache
 def get_settings() -> Settings:

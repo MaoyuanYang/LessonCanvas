@@ -697,3 +697,177 @@ export async function downloadExerciseFile(
 export function exerciseGenerationStreamUrl(projectId: string): string {
   return `${apiBaseUrl()}/projects/${projectId}/exercises/generation/events`;
 }
+
+export type EvidenceRunKind =
+  | "discovery"
+  | "planning"
+  | "lesson_plan"
+  | "slide_deck"
+  | "exercise";
+
+export const EVIDENCE_KIND_LABELS: Record<EvidenceRunKind, string> = {
+  discovery: "需求访谈",
+  planning: "蓝图规划",
+  lesson_plan: "教案生成",
+  slide_deck: "课件生成",
+  exercise: "练习生成",
+};
+
+export const INTERVIEW_STATUS_LABELS: Record<string, string> = {
+  initializing: "初始化中",
+  questioning: "提问中",
+  draft_ready: "草稿就绪",
+  provider_failed: "模型服务失败",
+};
+
+export const EVIDENCE_EVENT_LABELS: Record<string, string> = {
+  "model.gap_analysis": "模型调用·需求缺口分析",
+  "model.build_draft": "模型调用·起草简报",
+  "model.planning_gap_analysis": "模型调用·规划缺口分析",
+  "model.planning_build_draft": "模型调用·起草蓝图",
+  "model.generation_write_lesson": "模型调用·撰写教案",
+  "model.generation_write_deck": "模型调用·撰写课件",
+  "model.generation_write_exercises": "模型调用·撰写练习",
+  "model.narration": "模型调用·叙述",
+  "model.evidence_narration": "模型调用·任务讲解",
+  "tool.standards_search": "工具调用·课标检索",
+  "tool.render_lesson_plan_docx": "工具调用·渲染教案文档",
+  "tool.validate_lesson_plan_docx": "工具调用·校验教案文档",
+  "tool.render_lesson_deck_pptx": "工具调用·渲染课件文档",
+  "tool.validate_lesson_deck_pptx": "工具调用·校验课件文档",
+  "tool.render_lesson_exercises_docx": "工具调用·渲染练习文档",
+  "tool.validate_exercise_pair": "工具调用·校验练习配对",
+  run: "运行状态",
+  phase: "阶段",
+  lesson: "课程",
+  interview_round: "访谈轮次",
+};
+
+export interface EvidenceRunRow {
+  run_id: string;
+  kind: EvidenceRunKind;
+  status: string;
+  created_at: string;
+  cursor: string;
+  model_calls: number;
+  model_call_cap: number | null;
+  round_count: number | null;
+  brief_version: number | null;
+  blueprint_version: number | null;
+  difficulty: string | null;
+  language_mode: string | null;
+  complete_count: number | null;
+  total_count: number | null;
+  cost_usd_estimated: number;
+  cost_estimate_complete: boolean;
+  model_latency_ms_total: number;
+  trace_event_count: number;
+  model_call_count: number;
+  tool_call_count: number;
+  evidence_kinds: string[];
+  telemetry_gaps: string[];
+}
+
+export interface EvidenceInventory {
+  runs: EvidenceRunRow[];
+  next_cursor: string | null;
+}
+
+export interface EvidenceArtifactRow {
+  id: string;
+  lesson_index: number;
+  status: string;
+  failure_reason: string | null;
+  retry_count: number;
+  slide_count?: number | null;
+  category_count?: number | null;
+  item_count?: number | null;
+}
+
+export interface EvidenceRunDetail extends EvidenceRunRow {
+  updated_at: string;
+  artifacts: EvidenceArtifactRow[];
+  interview_message_count: number | null;
+  superseded_by: { brief_version: number | null; blueprint_version: number | null } | null;
+  recovery_view: string | null;
+}
+
+export interface EvidenceEvent {
+  cursor: string;
+  source: "trace" | "run_event" | "interview";
+  event_type: string;
+  created_at: string;
+  latency_ms: number | null;
+  prompt_tokens: number | null;
+  completion_tokens: number | null;
+  cost_usd: number | null;
+  model: string | null;
+  lesson_index: number | null;
+  payload: Record<string, unknown>;
+}
+
+export interface EvidenceEventsPage {
+  run_id: string;
+  events: EvidenceEvent[];
+  next_cursor: string | null;
+}
+
+export async function evidenceInventory(
+  token: string | null,
+  projectId: string,
+  after?: string,
+): Promise<EvidenceInventory> {
+  const query = after ? `?after=${encodeURIComponent(after)}` : "";
+  return apiFetch<EvidenceInventory>(`/projects/${projectId}/evidence${query}`, { token });
+}
+
+export async function evidenceRunSummary(
+  token: string | null,
+  projectId: string,
+  runId: string,
+): Promise<EvidenceRunDetail> {
+  return apiFetch<EvidenceRunDetail>(`/projects/${projectId}/evidence/${runId}`, { token });
+}
+
+export async function evidenceRunEvents(
+  token: string | null,
+  projectId: string,
+  runId: string,
+  options: { after?: string; limit?: number; kind?: string } = {},
+): Promise<EvidenceEventsPage> {
+  const params = new URLSearchParams();
+  if (options.after) params.set("after", options.after);
+  if (options.limit) params.set("limit", String(options.limit));
+  if (options.kind) params.set("kind", options.kind);
+  const query = params.toString() ? `?${params.toString()}` : "";
+  return apiFetch<EvidenceEventsPage>(
+    `/projects/${projectId}/evidence/${runId}/events${query}`,
+    { token },
+  );
+}
+
+export async function evidenceNarrate(
+  token: string | null,
+  projectId: string,
+  runId: string,
+): Promise<{ run_id: string; started: boolean }> {
+  return apiFetch<{ run_id: string; started: boolean }>(
+    `/projects/${projectId}/evidence/${runId}/narrate`,
+    { method: "POST", token },
+  );
+}
+
+export async function evidenceNarrateStop(
+  token: string | null,
+  projectId: string,
+  runId: string,
+): Promise<{ stopped: boolean }> {
+  return apiFetch<{ stopped: boolean }>(
+    `/projects/${projectId}/evidence/${runId}/narrate/stop`,
+    { method: "POST", token },
+  );
+}
+
+export function evidenceNarrateStreamUrl(projectId: string, runId: string): string {
+  return `${apiBaseUrl()}/projects/${projectId}/evidence/${runId}/narrate/stream`;
+}

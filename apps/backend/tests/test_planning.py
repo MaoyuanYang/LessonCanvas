@@ -180,8 +180,12 @@ def test_planning_uses_standards_tool_with_snapshot_citations(client, auth):
     assert standards_citations
     assert standards_citations[0]["snapshot_version"]
 
-    trace = client.get(f"/projects/{project_id}/trace", headers=auth).json()
-    event_types = {event["event_type"] for event in trace["events"]}
+    inventory = client.get(f"/projects/{project_id}/evidence", headers=auth).json()
+    planning_run = next(r for r in inventory["runs"] if r["kind"] == "planning")
+    events = client.get(
+        f"/projects/{project_id}/evidence/{planning_run['run_id']}/events", headers=auth
+    ).json()
+    event_types = {event["event_type"] for event in events["events"]}
     assert "tool.standards_search" in event_types
     assert "model.planning_build_draft" in event_types
 
