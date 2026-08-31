@@ -21,10 +21,11 @@ from sqlalchemy import create_engine, text
 from lessoncanvas.settings import get_settings
 
 TABLES = (
-    "run_events, slide_deck_artifacts, lesson_plan_artifacts, generation_runs, "
-    "trace_events, interaction_messages, discovery_runs, blueprint_drafts, blueprint_versions, "
-    "source_chunks, sources, brief_versions, brief_drafts, audit_events, quota_counters, "
-    "projects, workspaces, account_deletion_events"
+    "run_events, exercise_artifacts, slide_deck_artifacts, lesson_plan_artifacts, "
+    "generation_runs, trace_events, interaction_messages, discovery_runs, "
+    "blueprint_drafts, blueprint_versions, source_chunks, sources, brief_versions, "
+    "brief_drafts, audit_events, quota_counters, projects, workspaces, "
+    "account_deletion_events"
 )
 
 

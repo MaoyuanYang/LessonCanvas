@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from lessoncanvas.models import (
     BlueprintVersion,
     BriefVersion,
+    ExerciseArtifact,
     GenerationRun,
     LessonPlanArtifact,
     RunEvent,
@@ -19,6 +20,9 @@ from lessoncanvas.settings import get_settings
 
 LESSON_PLAN_KIND = "lesson_plan"
 SLIDE_DECK_KIND = "slide_deck"
+EXERCISE_KIND = "exercise"
+
+DIFFICULTY_TIERS = ("foundation", "consolidation", "advanced")
 
 
 class MissingVersionsError(Exception):
@@ -29,6 +33,12 @@ class PrerequisiteNotMetError(Exception):
     def __init__(self, reason: str) -> None:
         super().__init__(reason)
         self.reason = reason
+
+
+class InvalidDifficultyError(Exception):
+    def __init__(self, difficulty: object) -> None:
+        super().__init__(f"invalid difficulty tier: {difficulty!r}")
+        self.difficulty = difficulty
 
 
 class ResumeNotAllowedError(Exception):
@@ -67,6 +77,15 @@ def current_deck_run(session: Session, project_id: uuid.UUID) -> GenerationRun |
         select(GenerationRun)
         .where(GenerationRun.project_id == project_id)
         .where(GenerationRun.artifact_kind == SLIDE_DECK_KIND)
+        .order_by(GenerationRun.created_at.desc())
+    )
+
+
+def current_exercise_run(session: Session, project_id: uuid.UUID) -> GenerationRun | None:
+    return session.scalar(
+        select(GenerationRun)
+        .where(GenerationRun.project_id == project_id)
+        .where(GenerationRun.artifact_kind == EXERCISE_KIND)
         .order_by(GenerationRun.created_at.desc())
     )
 
@@ -240,6 +259,93 @@ def start_deck_generation(
     return run, True
 
 
+def start_exercise_generation(
+    session: Session,
+    workspace_id: uuid.UUID,
+    project_id: uuid.UUID,
+    difficulty: str,
+) -> tuple[GenerationRun, bool]:
+    """Atomically create (or return) the idempotent exercise run for the current
+    confirmed brief/blueprint version pair. Requires a complete lesson-plan run
+    bound to the same versions (Spec D3) and a valid difficulty tier that is
+    recorded once at creation and never overwritten (Spec D9). Returns
+    (run, created)."""
+
+    if difficulty not in DIFFICULTY_TIERS:
+        raise InvalidDifficultyError(difficulty)
+
+    brief = current_brief_version(session, project_id)
+    blueprint = current_blueprint_version(session, project_id)
+    if brief is None or blueprint is None:
+        raise MissingVersionsError("confirmed brief and blueprint versions are required")
+
+    plan_run = _run_for_versions(session, project_id, brief.id, blueprint.id, LESSON_PLAN_KIND)
+    if plan_run is None or plan_run.status != "complete":
+        reason = (
+            "lesson plans are incomplete; finish lesson-plan generation first"
+            if plan_run is not None
+            else "no lesson-plan run exists for the current confirmed versions"
+        )
+        raise PrerequisiteNotMetError(reason)
+
+    existing = _run_for_versions(session, project_id, brief.id, blueprint.id, EXERCISE_KIND)
+    if existing is not None:
+        return existing, False
+
+    payload = json.loads(blueprint.payload_json)
+    lessons = payload.get("lessons") or []
+    if not lessons:
+        raise MissingVersionsError("confirmed blueprint contains no lessons")
+
+    run = GenerationRun(
+        project_id=project_id,
+        workspace_id=workspace_id,
+        brief_version_id=brief.id,
+        blueprint_version_id=blueprint.id,
+        artifact_kind=EXERCISE_KIND,
+        prerequisite_run_id=plan_run.id,
+        difficulty=difficulty,
+        status="queued",
+        model_call_cap=get_settings().max_model_calls_per_exercise_run,
+    )
+    session.add(run)
+    try:
+        session.flush()
+    except IntegrityError:
+        session.rollback()
+        existing = _run_for_versions(session, project_id, brief.id, blueprint.id, EXERCISE_KIND)
+        return existing, False
+
+    language_mode = _language_mode(brief)
+    for lesson in lessons:
+        session.add(
+            ExerciseArtifact(
+                run_id=run.id,
+                project_id=project_id,
+                workspace_id=workspace_id,
+                lesson_index=int(lesson.get("index") or 0),
+                language_mode=language_mode,
+                status="pending",
+            )
+        )
+    append_event(
+        session,
+        run.id,
+        "run",
+        {
+            "status": "queued",
+            "brief_version": brief.version,
+            "blueprint_version": blueprint.version,
+            "lesson_count": len(lessons),
+            "language_mode": language_mode,
+            "prerequisite_run": str(plan_run.id),
+            "difficulty": difficulty,
+        },
+    )
+    session.flush()
+    return run, True
+
+
 def reserve_model_call(session: Session, run_id: uuid.UUID) -> bool:
     """Conditional cap guard: increments model_calls only when below the cap.
 
@@ -309,6 +415,16 @@ def deck_artifacts_of(session: Session, run_id: uuid.UUID) -> list[SlideDeckArti
     )
 
 
+def exercise_artifacts_of(session: Session, run_id: uuid.UUID) -> list[ExerciseArtifact]:
+    return list(
+        session.scalars(
+            select(ExerciseArtifact)
+            .where(ExerciseArtifact.run_id == run_id)
+            .order_by(ExerciseArtifact.lesson_index)
+        )
+    )
+
+
 def run_snapshot(session: Session, run: GenerationRun) -> dict:
     brief = session.get(BriefVersion, run.brief_version_id)
     blueprint = session.get(BlueprintVersion, run.blueprint_version_id)
@@ -339,6 +455,26 @@ def deck_run_snapshot(session: Session, run: GenerationRun) -> dict:
         "brief_version": brief.version if brief else None,
         "blueprint_version": blueprint.version if blueprint else None,
         "language_mode": artifacts[0].language_mode if artifacts else "zh-Hans",
+        "model_calls": run.model_calls,
+        "model_call_cap": run.model_call_cap,
+        "artifacts": artifacts,
+        "complete_count": complete,
+        "total_count": len(artifacts),
+    }
+
+
+def exercise_run_snapshot(session: Session, run: GenerationRun) -> dict:
+    brief = session.get(BriefVersion, run.brief_version_id)
+    blueprint = session.get(BlueprintVersion, run.blueprint_version_id)
+    artifacts = exercise_artifacts_of(session, run.id)
+    complete = sum(1 for artifact in artifacts if artifact.status == "complete")
+    return {
+        "run_id": str(run.id),
+        "status": run.status,
+        "brief_version": brief.version if brief else None,
+        "blueprint_version": blueprint.version if blueprint else None,
+        "language_mode": artifacts[0].language_mode if artifacts else "zh-Hans",
+        "difficulty": run.difficulty,
         "model_calls": run.model_calls,
         "model_call_cap": run.model_call_cap,
         "artifacts": artifacts,

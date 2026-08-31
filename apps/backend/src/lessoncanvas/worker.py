@@ -54,3 +54,25 @@ def generate_decks(run_id: str) -> str:
         if generate_decks.request.retries >= generate_decks.max_retries:
             return mark_deck_provider_exhausted(run_id)
         raise generate_decks.retry(exc=error) from error
+
+
+@celery_app.task(name="lessoncanvas.generate_exercises", max_retries=2)
+def generate_exercises(run_id: str) -> str:
+    """Execute one exercise/answer generation run to a settled status (F005).
+
+    Same recovery contract as generate_unit: bounded retries resume the same
+    run from per-pair checkpoints; cap exhaustion and supersession settle
+    inside the workflow.
+    """
+
+    from lessoncanvas.modules.artifact_production.exercise_graph import (
+        execute_exercise_generation,
+        mark_exercise_provider_exhausted,
+    )
+
+    try:
+        return execute_exercise_generation(run_id)
+    except Exception as error:
+        if generate_exercises.request.retries >= generate_exercises.max_retries:
+            return mark_exercise_provider_exhausted(run_id)
+        raise generate_exercises.retry(exc=error) from error

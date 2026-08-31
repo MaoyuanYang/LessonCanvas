@@ -11,6 +11,7 @@ from lessoncanvas.models import (
     BriefDraft,
     BriefVersion,
     DiscoveryRun,
+    ExerciseArtifact,
     GenerationRun,
     InteractionMessage,
     LessonPlanArtifact,
@@ -83,6 +84,24 @@ def delete_project_cascade(
                 )
             )
         ]
+        artifact_keys += [
+            key
+            for (key,) in session.execute(
+                select(ExerciseArtifact.exercise_object_key).where(
+                    ExerciseArtifact.run_id.in_(generation_run_ids),
+                    ExerciseArtifact.exercise_object_key.is_not(None),
+                )
+            )
+        ]
+        artifact_keys += [
+            key
+            for (key,) in session.execute(
+                select(ExerciseArtifact.answer_object_key).where(
+                    ExerciseArtifact.run_id.in_(generation_run_ids),
+                    ExerciseArtifact.answer_object_key.is_not(None),
+                )
+            )
+        ]
         from lessoncanvas.adapters.storage import StorageAdapter
         from lessoncanvas.settings import get_settings
 
@@ -97,6 +116,11 @@ def delete_project_cascade(
         session.execute(
             sql_delete(SlideDeckArtifact).where(
                 SlideDeckArtifact.run_id.in_(generation_run_ids)
+            )
+        )
+        session.execute(
+            sql_delete(ExerciseArtifact).where(
+                ExerciseArtifact.run_id.in_(generation_run_ids)
             )
         )
         session.execute(
