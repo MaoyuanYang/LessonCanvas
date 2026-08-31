@@ -1,7 +1,7 @@
 # F006: Layered Run Evidence
 
 - Spec Status: `SPEC READY`
-- Roadmap Status: `REVIEW`
+- Roadmap Status: `DONE`
 - Priority: `P0`
 - Owner: Implementation assignee unassigned until Coding starts
 - Work item: [GitHub Issue #12](https://github.com/MaoyuanYang/LessonCanvas/issues/12)
@@ -212,3 +212,23 @@ All DRAFT open questions are resolved by D1–D9 above. Non-blocking residuals:
 - Column names, indexes, and migration steps (Implementation Plan)
 - Components, packages, and internal functions (Implementation Plan)
 - Pixel-level UI and complete Test Design (`ux-ui.md`, `test-design.md`)
+
+## Gate Record: DONE
+
+- Status: `PASS`
+- Validation time: 2026-08-31
+- Decision Authority: `YMY / Project Owner` — full delivery flow (commit/push/PR/merge) explicitly authorized in the interactive session ("全部授权"); merge performed as merge commit `21bef27`
+- Conditions met:
+  - All 15 ACs satisfied with automated or E2E evidence (backend full suite exit-0 incl. 20 evidence tests; web 47/47; see test-design Execution Evidence Snapshot)
+  - E2E green across stacks: fault TS-020a/TS-020/TS-022 (B-001 keyboard pass) and live TS-021 (real DeepSeek + real Worker)
+  - Residuals executed: TS-023 root-caused and fixed (SSE keepalive + regression test + end-to-end probe verification); TS-024 reproduced with self-heal evidence, hardening routed to F011
+  - Review: no Critical findings; H-1 fixed and re-verified; M-1..M-3 / L-1..L-2 recorded in `review.md`
+  - Documentation sync: API/DATABASE/DESIGN_SYSTEM/TESTING/README updated; ROADMAP/STAGE/Issue synchronized (Issue #12 auto-closed by merge)
+  - Delivery: PR [#13](https://github.com/MaoyuanYang/LessonCanvas/pull/13) merged `21bef27`; main re-verified (backend exit-0 + ruff clean + web 47/47)
+- DONE evidence manifest (working-tree SHA-256 prefixes at gate time):
+  - `spec.md` @ `0fe5f33f9576`
+  - `ux-ui.md` @ `0028c5b3b77c`
+  - `test-design.md` @ `46b7a8c90802`
+  - `plan.md` @ `c487fc9b7b19`
+  - `review.md` @ `f245463363a2`
+  - `specs/ROADMAP.md` @ `None` (pre-DONE)

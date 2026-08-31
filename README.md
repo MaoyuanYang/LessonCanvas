@@ -31,8 +31,8 @@ LessonCanvas is a portfolio-first Agent application for individual mainland Chin
 ## Current Stage
 
 - Macro design: `MACRO DESIGN READY`
-- Delivered features: `F001` grounded confirmed brief, `F002` confirmed unit blueprint, `F003` recoverable unit lesson plans, `F004` editable lesson slide decks, `F005` lesson exercises and answers (all `DONE`; see `specs/ROADMAP.md`)
-- Current feature: `F006 Layered Run Evidence` — `IN_PROGRESS` on `feature/F006-layered-run-evidence` ([Issue #12](https://github.com/MaoyuanYang/LessonCanvas/issues/12)): layered owner-authorized run evidence over all five run kinds, estimated-cost telemetry, explanation narration, and the F003 SSE keepalive fix
+- Delivered features: `F001` grounded confirmed brief, `F002` confirmed unit blueprint, `F003` recoverable unit lesson plans, `F004` editable lesson slide decks, `F005` lesson exercises and answers, `F006` layered run evidence (all `DONE`; see `specs/ROADMAP.md`)
+- Next actionable: `F007 Versioned Targeted Regeneration` refinement (see `specs/ROADMAP.md`)
 - Application scaffold: monorepo with `apps/web` (Next.js) and `apps/backend` (FastAPI + Celery) established; infrastructure via `infra/docker-compose.yml`
 
 ## Start

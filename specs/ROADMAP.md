@@ -25,7 +25,7 @@ Phase 1 produces a publicly inspectable, multi-account LessonCanvas workflow in 
 | `F003` | Recoverable Unit Lesson Plans | Generate DOCX lesson plans for every lesson with durable recovery | First useful Office artifact and proof of long-running Agent execution | `P0` | `F002` | `DONE` | Version-bound asynchronous run, all-lesson plans, trace capture, progress, idempotency, checkpoints, and authorized downloads; delivered via PR [#7](https://github.com/MaoyuanYang/LessonCanvas/pull/7) |
 | `F004` | Editable Lesson Slide Decks | Generate editable PPTX decks for every lesson | Adds the presentation deliverable and a distinct rendering boundary | `P0` | `F003` | `DONE` | Evidence-linked slide decks with scoped progress, file validation, and recoverable delivery; delivered via PR [#9](https://github.com/MaoyuanYang/LessonCanvas/pull/9) |
 | `F005` | Lesson Exercises and Answers | Generate DOCX exercise and answer sets for every lesson | Completes assessment material and exposes correctness risk | `P0` | `F003` | `DONE` | Paired, version-bound exercises and answers with validation, recovery, and authorized download; delivered via PR [#11](https://github.com/MaoyuanYang/LessonCanvas/pull/11) |
-| `F006` | Layered Run Evidence | Explain each run to teachers and technical reviewers | Turns hidden telemetry into credible portfolio evidence | `P0` | `F003`, `F004`, `F005` | `REVIEW` | Teacher-readable explanation with owner-authorized sources, specialist steps, tools, cost, latency, retries, and currently available validation details |
+| `F006` | Layered Run Evidence | Explain each run to teachers and technical reviewers | Turns hidden telemetry into credible portfolio evidence | `P0` | `F003`, `F004`, `F005` | `DONE` | Teacher-readable explanation with owner-authorized sources, specialist steps, tools, cost, latency, retries, and currently available validation details |
 | `F007` | Versioned Targeted Regeneration | Rebuild only affected work after confirmed intent changes | Preserves valid work and demonstrates safe concurrency and cost control | `P0` | `F003`, `F004`, `F005` | `DRAFT` | Impact preview, immutable revisions, stale conflict handling, supersession, selective regeneration, and version comparison |
 | `F008` | Alignment Review and Delivery | Review objective alignment and deliver a selected unit version | Directly resolves the validated teacher problem | `P0` | `F006`, `F007` | `DRAFT` | Cross-artifact findings, severe-issue handling, draft vs validated status, selected-version package and printable report |
 | `F009` | Technical Portfolio Evaluation | Produce reproducible Agent, artifact, concurrency, and recovery evidence | Makes technical claims falsifiable | `P0` | `F008` | `DRAFT` | Fixed representative units, trace-bound metrics, fault injection, duplicate/concurrency checks, and technical results |
@@ -55,7 +55,17 @@ F001 -> F013
 
 ## Handoff
 
-### Current: F006 NEXT
+### Current: F006 DONE
+
+- Feature: `F006 Layered Run Evidence`
+- Work item: [GitHub Issue #12](https://github.com/MaoyuanYang/LessonCanvas/issues/12) — bound 2026-08-31; auto-closed on delivery.
+- Gates: `SPEC READY: PASS` (`b43922d2cc17`), `UI READY: PASS` (`ux-ui-f006-r1` / `4bff46959bb0`), `TEST DESIGN READY: PASS` (`test-design-f006-r1` / `e2e261591bd8`), approved by `YMY / Project Owner` on 2026-08-31 (D2 estimated-USD cost and D3 five-kind coverage selected interactively). `DONE: PASS` recorded 2026-08-31 after PR [#13](https://github.com/MaoyuanYang/LessonCanvas/pull/13) merged as `21bef27` (full delivery flow authorized by `YMY / Project Owner`).
+- DONE evidence manifest (working tree @ gate time): spec `a9b445a541cf`, ux-ui `0028c5b3b77c`, test-design `46b7a8c90802`, plan `c487fc9b7b19`, review `f245463363a2`, ROADMAP pre-DONE `2497c71650ed`; verification: backend full suite green incl. 20 evidence tests + ruff clean, web 47/47 + eslint/tsc/build clean, E2E fault TS-020a/020/TS-022 (B-001 keyboard pass) + live TS-021 (real DeepSeek + real Worker); main re-verified (backend exit-0 + ruff + web 47/47).
+- Residuals handled by F006: F003 SSE early-drop root-caused and FIXED (comment keepalives on generation/deck/exercise/narration streams + regression test + live probe verification); F004 M-2 StaleDataError REPRODUCED with self-heal evidence, fast-fail hardening routed to F011; STAGE B-001 keyboard pass executed and closed; F002 findings-embedding deferral not needed by this read model (revisit at F008).
+- Delivery-recorded deviations (owner-visible in review.md): M-1 environment re-run class, M-3 interfaces-over-Zod convention follow, L-1 narration stream token capture deferred to F009, L-2 multi-DB probe hygiene note.
+- Next actionable: F007 refinement (F006 completes half of the F008 dependency; F007 supplies the rest).
+
+### Previous: F005 DONE
 
 - Feature: `F006 Layered Run Evidence`
 - Work item: [GitHub Issue #12](https://github.com/MaoyuanYang/LessonCanvas/issues/12) — bound 2026-08-31; authorized by `YMY / Project Owner`.
