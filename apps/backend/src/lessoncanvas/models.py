@@ -277,6 +277,9 @@ class GenerationRun(Base):
         UUID(as_uuid=True), ForeignKey("generation_runs.id"), nullable=True
     )
     difficulty: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    # F007 targeted scope: JSON array of affected lesson indexes fixed at
+    # creation; NULL = full scope (pre-F007 rows and ordinary first starts).
+    scope_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[str] = mapped_column(String(24), nullable=False, default="queued")
     model_calls: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     model_call_cap: Mapped[int] = mapped_column(Integer, nullable=False)

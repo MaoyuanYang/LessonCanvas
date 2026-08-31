@@ -5,9 +5,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { ConversationRegion } from "@/components/conversation-region";
 import { DesktopRequiredNotice, useDesktop } from "@/components/desktop-gate";
+import { ImpactRegion } from "@/components/version-compare-panel";
 import { Alert, Button, ConfirmModal, EmptyState, Modal } from "@/components/ui";
 import type { BlueprintFinding, BlueprintLesson, BlueprintPayload } from "@/lib/api";
 import {
+  getImpact,
   ApiClientError,
   confirmBlueprint,
   getBlueprint,
@@ -46,6 +48,14 @@ export function BlueprintPanel({ projectId }: { projectId: string }) {
   const [decisionFinding, setDecisionFinding] = useState<BlueprintFinding | null>(null);
   const [decisionReason, setDecisionReason] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [impactError, setImpactError] = useState<string | null>(null);
+
+  const impactQuery = useQuery({
+    queryKey: ["impact", projectId],
+    queryFn: async () => getImpact(await getToken(), projectId),
+    enabled: false,
+    retry: false,
+  });
 
   const blueprintQuery = useQuery({
     queryKey: ["blueprint", projectId],
@@ -83,6 +93,24 @@ export function BlueprintPanel({ projectId }: { projectId: string }) {
       invalidate();
     },
     onError: (err) => setError(err instanceof ApiClientError ? err.message : "提交失败"),
+  });
+
+  // F007 D-REVSEED: seed a fresh draft revision from the immutable confirmed
+  // payload; editing then flows through the ordinary draft machinery.
+  const seedMutation = useMutation({
+    mutationFn: async () => {
+      const state = blueprintQuery.data;
+      if (state?.confirmed_payload == null) throw new Error("confirmed payload missing");
+      const base = state.draft_revision;
+      if (base == null) throw new Error("draft revision missing");
+      return patchBlueprintDraft(await getToken(), projectId, state.confirmed_payload, base);
+    },
+    onSuccess: () => {
+      setStaleConflict(false);
+      invalidate();
+    },
+    onError: (err) =>
+      setError(err instanceof ApiClientError ? err.message : "创建修订草稿失败"),
   });
 
   const saveMutation = useMutation({
@@ -470,6 +498,7 @@ export function BlueprintPanel({ projectId }: { projectId: string }) {
           </section>
 
           {isDesktop ? (
+            <div className="flex flex-col gap-3">
             <div className="flex items-center gap-3">
               <Button
                 onClick={() => setConfirmOpen(true)}
@@ -502,12 +531,55 @@ export function BlueprintPanel({ projectId }: { projectId: string }) {
                 </span>
               ) : null}
             </div>
+            <div aria-label="修订影响预览">
+              <Button
+                variant="quiet"
+                onClick={() =>
+                  impactQuery.refetch().then((result) => {
+                    if (result.error) {
+                      setImpactError(
+                        result.error instanceof ApiClientError
+                          ? result.error.message
+                          : "预览失败，请稍后重试。",
+                      );
+                    } else {
+                      setImpactError(null);
+                    }
+                  })
+                }
+              >
+                {impactQuery.isFetching ? "预览中……" : "预览影响"}
+              </Button>{" "}
+              {impactError ? (
+                <span className="text-xs text-severe">{impactError}</span>
+              ) : impactQuery.data ? (
+                <div className="mt-2">
+                  <ImpactRegion impact={impactQuery.data} />
+                </div>
+              ) : (
+                <span className="text-xs text-ink-secondary">
+                  确认前可先预览本次修订将影响哪些课时与产物。
+                </span>
+              )}
+            </div>
+            </div>
           ) : null}
         </>
       ) : null}
 
       {state?.confirmed_version && !draft ? (
-        <Alert tone="info">已确认蓝图版本 {state.confirmed_version}（不可变）。</Alert>
+        <div className="flex flex-wrap items-center gap-3">
+          <Alert tone="info">已确认蓝图版本 {state.confirmed_version}（不可变）。</Alert>
+          {isDesktop ? (
+            <Button
+              variant="secondary"
+              disabled={seedMutation.isPending}
+              onClick={() => seedMutation.mutate()}
+            >
+              {seedMutation.isPending ? "正在创建修订草稿……" : "基于已确认版本修订"}
+            </Button>
+          ) : null}
+        </div>
       ) : null}
 
       <Modal

@@ -59,7 +59,10 @@ def _run_or_404(session, workspace, project_id) -> GenerationRun:
 
 
 def _snapshot(session, run: GenerationRun) -> DeckGenerationSnapshot:
-    from lessoncanvas.modules.run_orchestration.schemas import deck_artifact_out
+    from lessoncanvas.modules.run_orchestration.schemas import (
+        RetainedArtifactOut,
+        deck_artifact_out,
+    )
 
     data = run_service.deck_run_snapshot(session, run)
     return DeckGenerationSnapshot(
@@ -68,6 +71,8 @@ def _snapshot(session, run: GenerationRun) -> DeckGenerationSnapshot:
         brief_version=data["brief_version"],
         blueprint_version=data["blueprint_version"],
         language_mode=data["language_mode"],
+        scope_lesson_indexes=data["scope_lesson_indexes"],
+        retained_artifacts=[RetainedArtifactOut(**entry) for entry in data["retained_artifacts"]],
         model_calls=data["model_calls"],
         model_call_cap=data["model_call_cap"],
         artifacts=[deck_artifact_out(artifact) for artifact in data["artifacts"]],
@@ -97,9 +102,18 @@ def start(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep):
         ) from err
     except run_service.PrerequisiteNotMetError as err:
         raise RequirementError(
-            "a complete lesson-plan run for the current confirmed versions is required "
-            "before deck generation",
-            {"gate": "lesson_plans", "reason": err.reason},
+            "lesson-plan coverage for the current confirmed versions is required before "
+            + "deck generation",
+            {
+                "gate": "lesson_plans",
+                "reason": err.reason,
+                "uncovered_lessons": err.uncovered_lessons,
+            },
+        ) from err
+    except run_service.NothingToRegenerateError as err:
+        raise RequirementError(
+            "the current version transition affects no lessons here; nothing to regenerate",
+            {"affected_lessons": []},
         ) from err
     session.commit()
     if created:

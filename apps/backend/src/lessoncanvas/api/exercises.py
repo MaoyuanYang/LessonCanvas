@@ -67,7 +67,10 @@ def _run_or_404(session, workspace, project_id) -> GenerationRun:
 
 
 def _snapshot(session, run: GenerationRun) -> ExerciseGenerationSnapshot:
-    from lessoncanvas.modules.run_orchestration.schemas import exercise_artifact_out
+    from lessoncanvas.modules.run_orchestration.schemas import (
+        RetainedArtifactOut,
+        exercise_artifact_out,
+    )
 
     data = run_service.exercise_run_snapshot(session, run)
     return ExerciseGenerationSnapshot(
@@ -77,6 +80,8 @@ def _snapshot(session, run: GenerationRun) -> ExerciseGenerationSnapshot:
         blueprint_version=data["blueprint_version"],
         language_mode=data["language_mode"],
         difficulty=data["difficulty"],
+        scope_lesson_indexes=data["scope_lesson_indexes"],
+        retained_artifacts=[RetainedArtifactOut(**entry) for entry in data["retained_artifacts"]],
         model_calls=data["model_calls"],
         model_call_cap=data["model_call_cap"],
         artifacts=[exercise_artifact_out(artifact) for artifact in data["artifacts"]],
@@ -113,9 +118,18 @@ def start(
         ) from err
     except run_service.PrerequisiteNotMetError as err:
         raise RequirementError(
-            "a complete lesson-plan run for the current confirmed versions is required "
-            "before exercise generation",
-            {"gate": "lesson_plans", "reason": err.reason},
+            "lesson-plan coverage for the current confirmed versions is required before "
+            + "exercise generation",
+            {
+                "gate": "lesson_plans",
+                "reason": err.reason,
+                "uncovered_lessons": err.uncovered_lessons,
+            },
+        ) from err
+    except run_service.NothingToRegenerateError as err:
+        raise RequirementError(
+            "the current version transition affects no lessons here; nothing to regenerate",
+            {"affected_lessons": []},
         ) from err
     session.commit()
     if created:
@@ -216,9 +230,7 @@ def download(
             ExerciseArtifact.project_id == project_id,
         )
     )
-    object_key = (
-        artifact.exercise_object_key if file == "exercise" else artifact.answer_object_key
-    )
+    object_key = artifact.exercise_object_key if file == "exercise" else artifact.answer_object_key
     if artifact is None or artifact.status != "complete" or not object_key:
         raise NotFoundError("exercise artifact not found")
 

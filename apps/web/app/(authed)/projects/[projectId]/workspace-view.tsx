@@ -9,6 +9,7 @@ import { EvidencePanel } from "@/components/evidence-panel";
 import { ExercisePanel } from "@/components/exercise-panel";
 import { GenerationPanel } from "@/components/generation-panel";
 import { SourcesPanel } from "@/components/sources-panel";
+import { VersionComparePanel } from "@/components/version-compare-panel";
 
 export type WorkspaceTab =
   | "sources"
@@ -18,7 +19,8 @@ export type WorkspaceTab =
   | "generation"
   | "decks"
   | "exercises"
-  | "evidence";
+  | "evidence"
+  | "versions";
 
 const TAB_LABELS: Record<WorkspaceTab, string> = {
   sources: "来源",
@@ -29,6 +31,7 @@ const TAB_LABELS: Record<WorkspaceTab, string> = {
   decks: "课件生成",
   exercises: "练习与答案",
   evidence: "运行证据",
+  versions: "版本对比",
 };
 
 export default function WorkspaceView({ projectId }: { projectId: string }) {
@@ -61,6 +64,7 @@ export default function WorkspaceView({ projectId }: { projectId: string }) {
       {tab === "decks" ? <DeckPanel projectId={projectId} onNavigate={setTab} /> : null}
       {tab === "exercises" ? <ExercisePanel projectId={projectId} onNavigate={setTab} /> : null}
       {tab === "evidence" ? <EvidencePanel projectId={projectId} onNavigate={setTab} /> : null}
+      {tab === "versions" ? <VersionComparePanel projectId={projectId} /> : null}
     </section>
   );
 }

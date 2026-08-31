@@ -13,6 +13,16 @@ RESUMABLE_RUN_STATUSES = ("partial_failure", "capped_failure")
 ACTIVE_RUN_STATUSES = ("queued", "generating", "validating")
 
 
+class RetainedArtifactOut(BaseModel):
+    id: str
+    lesson_index: int
+    source_brief_version: int | None = None
+    source_blueprint_version: int | None = None
+    source_run_id: str
+    checksum: str | None = None
+    download_available: bool = True
+
+
 class LessonArtifactOut(BaseModel):
     id: str
     lesson_index: int
@@ -29,6 +39,8 @@ class GenerationSnapshot(BaseModel):
     brief_version: int
     blueprint_version: int
     language_mode: str
+    scope_lesson_indexes: list[int] | None = None
+    retained_artifacts: list[RetainedArtifactOut] = []
     model_calls: int
     model_call_cap: int
     artifacts: list[LessonArtifactOut]
@@ -53,6 +65,8 @@ class DeckGenerationSnapshot(BaseModel):
     brief_version: int
     blueprint_version: int
     language_mode: str
+    scope_lesson_indexes: list[int] | None = None
+    retained_artifacts: list[RetainedArtifactOut] = []
     model_calls: int
     model_call_cap: int
     artifacts: list[DeckArtifactOut]
@@ -79,6 +93,8 @@ class ExerciseGenerationSnapshot(BaseModel):
     brief_version: int
     blueprint_version: int
     language_mode: str
+    scope_lesson_indexes: list[int] | None = None
+    retained_artifacts: list[RetainedArtifactOut] = []
     difficulty: str | None = None
     model_calls: int
     model_call_cap: int

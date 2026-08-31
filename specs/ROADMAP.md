@@ -26,7 +26,7 @@ Phase 1 produces a publicly inspectable, multi-account LessonCanvas workflow in 
 | `F004` | Editable Lesson Slide Decks | Generate editable PPTX decks for every lesson | Adds the presentation deliverable and a distinct rendering boundary | `P0` | `F003` | `DONE` | Evidence-linked slide decks with scoped progress, file validation, and recoverable delivery; delivered via PR [#9](https://github.com/MaoyuanYang/LessonCanvas/pull/9) |
 | `F005` | Lesson Exercises and Answers | Generate DOCX exercise and answer sets for every lesson | Completes assessment material and exposes correctness risk | `P0` | `F003` | `DONE` | Paired, version-bound exercises and answers with validation, recovery, and authorized download; delivered via PR [#11](https://github.com/MaoyuanYang/LessonCanvas/pull/11) |
 | `F006` | Layered Run Evidence | Explain each run to teachers and technical reviewers | Turns hidden telemetry into credible portfolio evidence | `P0` | `F003`, `F004`, `F005` | `DONE` | Teacher-readable explanation with owner-authorized sources, specialist steps, tools, cost, latency, retries, and currently available validation details |
-| `F007` | Versioned Targeted Regeneration | Rebuild only affected work after confirmed intent changes | Preserves valid work and demonstrates safe concurrency and cost control | `P0` | `F003`, `F004`, `F005` | `DRAFT` | Impact preview, immutable revisions, stale conflict handling, supersession, selective regeneration, and version comparison |
+| `F007` | Versioned Targeted Regeneration | Rebuild only affected work after confirmed intent changes | Preserves valid work and demonstrates safe concurrency and cost control | `P0` | `F003`, `F004`, `F005` | `REVIEW` | Impact preview, immutable revisions, stale conflict handling, supersession, selective regeneration, and version comparison |
 | `F008` | Alignment Review and Delivery | Review objective alignment and deliver a selected unit version | Directly resolves the validated teacher problem | `P0` | `F006`, `F007` | `DRAFT` | Cross-artifact findings, severe-issue handling, draft vs validated status, selected-version package and printable report |
 | `F009` | Technical Portfolio Evaluation | Produce reproducible Agent, artifact, concurrency, and recovery evidence | Makes technical claims falsifiable | `P0` | `F008` | `DRAFT` | Fixed representative units, trace-bound metrics, fault injection, duplicate/concurrency checks, and technical results |
 | `F010` | Teacher Product Validation | Record independent teacher-quality pass, fail, or not-complete status | Prevents technical completion from becoming a false usability claim | `P1` | `F009` | `DRAFT` | External teacher rubric for representative complete units with separate product-validation status |
@@ -55,7 +55,14 @@ F001 -> F013
 
 ## Handoff
 
-### Current: F006 DONE
+### Current: F007 NEXT
+
+- Feature: `F007 Versioned Targeted Regeneration`
+- Selection: `DRAFT -> NEXT` confirmed by `YMY / Project Owner` on 2026-08-31 (start instruction after F006 DONE; dependencies F003/F004/F005 all DONE; F006 DONE completes the other half of the F008 dependency).
+- Gates: `SPEC READY` PASS (`fb351456a2ee`), `UI READY` PASS (`ux-ui-f007-r1` / `97597ad3c608`), `TEST DESIGN READY` PASS (`test-design-f007-r1` / `69c9d0532f7a`), approved by `YMY / Project Owner` on 2026-08-31 (D1 field-level conservative matrix and D2 teacher-triggered per-family regeneration selected interactively; D3–D7 evidence-resolved). Plan `specs/F007-versioned-targeted-regeneration/plan.md` (T0–T6) valid; `Roadmap Status: READY` recorded 2026-08-31. Implementation complete on `feature/F007-versioned-targeted-regeneration` (T0–T6): backend full suite green incl. 11 regeneration tests + ruff; web 51/51 + eslint/tsc/build clean; E2E TS-014/TS-016 fault stack + TS-015 live stack green; three delivery-found defects fixed with tests (review.md M-1..M-3); docs synced. `Roadmap Status: REVIEW` 2026-08-31; delivery pending authorization.
+- Residuals in scope by routing: F004 M-2 fast-fail hardening stays with F011; F007 owns versioned revision/impact/supersession/selective-regeneration semantics.
+
+### Previous: F006 DONE
 
 - Feature: `F006 Layered Run Evidence`
 - Work item: [GitHub Issue #12](https://github.com/MaoyuanYang/LessonCanvas/issues/12) — bound 2026-08-31; auto-closed on delivery.

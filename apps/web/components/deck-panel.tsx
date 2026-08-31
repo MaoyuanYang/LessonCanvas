@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ArtifactProgressList,
+  RetainedList,
   NarrationRegion,
   ReconnectBanner,
   RunOutcomeBanners,
@@ -358,6 +359,14 @@ export function DeckPanel({
       />
 
       <NarrationRegion lines={narrationLines} />
+
+      <RetainedList
+        retained={snapshot.retained_artifacts ?? []}
+        noun="课件"
+        renderActions={(retained) => (
+          <DownloadDeckButton projectId={projectId} artifactId={retained.id} />
+        )}
+      />
 
       <ArtifactProgressList
         completeCount={snapshot.complete_count}

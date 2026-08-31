@@ -118,6 +118,40 @@ export function RunOutcomeBanners({
   );
 }
 
+export interface RetainedRow {
+  id: string;
+  lesson_index: number;
+  source_brief_version: number | null;
+  source_blueprint_version: number | null;
+  source_run_id: string;
+}
+
+// F007 retained variant (ux-ui.md D-RETAINDS): unaffected lessons under a
+// version transition stay owned by their prior run; the row shows provenance
+// and a download slot, never a resume action.
+export function RetainedArtifactRow({
+  retained,
+  noun,
+  renderActions,
+}: {
+  retained: RetainedRow;
+  noun: string;
+  renderActions?: (retained: RetainedRow) => ReactNode;
+}) {
+  return (
+    <li className="flex items-center justify-between gap-4 rounded border border-line bg-surface-alt/60 p-3">
+      <div>
+        <span className="font-medium">第 {retained.lesson_index} 课</span>
+        <span className="ml-3 text-sm text-evidence">沿用</span>
+        <span className="ml-2 text-xs text-ink-secondary">
+          源版本：简报 v{retained.source_brief_version} · 蓝图 v{retained.source_blueprint_version}（{noun}未受本次修订影响）
+        </span>
+      </div>
+      <div className="flex items-center gap-2">{renderActions?.(retained)}</div>
+    </li>
+  );
+}
+
 export function ArtifactProgressList({
   completeCount,
   totalCount,
@@ -151,6 +185,28 @@ export function ArtifactProgressList({
             </div>
             <div className="flex items-center gap-2">{renderActions?.(artifact)}</div>
           </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+export function RetainedList({
+  retained,
+  noun,
+  renderActions,
+}: {
+  retained: RetainedRow[];
+  noun: string;
+  renderActions?: (retained: RetainedRow) => ReactNode;
+}) {
+  if (retained.length === 0) return null;
+  return (
+    <section aria-label="沿用课程" className="mb-4">
+      <h3 className="mb-2 text-base font-medium">沿用课程（{retained.length}）</h3>
+      <ul className="space-y-2">
+        {retained.map((item) => (
+          <RetainedArtifactRow key={item.id} retained={item} noun={noun} renderActions={renderActions} />
         ))}
       </ul>
     </section>
