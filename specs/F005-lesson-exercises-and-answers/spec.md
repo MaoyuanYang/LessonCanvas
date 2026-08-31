@@ -1,7 +1,7 @@
 # F005: Lesson Exercises and Answers
 
 - Spec Status: `SPEC READY`
-- Roadmap Status: `NEXT`
+- Roadmap Status: `DONE`
 - Priority: `P0`
 - Owner: Implementation assignee unassigned until Coding starts
 - Work item: [GitHub Issue #10](https://github.com/MaoyuanYang/LessonCanvas/issues/10)
@@ -221,3 +221,24 @@ All DRAFT open questions are resolved by D1–D9 above. Non-blocking residuals:
 - [ASSUMED] `python-docx` structural/pairing validation plus one controlled manual Word open smoke is sufficient evidence of openability and editability for Phase-1 claims; F009 may add stronger file evidence.
 - [ASSUMED] The bounded six-category catalog fits the representative units and language modes (owner-selected D1); a new category requires a Design Change, not silent prompt drift.
 - [ASSUMED] Difficulty immutability per run (D9) is acceptable in Phase 1 because tier switching maps to the existing supersession path and F007 adds targeted regeneration.
+
+## Gate Record: DONE
+
+- Status: `PASS`
+- Validation time: 2026-08-31
+- Decision Authority: `YMY / Project Owner` — merge authorized in the interactive session (M-1 environment residual re-run-passed; M-2/M-3 recorded deviations accepted)
+- Conditions met:
+  - All 20 ACs satisfied with automated evidence (150 backend tests incl. 26 exercise; 39 web tests incl. 9 exercise-panel; migrations applied to test and dev DBs)
+  - Exercise E2E: seven journeys green — TS-024/025/026 (fault stack, F003 eager profile), TS-028 (small-cap), TS-027/029/030 (live stack, real DeepSeek + real Celery Worker) — plus TS-031 Word 16.0 COM smoke over all 12 files of the TS-030 pairs (opens without repair, editable)
+  - Live-model defect found and fixed during TS-030 (multi-line writing answers vs the first-line-anchored pairing regex) with regression test; suites re-verified after the fix
+  - Review: no Critical findings; H-1 fixed; M-1 environment residual (re-run passed) with substitute coverage; M-2/M-3 recorded deviations; L-1 hygiene
+  - Documentation sync: DATABASE/TESTING/DESIGN_SYSTEM updated; ROADMAP/STAGE/Issue synchronized
+  - Delivery: PR [#11](https://github.com/MaoyuanYang/LessonCanvas/pull/11) merged `5804e86` (authorized commit/push/PR/merge by `YMY / Project Owner`); main re-verified (150 backend passed + ruff clean + 39 web tests passed)
+- DONE evidence manifest (working-tree SHA-256 prefixes at gate time):
+  - `spec.md` @ `807f4c857bf8`
+  - `ux-ui.md` @ `98e79e83c0cd`
+  - `test-design.md` @ `b9f922a0c5cb`
+  - `plan.md` @ `d36cc2307cd8`
+  - `review.md` @ `446769289540`
+  - `specs/ROADMAP.md` @ `3d795c14b6db`
+  - `AGENTS.md` @ `b03a2200602b`
