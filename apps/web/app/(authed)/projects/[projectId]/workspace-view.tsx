@@ -5,27 +5,36 @@ import { BlueprintPanel } from "@/components/blueprint-panel";
 import { BriefPanel } from "@/components/brief-panel";
 import { DeckPanel } from "@/components/deck-panel";
 import { DiscoveryPanel } from "@/components/discovery-panel";
+import { ExercisePanel } from "@/components/exercise-panel";
 import { GenerationPanel } from "@/components/generation-panel";
 import { SourcesPanel } from "@/components/sources-panel";
 
-type Tab = "sources" | "discovery" | "brief" | "blueprint" | "generation" | "decks";
+export type WorkspaceTab =
+  | "sources"
+  | "discovery"
+  | "brief"
+  | "blueprint"
+  | "generation"
+  | "decks"
+  | "exercises";
 
-const TAB_LABELS: Record<Tab, string> = {
+const TAB_LABELS: Record<WorkspaceTab, string> = {
   sources: "来源",
   discovery: "需求访谈",
   brief: "教学简报",
   blueprint: "单元蓝图",
   generation: "教案生成",
   decks: "课件生成",
+  exercises: "练习与答案",
 };
 
 export default function WorkspaceView({ projectId }: { projectId: string }) {
-  const [tab, setTab] = useState<Tab>("sources");
+  const [tab, setTab] = useState<WorkspaceTab>("sources");
 
   return (
     <section aria-label="单元备课工作区">
       <nav aria-label="工作区导航" className="mb-6 flex gap-2 border-b border-line">
-        {(Object.keys(TAB_LABELS) as Tab[]).map((key) => (
+        {(Object.keys(TAB_LABELS) as WorkspaceTab[]).map((key) => (
           <button
             key={key}
             type="button"
@@ -47,6 +56,7 @@ export default function WorkspaceView({ projectId }: { projectId: string }) {
       {tab === "blueprint" ? <BlueprintPanel projectId={projectId} /> : null}
       {tab === "generation" ? <GenerationPanel projectId={projectId} /> : null}
       {tab === "decks" ? <DeckPanel projectId={projectId} onNavigate={setTab} /> : null}
+      {tab === "exercises" ? <ExercisePanel projectId={projectId} onNavigate={setTab} /> : null}
     </section>
   );
 }

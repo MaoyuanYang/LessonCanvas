@@ -60,6 +60,33 @@ class DeckGenerationSnapshot(BaseModel):
     total_count: int
 
 
+class ExerciseArtifactOut(BaseModel):
+    id: str
+    lesson_index: int
+    status: str
+    language_mode: str
+    category_count: int | None = None
+    item_count: int | None = None
+    failure_reason: str | None = None
+    retry_count: int
+    exercise_download_url: str | None = None
+    answer_download_url: str | None = None
+
+
+class ExerciseGenerationSnapshot(BaseModel):
+    run_id: str
+    status: str
+    brief_version: int
+    blueprint_version: int
+    language_mode: str
+    difficulty: str | None = None
+    model_calls: int
+    model_call_cap: int
+    artifacts: list[ExerciseArtifactOut]
+    complete_count: int
+    total_count: int
+
+
 class RunEventOut(BaseModel):
     id: str
     run_id: str
@@ -95,6 +122,30 @@ def deck_artifact_out(artifact) -> DeckArtifactOut:
         download_url=f"/projects/{artifact.project_id}/slide-decks/{artifact.id}/download"
         if artifact.status == "complete"
         else None,
+    )
+
+
+def exercise_artifact_out(artifact) -> ExerciseArtifactOut:
+    complete = artifact.status == "complete"
+    return ExerciseArtifactOut(
+        id=str(artifact.id),
+        lesson_index=artifact.lesson_index,
+        status=artifact.status,
+        language_mode=artifact.language_mode,
+        category_count=artifact.category_count,
+        item_count=artifact.item_count,
+        failure_reason=artifact.failure_reason,
+        retry_count=artifact.retry_count,
+        exercise_download_url=(
+            f"/projects/{artifact.project_id}/exercises/{artifact.id}/download?file=exercise"
+            if complete
+            else None
+        ),
+        answer_download_url=(
+            f"/projects/{artifact.project_id}/exercises/{artifact.id}/download?file=answer"
+            if complete
+            else None
+        ),
     )
 
 

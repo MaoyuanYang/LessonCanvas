@@ -24,7 +24,7 @@ Phase 1 produces a publicly inspectable, multi-account LessonCanvas workflow in 
 | `F002` | Confirmed Unit Blueprint | Confirm a complete every-lesson unit design | Makes expensive generation governable by teacher intent | `P0` | `F001` | `DONE` | Source-linked unit blueprint, structured revision, and second confirmation gate |
 | `F003` | Recoverable Unit Lesson Plans | Generate DOCX lesson plans for every lesson with durable recovery | First useful Office artifact and proof of long-running Agent execution | `P0` | `F002` | `DONE` | Version-bound asynchronous run, all-lesson plans, trace capture, progress, idempotency, checkpoints, and authorized downloads; delivered via PR [#7](https://github.com/MaoyuanYang/LessonCanvas/pull/7) |
 | `F004` | Editable Lesson Slide Decks | Generate editable PPTX decks for every lesson | Adds the presentation deliverable and a distinct rendering boundary | `P0` | `F003` | `DONE` | Evidence-linked slide decks with scoped progress, file validation, and recoverable delivery; delivered via PR [#9](https://github.com/MaoyuanYang/LessonCanvas/pull/9) |
-| `F005` | Lesson Exercises and Answers | Generate DOCX exercise and answer sets for every lesson | Completes assessment material and exposes correctness risk | `P0` | `F003` | `DRAFT` | Paired, version-bound exercises and answers with validation, recovery, and authorized download |
+| `F005` | Lesson Exercises and Answers | Generate DOCX exercise and answer sets for every lesson | Completes assessment material and exposes correctness risk | `P0` | `F003` | `REVIEW` | Paired, version-bound exercises and answers with validation, recovery, and authorized download; bound to [Issue #10](https://github.com/MaoyuanYang/LessonCanvas/issues/10) |
 | `F006` | Layered Run Evidence | Explain each run to teachers and technical reviewers | Turns hidden telemetry into credible portfolio evidence | `P0` | `F003`, `F004`, `F005` | `DRAFT` | Teacher-readable explanation with owner-authorized sources, specialist steps, tools, cost, latency, retries, and currently available validation details |
 | `F007` | Versioned Targeted Regeneration | Rebuild only affected work after confirmed intent changes | Preserves valid work and demonstrates safe concurrency and cost control | `P0` | `F003`, `F004`, `F005` | `DRAFT` | Impact preview, immutable revisions, stale conflict handling, supersession, selective regeneration, and version comparison |
 | `F008` | Alignment Review and Delivery | Review objective alignment and deliver a selected unit version | Directly resolves the validated teacher problem | `P0` | `F006`, `F007` | `DRAFT` | Cross-artifact findings, severe-issue handling, draft vs validated status, selected-version package and printable report |
@@ -55,7 +55,15 @@ F001 -> F013
 
 ## Handoff
 
-### Current: F004 DONE
+### Current: F005 NEXT
+
+- Feature: `F005 Lesson Exercises and Answers`
+- Work item: [GitHub Issue #10](https://github.com/MaoyuanYang/LessonCanvas/issues/10) — bound 2026-08-31; writable work-status authority.
+- Selection confirmed by `YMY / Project Owner` (Roadmap Decision Authority) on 2026-08-31; `DRAFT -> NEXT`.
+- Refinement inputs resolved by `YMY / Project Owner` on 2026-08-31: exercise categories derive from confirmed-blueprint lesson objectives (bounded senior-high English set); validation is deterministic structural + pairing checks with answer correctness deferred to F008; teacher selects a structured difficulty tier at generation start.
+- Stage: `REVIEW` (all three Gates `PASS` 2026-08-31; T0–T8 complete with verification: 150 backend tests, 39 web tests, ruff/eslint/tsc/build clean, 7/7 exercise E2E journeys green across fault/small-cap/live stacks with real DeepSeek + real Worker on live, TS-031 Word COM smoke on all 12 pair files; live-model pairing-regex defect found and fixed with regression test; documentation synced — DATABASE/TESTING/DESIGN_SYSTEM updated; review recorded with M-1 environment residual and M-2/M-3 recorded deviations; awaiting separately authorized delivery).
+
+### Previous: F004 DONE
 
 - Feature: `F004 Editable Lesson Slide Decks`
 - Work item: [GitHub Issue #8](https://github.com/MaoyuanYang/LessonCanvas/issues/8) — bound 2026-08-29; closed on delivery.

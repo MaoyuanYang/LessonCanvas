@@ -37,6 +37,11 @@ class Settings(BaseSettings):
     max_model_calls_per_deck_run: int = 20
     deck_max_slides: int = 16
     deck_max_stage_slides: int = 2
+    max_model_calls_per_exercise_run: int = 20
+    exercise_min_items_per_lesson: int = 6
+    exercise_max_items_per_lesson: int = 15
+    exercise_min_categories_per_lesson: int = 3
+    exercise_max_categories_per_lesson: int = 4
     checkpoint_backend: str = "postgres"
 
 

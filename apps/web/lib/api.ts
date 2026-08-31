@@ -599,3 +599,101 @@ export async function downloadSlideDeck(
 export function deckGenerationStreamUrl(projectId: string): string {
   return `${apiBaseUrl()}/projects/${projectId}/decks/generation/events`;
 }
+
+export type ExerciseDifficulty = "foundation" | "consolidation" | "advanced";
+
+export const EXERCISE_DIFFICULTY_LABELS: Record<ExerciseDifficulty, string> = {
+  foundation: "基础",
+  consolidation: "巩固",
+  advanced: "进阶",
+};
+
+export const EXERCISE_DIFFICULTY_DESCRIPTIONS: Record<ExerciseDifficulty, string> = {
+  foundation: "面向课堂基础目标，覆盖核心词汇与基本理解",
+  consolidation: "面向当堂巩固，强化重点句型与篇章理解",
+  advanced: "面向拓展提升，侧重综合运用与表达输出",
+};
+
+export interface ExerciseArtifact {
+  id: string;
+  lesson_index: number;
+  status: string;
+  language_mode: string;
+  category_count: number | null;
+  item_count: number | null;
+  failure_reason: string | null;
+  retry_count: number;
+  exercise_download_url: string | null;
+  answer_download_url: string | null;
+}
+
+export interface ExerciseGenerationSnapshot {
+  run_id: string;
+  status: string;
+  brief_version: number | null;
+  blueprint_version: number | null;
+  language_mode: string;
+  difficulty: ExerciseDifficulty | null;
+  model_calls: number;
+  model_call_cap: number;
+  artifacts: ExerciseArtifact[];
+  complete_count: number;
+  total_count: number;
+}
+
+export async function exerciseGenerationStart(
+  token: string | null,
+  projectId: string,
+  difficulty: ExerciseDifficulty,
+): Promise<ExerciseGenerationSnapshot> {
+  return apiFetch<ExerciseGenerationSnapshot>(`/projects/${projectId}/exercises/generation/start`, {
+    method: "POST",
+    body: { difficulty },
+    token,
+  });
+}
+
+export async function exerciseGenerationStatus(
+  token: string | null,
+  projectId: string,
+): Promise<ExerciseGenerationSnapshot> {
+  return apiFetch<ExerciseGenerationSnapshot>(`/projects/${projectId}/exercises/generation`, {
+    token,
+  });
+}
+
+export async function exerciseGenerationResume(
+  token: string | null,
+  projectId: string,
+): Promise<{ status: string }> {
+  return apiFetch<{ status: string }>(`/projects/${projectId}/exercises/generation/resume`, {
+    method: "POST",
+    token,
+  });
+}
+
+export async function downloadExerciseFile(
+  token: string | null,
+  projectId: string,
+  artifactId: string,
+  file: "exercise" | "answer",
+): Promise<Blob> {
+  const response = await fetch(
+    `${apiBaseUrl()}/projects/${projectId}/exercises/${artifactId}/download?file=${file}`,
+    { headers: token ? { Authorization: `Bearer ${token}` } : {} },
+  );
+  if (!response.ok) {
+    throw new ApiClientError(
+      "UNEXPECTED_SYSTEM" as ApiErrorCode,
+      "下载失败，请稍后重试。",
+      response.status,
+      null,
+      {},
+    );
+  }
+  return response.blob();
+}
+
+export function exerciseGenerationStreamUrl(projectId: string): string {
+  return `${apiBaseUrl()}/projects/${projectId}/exercises/generation/events`;
+}

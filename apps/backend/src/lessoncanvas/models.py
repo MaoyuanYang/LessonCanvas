@@ -273,6 +273,7 @@ class GenerationRun(Base):
     prerequisite_run_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("generation_runs.id"), nullable=True
     )
+    difficulty: Mapped[str | None] = mapped_column(String(16), nullable=True)
     status: Mapped[str] = mapped_column(String(24), nullable=False, default="queued")
     model_calls: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     model_call_cap: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -340,6 +341,39 @@ class SlideDeckArtifact(Base):
     slide_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
     object_key: Mapped[str | None] = mapped_column(Text, nullable=True)
     checksum: Mapped[str | None] = mapped_column(Text, nullable=True)
+    failure_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    retry_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
+
+
+class ExerciseArtifact(Base):
+    __tablename__ = "exercise_artifacts"
+    __table_args__ = (
+        UniqueConstraint("run_id", "lesson_index", name="uq_exercise_artifact_lesson"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
+    run_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("generation_runs.id"), nullable=False, index=True
+    )
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("projects.id"), nullable=False
+    )
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=False
+    )
+    lesson_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    language_mode: Mapped[str] = mapped_column(String(16), nullable=False)
+    status: Mapped[str] = mapped_column(String(24), nullable=False, default="pending")
+    category_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    item_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    exercise_object_key: Mapped[str | None] = mapped_column(Text, nullable=True)
+    exercise_checksum: Mapped[str | None] = mapped_column(Text, nullable=True)
+    answer_object_key: Mapped[str | None] = mapped_column(Text, nullable=True)
+    answer_checksum: Mapped[str | None] = mapped_column(Text, nullable=True)
     failure_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     retry_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

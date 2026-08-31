@@ -12,6 +12,8 @@ from lessoncanvas.api.decks import deck_router as decks_artifact_router
 from lessoncanvas.api.decks import router as decks_router
 from lessoncanvas.api.discovery import router as discovery_router
 from lessoncanvas.api.errors import ApiError, render_error
+from lessoncanvas.api.exercises import exercise_router as exercises_artifact_router
+from lessoncanvas.api.exercises import router as exercises_router
 from lessoncanvas.api.generation import lesson_router as generation_lesson_router
 from lessoncanvas.api.generation import router as generation_router
 from lessoncanvas.api.planning import router as planning_router
@@ -70,6 +72,8 @@ def create_app() -> FastAPI:
     app.include_router(generation_lesson_router)
     app.include_router(decks_router)
     app.include_router(decks_artifact_router)
+    app.include_router(exercises_router)
+    app.include_router(exercises_artifact_router)
     app.include_router(account_router)
     app.include_router(trace_router)
 
