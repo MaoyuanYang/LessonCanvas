@@ -4,9 +4,9 @@
 
 | Field | Value |
 | --- | --- |
-| Snapshot Revision | `STAGE-23` |
-| Parent Snapshot | `STAGE-22` @ `78fb04cd311f` |
-| Last Reconciled At | `2026-08-31T15:55:15+08:00` |
+| Snapshot Revision | `STAGE-24` |
+| Parent Snapshot | `STAGE-23` @ `059c85476cf3` |
+| Last Reconciled At | `2026-08-31T16:01:37+08:00` |
 | Reconciled By | `ZCode feature-dev session (YMY / Project Owner driving)` |
 | Repository Ref | `main @ 123523a` |
 | Write Coordination | `SINGLE_WRITER:ZCode feature-dev session` |
@@ -30,7 +30,7 @@
 
 | Activity ID | Work Item | Member | Type | Skill | Skill Stage | Activity State | Work Status | Branch / Worktree | Status Authority | Next Checkpoint | Updated At |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `A-005` | `F005 Lesson Exercises and Answers` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `REVIEW` | `ACTIVE` | `REVIEW` | `feature/F005-lesson-exercises-and-answers` | `https://github.com/MaoyuanYang/LessonCanvas/issues/10` | Authorized delivery (PR) | `2026-08-31T15:55:15+08:00` |
+| `A-005` | `F005 Lesson Exercises and Answers` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `DELIVERY` | `ACTIVE` | `REVIEW` | `feature/F005-lesson-exercises-and-answers` | `https://github.com/MaoyuanYang/LessonCanvas/issues/10` | PR [#11](https://github.com/MaoyuanYang/LessonCanvas/pull/11) review + merge authorization | `2026-08-31T16:01:37+08:00` |
 | `A-003` | `F003 Recoverable Unit Lesson Plans` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/6` | N/A - terminal (PR #7 merge `ad81c82`) | `2026-08-29T00:24:37+08:00` |
 | `A-002` | `F002 Confirmed Unit Blueprint (DONE reconciliation)` | `opencode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `ACTIVE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/3` | N/A - terminal | `2026-08-28T19:10:00+08:00` |
 
