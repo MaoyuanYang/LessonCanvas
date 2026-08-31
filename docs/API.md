@@ -26,6 +26,7 @@ This document governs the project-level HTTP and progress-stream conventions bet
 - Reconnect: [CONFIRMED] reconnects resume from authoritative server state; replay must not duplicate generation or mutate confirmed state.
 - Stop: [CONFIRMED] a teacher may stop a streamed response; stopping narration is not run cancellation unless explicitly requested.
 - Trace integrity: [CONFIRMED] streamed content is not a separate corpus; the complete response is captured in the workspace's full run trace.
+- Idle keepalive: [CONFIRMED, F006 2026-08-31] long-running event streams (generation, decks, exercises, evidence narration) emit SSE comment frames (`: keepalive`) after every silent interval so idle-timeout intermediaries cannot drop the connection mid-run; comment frames carry no id/data and are ignored by replay.
 - Exact event envelopes and interruption contracts wait for Feature refinement.
 
 ## Authentication and Authorization
@@ -60,3 +61,4 @@ Concrete business endpoints, event names, payload fields, and frontend/backend c
 
 - [RESOLVED, 2026-08-24] The managed identity token/session integration: Clerk sessions validated at the FastAPI boundary (`YMY / Project Owner`, F001 refinement D1).
 - [RESOLVED, 2026-08-29] The SSE resume mechanism and event envelope: PostgreSQL run-event table is authoritative; events carry per-run monotonic ids; reconnect replays from `Last-Event-ID`; replay triggers no model work (`YMY / Project Owner`, F003 refinement D4; implemented in the F003 generation stream).
+- [RESOLVED, 2026-08-31] Layered run evidence API (`YMY / Project Owner`, F006): owner-authorized reads under `/projects/{id}/evidence` — run inventory (all five run kinds), per-run teacher summary, and cursor-paginated technical events (stable URL-safe cursors, bounded pages, explicit `未记录` gaps, estimated-cost labeling); explanation narration (`POST .../narrate` + `.../narrate/stream` SSE) is workspace-quota guarded and records its complete text in the trace. The pre-F006 metadata-only `GET /projects/{id}/trace` endpoint is removed (it was never consumed by the Web application).

@@ -295,6 +295,7 @@ def _process_one_deck(session, run, artifact, context: dict) -> None:
             "model.generation_write_deck",
             {"prompt": user_payload, "response": deck},
             latency,
+            usage=response,
         )
         session.commit()
 

@@ -104,6 +104,7 @@ def analyze_node(state: PlanningState) -> dict:
             "model.planning_gap_analysis",
             {"prompt": user_payload, "response": data},
             latency,
+            usage=response,
         )
         run.model_calls += 1
         new_round = state.get("round_count", 0) + (1 if questions else 0)
@@ -219,6 +220,7 @@ def build_draft_node(state: PlanningState) -> dict:
             "model.planning_build_draft",
             {"prompt": user_payload, "response": data},
             latency,
+            usage=response,
         )
         run.model_calls += 1
 

@@ -36,6 +36,7 @@ TERMINAL_STATUSES = (
 )
 STREAM_POLL_SECONDS = 1.0
 STREAM_MAX_SECONDS = 900.0
+STREAM_KEEPALIVE_SECONDS = 5.0
 
 DOCX_MEDIA_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 
@@ -161,6 +162,7 @@ def events(
     def event_stream():
         nonlocal cursor
         started = time.monotonic()
+        last_emit = started
         while True:
             stream_session = SessionLocal()
             try:
@@ -182,9 +184,15 @@ def events(
                 }
                 body = json.dumps(data, ensure_ascii=False)
                 yield f"id: {event.seq}\nevent: {event.event_type}\ndata: {body}\n\n"
+            if rows:
+                last_emit = time.monotonic()
             if status_now in TERMINAL_STATUSES and not rows:
                 yield "event: end\ndata: {}\n\n"
                 return
+            if time.monotonic() - last_emit > STREAM_KEEPALIVE_SECONDS:
+                last_emit = time.monotonic()
+                # SSE comment keepalive (F006; see generation.py for rationale).
+                yield ": keepalive\n\n"
             if time.monotonic() - started > STREAM_MAX_SECONDS:
                 yield "event: timeout\ndata: {}\n\n"
                 return

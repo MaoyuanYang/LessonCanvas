@@ -240,6 +240,7 @@ def _process_one_lesson(session, run, artifact, context: dict) -> None:
             "model.generation_write_lesson",
             {"prompt": user_payload, "response": plan},
             latency,
+            usage=response,
         )
         session.commit()
 

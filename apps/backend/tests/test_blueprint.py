@@ -298,10 +298,14 @@ def test_generation_surface_is_gated_not_absent(client, auth):
 
 def test_blueprint_trace_and_deletion_cascade(client, auth, db_session):
     project_id, _ = blueprint_ready(client, auth)
-    trace = client.get(f"/projects/{project_id}/trace", headers=auth).json()
-    kinds = {event["event_type"] for event in trace["events"]}
+    inventory = client.get(f"/projects/{project_id}/evidence", headers=auth).json()
+    planning_run = next(r for r in inventory["runs"] if r["kind"] == "planning")
+    events = client.get(
+        f"/projects/{project_id}/evidence/{planning_run['run_id']}/events", headers=auth
+    ).json()
+    kinds = {event["event_type"] for event in events["events"]}
     assert "model.planning_gap_analysis" in kinds or "model.planning_build_draft" in kinds
-    assert any(run["round_count"] is not None for run in trace["runs"])
+    assert planning_run["round_count"] is not None
 
     deleted = client.delete(f"/projects/{project_id}", headers=auth)
     assert deleted.status_code in {200, 202, 204}

@@ -4,16 +4,16 @@
 
 | Field | Value |
 | --- | --- |
-| Snapshot Revision | `STAGE-25` |
-| Parent Snapshot | `STAGE-24` @ `28c859478189` |
-| Last Reconciled At | `2026-08-31T16:12:30+08:00` |
+| Snapshot Revision | `STAGE-33` |
+| Parent Snapshot | `STAGE-32` @ `709d90a2cbbd` |
+| Last Reconciled At | `2026-08-31T19:40:00+08:00` |
 | Reconciled By | `ZCode feature-dev session (YMY / Project Owner driving)` |
 | Repository Ref | `main @ 5804e86` |
 | Write Coordination | `SINGLE_WRITER:ZCode feature-dev session` |
 | Lifecycle Path | `GREENFIELD` |
 | Project Phase | `DELIVERY` |
 | Overall State | `ACTIVE` |
-| Current Milestone | F005 Lesson Exercises and Answers delivered as the third artifact-production vertical slice; next actionable is F006/F007 refinement |
+| Current Milestone | F006 READY FOR PR: delivery blocked only on commit/push/PR/Issue-sync authorization |
 | Tracking Mode | `REMOTE` |
 
 ## Lifecycle Progress
@@ -24,12 +24,13 @@
 | F001 Grounded Confirmed Brief | `COMPLETE` | Issue #1 (closed), PR #2 merge `1253ca2`, `specs/F001-grounded-confirmed-brief/` | N/A |
 | F002 planning workflow delivered | `COMPLETE` | Issue #3 (closed), PR #4 merge `8f90bb6`, `specs/F002-confirmed-unit-blueprint/` | N/A |
 | F003 Recoverable Unit Lesson Plans | `DONE` | Issue #6 (closed), PR #7 merge `ad81c82`, `specs/F003-recoverable-unit-lesson-plans/` | F004/F005 refinement |
-| F004+ remaining Feature map | `IN_PROGRESS` | `specs/ROADMAP.md` Feature Map + Issue [#10](https://github.com/MaoyuanYang/LessonCanvas/issues/10) (closed) | F006/F007 refinement |
+| F004+ remaining Feature map | `IN_PROGRESS` | `specs/ROADMAP.md` Feature Map + Issue [#12](https://github.com/MaoyuanYang/LessonCanvas/issues/12) | F006 Gates then READY |
 
 ## Active Work
 
 | Activity ID | Work Item | Member | Type | Skill | Skill Stage | Activity State | Work Status | Branch / Worktree | Status Authority | Next Checkpoint | Updated At |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `A-006` | `F006 Layered Run Evidence` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `REVIEW` | `ACTIVE` | `REVIEW` | `feature/F006-layered-run-evidence` | `https://github.com/MaoyuanYang/LessonCanvas/issues/12` | authorized commit/push/PR -> DONE | `2026-08-31T19:25:00+08:00` |
 | `A-003` | `F003 Recoverable Unit Lesson Plans` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/6` | N/A - terminal (PR #7 merge `ad81c82`) | `2026-08-29T00:24:37+08:00` |
 | `A-002` | `F002 Confirmed Unit Blueprint (DONE reconciliation)` | `opencode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `ACTIVE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/3` | N/A - terminal | `2026-08-28T19:10:00+08:00` |
 
@@ -56,6 +57,9 @@
 | F005 | `UI READY` | `PASS` | `specs/F005-lesson-exercises-and-answers/ux-ui.md` UI READY Record @ `ux-ui-f005-r1` / `78923f6468b7` |
 | F005 | `TEST DESIGN READY` | `PASS` | `specs/F005-lesson-exercises-and-answers/test-design.md` Record @ `test-design-f005-r1` / `29b9ad5c42d2` |
 | F005 | `DONE` | `PASS` | PR #11 merge `5804e86`; DONE evidence manifest in `specs/F005-lesson-exercises-and-answers/spec.md` Gate Record |
+| F006 | `SPEC READY` | `PASS` | `specs/F006-layered-run-evidence/spec.md` Gate Record @ `b43922d2cc17` |
+| F006 | `UI READY` | `PASS` | `specs/F006-layered-run-evidence/ux-ui.md` UI READY Record @ `ux-ui-f006-r1` / `4bff46959bb0` |
+| F006 | `TEST DESIGN READY` | `PASS` | `specs/F006-layered-run-evidence/test-design.md` Record @ `test-design-f006-r1` / `e2e261591bd8` |
 
 ## Blockers and Conflicts
 

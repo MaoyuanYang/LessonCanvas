@@ -5,6 +5,7 @@ import { BlueprintPanel } from "@/components/blueprint-panel";
 import { BriefPanel } from "@/components/brief-panel";
 import { DeckPanel } from "@/components/deck-panel";
 import { DiscoveryPanel } from "@/components/discovery-panel";
+import { EvidencePanel } from "@/components/evidence-panel";
 import { ExercisePanel } from "@/components/exercise-panel";
 import { GenerationPanel } from "@/components/generation-panel";
 import { SourcesPanel } from "@/components/sources-panel";
@@ -16,7 +17,8 @@ export type WorkspaceTab =
   | "blueprint"
   | "generation"
   | "decks"
-  | "exercises";
+  | "exercises"
+  | "evidence";
 
 const TAB_LABELS: Record<WorkspaceTab, string> = {
   sources: "来源",
@@ -26,6 +28,7 @@ const TAB_LABELS: Record<WorkspaceTab, string> = {
   generation: "教案生成",
   decks: "课件生成",
   exercises: "练习与答案",
+  evidence: "运行证据",
 };
 
 export default function WorkspaceView({ projectId }: { projectId: string }) {
@@ -57,6 +60,7 @@ export default function WorkspaceView({ projectId }: { projectId: string }) {
       {tab === "generation" ? <GenerationPanel projectId={projectId} /> : null}
       {tab === "decks" ? <DeckPanel projectId={projectId} onNavigate={setTab} /> : null}
       {tab === "exercises" ? <ExercisePanel projectId={projectId} onNavigate={setTab} /> : null}
+      {tab === "evidence" ? <EvidencePanel projectId={projectId} onNavigate={setTab} /> : null}
     </section>
   );
 }

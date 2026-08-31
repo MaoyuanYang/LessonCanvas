@@ -79,7 +79,7 @@ def _produce(run_id: str, state: NarrationState, user_payload: dict) -> None:
                     {"prompt": user_payload, "response": full_text}, ensure_ascii=False
                 ),
                 latency_ms=latency,
-                cost_usd=0.0,
+                cost_usd=None,
             )
         )
         session.commit()

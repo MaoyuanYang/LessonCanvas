@@ -311,6 +311,7 @@ def _process_one_pair(session, run, artifact, context: dict) -> None:
             "model.generation_write_exercises",
             {"prompt": user_payload, "response": exercise_set},
             latency,
+            usage=response,
         )
         session.commit()
 

@@ -37,7 +37,7 @@
 | Integration | PostgreSQL transactions, pgvector retrieval, Celery/Redis delivery, checkpoints, object lifecycle, identity verification, provider adapters, Office rendering, MCP client/tool boundaries, and SSE streaming | Duplicating all pure rule cases |
 | API / Contract | Ownership, errors, stale-version conflicts, idempotency, upload/download authorization, and SSE behavior | Private functions or incidental serialization |
 | Component / Interaction | Confirmation gates, structured revisions, progress, stale state, partial failure, recovery, and layered trace disclosure | Pixel assertions without regression value |
-| E2E | Login-to-private-project, brief and blueprint confirmation, representative generation (lesson plans, slide decks, and exercise/answer pairs across live and fault stacks), failure recovery, review, override, export, and deletion | Every content permutation or low-level edge case |
+| E2E | Login-to-private-project, brief and blueprint confirmation, representative generation (lesson plans, slide decks, and exercise/answer pairs across live and fault stacks), layered run-evidence inspection, failure recovery, review, override, export, and deletion | Every content permutation or low-level edge case |
 | Accessibility | Keyboard path, focus restoration, labels, announcements, contrast, and reduced motion | Treating automated scans as complete WCAG proof |
 | Visual regression | Shared workspace foundations, status distinctions, responsive modes, and high-risk document/evidence layouts | Broad screenshot churn or pixel-perfect assertions without user risk |
 | Security | Isolation, untrusted files, prompt injection, authorized objects, secrets, audit, and dependency risk | Enterprise compliance claims outside Phase 1 |
