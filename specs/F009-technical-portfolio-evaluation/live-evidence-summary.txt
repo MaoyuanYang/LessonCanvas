@@ -1,0 +1,8 @@
+cultural-heritage p1: completed/pass (estimated cost $0.011389; blocking failures: none)
+cultural-heritage p2: completed/pass (estimated cost $0.009727; blocking failures: none)
+natural-disasters p1: completed/pass (estimated cost $0.011011; blocking failures: none)
+natural-disasters p2: completed/pass (estimated cost $0.010219; blocking failures: none)
+travelling-around p1: completed/pass (estimated cost $0.012376; blocking failures: none)
+travelling-around p2: completed/fail (estimated cost $0.014061; blocking failures: ['C-ART-1'])
+
+worker recovery: killed at lesson 1 (2 calls, status generating); after restart the same run completed with byte-identical preserved checksum and model_calls 2->4

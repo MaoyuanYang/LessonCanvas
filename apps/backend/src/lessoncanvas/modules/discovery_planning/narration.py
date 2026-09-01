@@ -38,12 +38,14 @@ class NarrationQuotaError(Exception):
 
 def _produce(run_id: str, state: NarrationState, user_payload: dict) -> None:
     started = time.monotonic()
+    usage: dict = {}
     try:
         adapter = get_model_adapter()
-        for token in adapter.stream(
+        tokens, usage = adapter.stream_with_usage(
             "You are a requirements discovery specialist. Narrate the next interview step.",
             json.dumps(user_payload, ensure_ascii=False),
-        ):
+        )
+        for token in tokens:
             with state.condition:
                 state.tokens.append(token)
                 state.condition.notify_all()
@@ -56,6 +58,13 @@ def _produce(run_id: str, state: NarrationState, user_payload: dict) -> None:
 
     full_text = state.full_text()
     latency = int((time.monotonic() - started) * 1000)
+    prompt_tokens = usage.get("prompt_tokens") if usage.get("prompt_tokens") else None
+    completion_tokens = usage.get("completion_tokens") if usage.get("completion_tokens") else None
+    cost = None
+    if prompt_tokens is not None and completion_tokens is not None:
+        from lessoncanvas.modules.run_orchestration.evidence import estimated_cost_usd
+
+        cost = round(estimated_cost_usd(prompt_tokens, completion_tokens), 6)
     session = SessionLocal()
     try:
         from lessoncanvas.models import DiscoveryRun
@@ -79,7 +88,9 @@ def _produce(run_id: str, state: NarrationState, user_payload: dict) -> None:
                     {"prompt": user_payload, "response": full_text}, ensure_ascii=False
                 ),
                 latency_ms=latency,
-                cost_usd=None,
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                cost_usd=cost,
             )
         )
         session.commit()

@@ -22,8 +22,15 @@ class StorageAdapter:
     def ensure_bucket(self) -> None:
         try:
             self._client.head_bucket(Bucket=self._bucket)
+            return
         except Exception:
+            pass
+        try:
             self._client.create_bucket(Bucket=self._bucket)
+        except Exception:
+            # Concurrent first-writer bucket creation: the bucket exists if
+            # the other writer won the race; anything else is a real failure.
+            self._client.head_bucket(Bucket=self._bucket)
 
     def put(self, key: str, data: bytes) -> None:
         self.ensure_bucket()

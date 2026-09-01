@@ -6,6 +6,7 @@ import { useCallback, useRef, useState } from "react";
 import { DesktopRequiredNotice, useDesktop } from "@/components/desktop-gate";
 import { ARTIFACT_STATUS_LABELS, RUN_STATUS_LABELS } from "@/components/artifact-run";
 import { Alert, Button, EmptyState, SkeletonRows } from "@/components/ui";
+import { TechnicalEvaluationRegion } from "@/components/technical-evaluation-region";
 import type { WorkspaceTab } from "@/app/(authed)/projects/[projectId]/workspace-view";
 import {
   ApiClientError,
@@ -203,6 +204,7 @@ export function EvidencePanel({
     return (
       <div>
         <h2 className="text-lg font-semibold">运行证据</h2>
+        <TechnicalEvaluationRegion projectId={projectId} />
         <EmptyState
           title="还没有任何运行记录"
           hint="前往「来源」或「需求访谈」开始第一次备课流程；每次访谈与生成都会在这里留下可解释的证据。"
@@ -244,6 +246,8 @@ export function EvidencePanel({
       <p className="mb-4 mt-1 text-sm text-ink-secondary">
         每次访谈与生成任务的教师摘要与技术证据。所有信息只读，不会影响任何任务状态。
       </p>
+
+      <TechnicalEvaluationRegion projectId={projectId} />
 
       <section aria-label="运行清单" className="mb-6">
         <ul className="space-y-2">

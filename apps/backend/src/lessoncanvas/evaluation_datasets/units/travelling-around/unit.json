@@ -1,0 +1,29 @@
+{
+  "unit_key": "travelling-around",
+  "title": "Travelling Around",
+  "output_mode": "english",
+  "output_language_value": "English",
+  "license": "CC0-1.0",
+  "synthetic": true,
+  "description": "Senior-high English unit on travel planning and journey expression; teaching materials generated in English.",
+  "source_files": [
+    "sources/01-reading-passage.txt",
+    "sources/02-teacher-intent.txt"
+  ],
+  "discovery_answers": {
+    "unit_theme": "环游世界——旅行规划与出行表达",
+    "lesson_count": "3",
+    "student_context": "高一学生，英语基础中等，对旅行话题兴趣浓厚，口语输出信心不足",
+    "teaching_objectives": "掌握旅行规划核心词汇与句型；读懂说明性语篇并提取关键信息；用英语制定并口头介绍一份简单的旅行计划",
+    "material_positioning": "自编合成单元（主题语境对应人教版高中英语必修第一册 Unit 2 Travelling Around）",
+    "output_language_mode": "English",
+    "assessment_orientation": "形成性评价为主"
+  },
+  "planning_answers": {
+    "period_plan": "共6课时，每课2课时，评估聚焦口头与书面旅行计划输出"
+  },
+  "expected_evidence_direction": {
+    "criterion_notes": "All seven intent fields are stated in the teacher-intent source, so discovery should resolve without scripted gap answers; artifacts should carry English teaching copy.",
+    "coverage_focus": "Lesson-plan stages, deck slides, and exercise categories should reference the reading passage for grounding."
+  }
+}

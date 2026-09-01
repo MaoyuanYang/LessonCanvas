@@ -479,3 +479,80 @@ class DeliveryExport(Base):
     created_by: Mapped[str] = mapped_column(String(128), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     ready_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class TechnicalEvaluation(Base):
+    """F009 technical-evaluation pass: one scripted, idempotent evaluation
+    execution bound to its dataset revision, unit, mode, scenario, and the
+    immutable version pair it created (Spec D3/D7/D10)."""
+
+    __tablename__ = "technical_evaluations"
+    __table_args__ = (
+        UniqueConstraint(
+            "project_id",
+            "dataset_revision",
+            "unit_key",
+            "pass_index",
+            "mode",
+            "scenario",
+            name="uq_technical_evaluation_identity",
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("projects.id"), nullable=False, index=True
+    )
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=False, index=True
+    )
+    dataset_revision: Mapped[str] = mapped_column(String(32), nullable=False)
+    unit_key: Mapped[str] = mapped_column(String(64), nullable=False)
+    pass_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    mode: Mapped[str] = mapped_column(String(16), nullable=False)
+    scenario: Mapped[str] = mapped_column(String(48), nullable=False)
+    model_config_json: Mapped[str] = mapped_column(Text, nullable=False)
+    memory_state_json: Mapped[str] = mapped_column(Text, nullable=False)
+    brief_version_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("brief_versions.id"), nullable=True
+    )
+    blueprint_version_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("blueprint_versions.id"), nullable=True
+    )
+    run_ids_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    status: Mapped[str] = mapped_column(String(24), nullable=False, default="queued")
+    failure_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    overall_outcome: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    created_by: Mapped[str] = mapped_column(String(128), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class TechnicalEvaluationResult(Base):
+    """F009 per-criterion outcome for one evaluation pass (Spec D2/D10):
+    blocking criteria carry pass/fail/missing_evidence; diagnostic metrics
+    record measured values without pass/fail semantics."""
+
+    __tablename__ = "technical_evaluation_results"
+    __table_args__ = (
+        UniqueConstraint(
+            "evaluation_id",
+            "criterion_key",
+            name="uq_technical_evaluation_result_criterion",
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
+    evaluation_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("technical_evaluations.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    criterion_key: Mapped[str] = mapped_column(String(48), nullable=False)
+    classification: Mapped[str] = mapped_column(String(16), nullable=False)
+    outcome: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    measured_json: Mapped[str] = mapped_column(Text, nullable=True)
+    evidence_json: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

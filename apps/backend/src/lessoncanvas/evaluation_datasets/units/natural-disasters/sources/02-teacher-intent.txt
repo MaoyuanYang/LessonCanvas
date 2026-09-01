@@ -1,0 +1,10 @@
+LessonCanvas Evaluation Dataset | License: CC0-1.0 | Self-authored synthetic content; contains no private teacher or student material.
+
+单元主题：自然灾害——读懂大地的信号
+课时数：3
+学情：高一学生，英语阅读能力中等，中文思维理解灾难话题更快，需以中文讲授降低语言门槛
+教学目标：理解地震、洪水、台风、干旱四类灾害的成因与应对；掌握灾害主题英语词汇；能就防灾准备用英语进行简单表达
+教材定位：自编合成单元（主题语境对应人教版高中英语必修第一册 Unit 4 Natural Disasters，语料为本数据集自创）
+输出语言：中文
+评估倾向：形成性评价为主
+课时分配：共6课时，每课2课时，评估聚焦灾害应对方案的中文说明与英文关键词表达

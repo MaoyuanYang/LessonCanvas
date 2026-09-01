@@ -1,0 +1,29 @@
+{
+  "unit_key": "natural-disasters",
+  "title": "Natural Disasters",
+  "output_mode": "chinese",
+  "output_language_value": "中文",
+  "license": "CC0-1.0",
+  "synthetic": true,
+  "description": "Senior-high English unit on reading the signs of natural disasters; teaching materials generated in Chinese.",
+  "source_files": [
+    "sources/01-reading-passage.txt",
+    "sources/02-teacher-intent.txt"
+  ],
+  "discovery_answers": {
+    "unit_theme": "自然灾害——读懂大地的信号",
+    "lesson_count": "3",
+    "student_context": "高一学生，英语阅读能力中等，中文思维理解灾难话题更快，需以中文讲授降低语言门槛",
+    "teaching_objectives": "理解地震、洪水、台风、干旱四类灾害的成因与应对；掌握灾害主题英语词汇；能就防灾准备用英语进行简单表达",
+    "material_positioning": "自编合成单元（主题语境对应人教版高中英语必修第一册 Unit 4 Natural Disasters）",
+    "output_language_mode": "中文",
+    "assessment_orientation": "形成性评价为主"
+  },
+  "planning_answers": {
+    "period_plan": "共6课时，每课2课时，评估聚焦灾害应对方案的中文说明与英文关键词表达"
+  },
+  "expected_evidence_direction": {
+    "criterion_notes": "All seven intent fields are stated in the teacher-intent source; artifacts should carry Chinese teaching copy while exercise content keeps English key terms.",
+    "coverage_focus": "Disaster-response vocabulary and safety procedures from the reading passage should be traceable into exercises."
+  }
+}

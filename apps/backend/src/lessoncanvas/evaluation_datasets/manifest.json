@@ -1,0 +1,17 @@
+{
+  "dataset_revision": "eval-datasets-r1",
+  "license": "CC0-1.0",
+  "synthetic": true,
+  "governance_rule": "Every file must be listed with a matching SHA-256; every unit file must carry the CC0-1.0 dedication; loading fails closed on any mismatch or unlisted file.",
+  "files": {
+    "units/cultural-heritage/sources/01-reading-passage.txt": "1b138e0146ef260b68ec0ab44627c48181dad5d00f40e3c09ef98fb9d1af58d9",
+    "units/cultural-heritage/sources/02-teacher-intent.txt": "7defad1e588be5fd3d33a22cb818bcd76f7cd280245b85b95bec13ff57898b1f",
+    "units/cultural-heritage/unit.json": "c5990e72089ea265d4c6a09907000f5b7574c4d8bb7c23ab333a432802de6d51",
+    "units/natural-disasters/sources/01-reading-passage.txt": "d0e02ec0a719abccb8b6ed8a51a024d31d920cb60a2d046ce9f93bcd227f9f59",
+    "units/natural-disasters/sources/02-teacher-intent.txt": "4f9c0415fd66f57cf4e189047822abab40953106bf416966472f21d12653de42",
+    "units/natural-disasters/unit.json": "f7f8e1ded60c038dc318013bf81e27b5678c9d6afe43c7f3aac1e6d78aa50e61",
+    "units/travelling-around/sources/01-reading-passage.txt": "9a291eed1c318ae000e6ce202aa4b78d9bd9bfde4e0363f33638a10a165e3717",
+    "units/travelling-around/sources/02-teacher-intent.txt": "9d38b06037a4374b83c3f09e84fdf362b8656291cc103efe8219bb49511de082",
+    "units/travelling-around/unit.json": "6ea184ab7f91a59b9544f9e607a5f2ffbad9604d62d1273a3f9d74dba321cca5"
+  }
+}

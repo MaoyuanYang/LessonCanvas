@@ -43,6 +43,7 @@ class Settings(BaseSettings):
     exercise_min_categories_per_lesson: int = 3
     exercise_max_categories_per_lesson: int = 4
     checkpoint_backend: str = "postgres"
+    eval_fault_profile: str = ""
 
     model_price_prompt_per_mtok: float = 0.27
     model_price_completion_per_mtok: float = 1.10

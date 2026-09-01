@@ -1,0 +1,10 @@
+LessonCanvas Evaluation Dataset | License: CC0-1.0 | Self-authored synthetic content; contains no private teacher or student material.
+
+单元主题：环游世界——旅行规划与出行表达
+课时数：3
+学情：高一学生，英语基础中等，对旅行话题兴趣浓厚，口语输出信心不足
+教学目标：掌握旅行规划核心词汇与句型；读懂说明性语篇并提取关键信息；用英语制定并口头介绍一份简单的旅行计划
+教材定位：自编合成单元（主题语境对应人教版高中英语必修第一册 Unit 2 Travelling Around，语料为本数据集自创）
+输出语言：English
+评估倾向：形成性评价为主
+课时分配：共6课时，每课2课时，评估聚焦口头与书面旅行计划输出

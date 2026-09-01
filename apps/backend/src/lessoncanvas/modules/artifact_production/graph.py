@@ -233,7 +233,25 @@ def _process_one_lesson(session, run, artifact, context: dict) -> None:
             session.rollback()
             raise
         latency = int((time.monotonic() - started) * 1000)
-        plan = parse_model_json(response.text).get("lesson_plan", {})
+        try:
+            plan = parse_model_json(response.text).get("lesson_plan", {})
+        except ValueError:
+            # An unparseable (e.g., truncated) response is a per-lesson
+            # validation failure with bounded retry, never a provider
+            # failure and never a fabricated success (F009 Spec D6/AC-007).
+            record_trace(
+                session,
+                run.id,
+                "model.generation_write_lesson",
+                {"prompt": user_payload, "response": response.text[:2000], "parse_failed": True},
+                latency,
+                usage=response,
+            )
+            session.commit()
+            last_error = LessonValidationError("unparseable model response")
+            artifact.retry_count = attempts - 1
+            session.commit()
+            continue
         record_trace(
             session,
             run.id,

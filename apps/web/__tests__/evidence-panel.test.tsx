@@ -215,7 +215,7 @@ describe("EvidencePanel", () => {
     vi.stubGlobal("fetch", defaultFetchMock());
     renderUi(<EvidencePanel projectId="p1" onNavigate={() => {}} />);
     expect(await screen.findByText("教案生成")).toBeVisible();
-    expect(screen.getByText(/绑定版本：教学简报 v1 · 单元蓝图 v1/)).toBeVisible();
+    expect(await screen.findByText(/绑定版本：教学简报 v1 · 单元蓝图 v1/)).toBeVisible();
     expect(screen.getAllByText(/模型调用 6\/20/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/估算/).length).toBeGreaterThan(0);
     expect(screen.getByText(/原因：provider unavailable/)).toBeVisible();

@@ -4,16 +4,16 @@
 
 | Field | Value |
 | --- | --- |
-| Snapshot Revision | `STAGE-50` |
-| Parent Snapshot | `STAGE-49` @ (pre-write read, no external change) |
-| Last Reconciled At | `2026-09-01T10:35:00+08:00` |
+| Snapshot Revision | `STAGE-58` |
+| Parent Snapshot | `STAGE-57` @ `4aae5c497c2f` (pre-write read, no external change) |
+| Last Reconciled At | `2026-09-01T16:33:56+08:00` |
 | Reconciled By | `ZCode feature-dev session (YMY / Project Owner driving)` |
-| Repository Ref | `main @ 1982ac9` |
+| Repository Ref | `main @ 13dbee6` (branch `feature/F009-technical-portfolio-evaluation` created from it) |
 | Write Coordination | `SINGLE_WRITER:ZCode feature-dev session` |
 | Lifecycle Path | `GREENFIELD` |
 | Project Phase | `COMPLETE` |
 | Overall State | `ACTIVE` |
-| Current Milestone | F008 DONE (PR #17 merge `1982ac9`); next actionable is F009 refinement |
+| Current Milestone | F009 `REVIEW` (A-009, Issue #18); all ACs evidenced incl. live protocol (6 live passes, 5 pass + 1 honest fail; worker recovery demonstration); commit+push+PR authorized, delivery in progress |
 | Tracking Mode | `REMOTE` |
 
 ## Lifecycle Progress
@@ -24,13 +24,14 @@
 | F001 Grounded Confirmed Brief | `COMPLETE` | Issue #1 (closed), PR #2 merge `1253ca2`, `specs/F001-grounded-confirmed-brief/` | N/A |
 | F002 planning workflow delivered | `COMPLETE` | Issue #3 (closed), PR #4 merge `8f90bb6`, `specs/F002-confirmed-unit-blueprint/` | N/A |
 | F003 Recoverable Unit Lesson Plans | `DONE` | Issue #6 (closed), PR #7 merge `ad81c82`, `specs/F003-recoverable-unit-lesson-plans/` | F004/F005 refinement |
-| F004+ remaining Feature map | `IN_PROGRESS` | `specs/ROADMAP.md` Feature Map + Issue [#14](https://github.com/MaoyuanYang/LessonCanvas/issues/14) (closed) | F008 refinement |
+| F004+ remaining Feature map | `IN_PROGRESS` | `specs/ROADMAP.md` Feature Map + Issue [#14](https://github.com/MaoyuanYang/LessonCanvas/issues/14) (closed) | F009 delivery (A-009) |
 
 ## Active Work
 
 | Activity ID | Work Item | Member | Type | Skill | Skill Stage | Activity State | Work Status | Branch / Worktree | Status Authority | Next Checkpoint | Updated At |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `A-003` | `F003 Recoverable Unit Lesson Plans` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/6` | N/A - terminal (PR #7 merge `ad81c82`) | `2026-08-29T00:24:37+08:00` |
+| `A-009` | `F009 Technical Portfolio Evaluation` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `DELIVERY` | `ACTIVE` | `REVIEW` | `feature/F009-technical-portfolio-evaluation` | `https://github.com/MaoyuanYang/LessonCanvas/issues/18` | PR opened (commit+push+PR authorized 2026-09-01); merge awaits separate authorization, then DONE records | `2026-09-01T16:33:56+08:00` |
 | `A-002` | `F002 Confirmed Unit Blueprint (DONE reconciliation)` | `opencode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `ACTIVE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/3` | N/A - terminal | `2026-08-28T19:10:00+08:00` |
 
 ## Gate Snapshot
@@ -68,9 +69,9 @@
 | F008 | `UI READY` | `PASS` | `specs/F008-alignment-review-and-delivery/ux-ui.md` UI READY Record @ `ux-ui-f008-r1` / `6bca800ac896` |
 | F008 | `TEST DESIGN READY` | `PASS` | `specs/F008-alignment-review-and-delivery/test-design.md` Record @ `test-design-f008-r1` / `6d7979391f92` |
 | F008 | `DONE` | `PASS` | PR #17 merge `1982ac9`; DONE evidence manifest in `specs/F008-alignment-review-and-delivery/spec.md` Gate Record |
-| F008 | `SPEC READY` | `PASS` | `specs/F008-alignment-review-and-delivery/spec.md` Gate Record @ `dc301bba1a83` |
-| F008 | `UI READY` | `PASS` | `specs/F008-alignment-review-and-delivery/ux-ui.md` UI READY Record @ `ux-ui-f008-r1` / `6bca800ac896` |
-| F008 | `TEST DESIGN READY` | `PASS` | `specs/F008-alignment-review-and-delivery/test-design.md` Record @ `test-design-f008-r1` / `6d7979391f92` |
+| F009 | `SPEC READY` | `PASS` | `specs/F009-technical-portfolio-evaluation/spec.md` Gate Record @ `15803bdc1837` |
+| F009 | `UI READY` | `PASS` | `specs/F009-technical-portfolio-evaluation/ux-ui.md` UI READY Record @ `ux-ui-f009-r1` / `d3860c7a8c05` |
+| F009 | `TEST DESIGN READY` | `PASS` | `specs/F009-technical-portfolio-evaluation/test-design.md` Record @ `test-design-f009-r1` / `5a7fc2df6b13` |
 
 ## Blockers and Conflicts
 

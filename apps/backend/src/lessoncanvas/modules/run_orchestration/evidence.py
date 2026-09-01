@@ -565,15 +565,17 @@ def _produce_narration(run_id: str, state: _NarrationState, user_payload: dict) 
     from lessoncanvas.db import SessionLocal
 
     started = time.monotonic()
+    usage: dict = {}
     try:
         adapter = get_model_adapter()
-        for token in adapter.stream(
+        tokens, usage = adapter.stream_with_usage(
             "You are a teaching-workbench explainer. Explain this run's outcome to the "
             "teacher in calm Simplified Chinese: what was requested, what happened, what "
             "failed and why, what recovered, and what it cost in estimated terms. Do not "
             "invent facts beyond the provided run summary.",
             json.dumps(user_payload, ensure_ascii=False),
-        ):
+        )
+        for token in tokens:
             with state.condition:
                 state.tokens.append(token)
                 state.condition.notify_all()
@@ -588,6 +590,11 @@ def _produce_narration(run_id: str, state: _NarrationState, user_payload: dict) 
 
     full_text = state.full_text()
     latency = int((time.monotonic() - started) * 1000)
+    prompt_tokens = usage.get("prompt_tokens") if usage.get("prompt_tokens") else None
+    completion_tokens = usage.get("completion_tokens") if usage.get("completion_tokens") else None
+    cost = None
+    if prompt_tokens is not None and completion_tokens is not None:
+        cost = round(estimated_cost_usd(prompt_tokens, completion_tokens), 6)
     session = SessionLocal()
     try:
         session.add(
@@ -598,7 +605,9 @@ def _produce_narration(run_id: str, state: _NarrationState, user_payload: dict) 
                     {"prompt": user_payload, "response": full_text}, ensure_ascii=False
                 ),
                 latency_ms=latency,
-                cost_usd=None,
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                cost_usd=cost,
             )
         )
         session.commit()

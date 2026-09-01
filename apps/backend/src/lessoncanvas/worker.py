@@ -76,3 +76,19 @@ def generate_exercises(run_id: str) -> str:
         if generate_exercises.request.retries >= generate_exercises.max_retries:
             return mark_exercise_provider_exhausted(run_id)
         raise generate_exercises.retry(exc=error) from error
+
+
+@celery_app.task(name="lessoncanvas.run_technical_evaluation", max_retries=1)
+def run_technical_evaluation(evaluation_id: str) -> str:
+    """Execute one F009 technical-evaluation pass to a settled status.
+
+    The scripted harness re-verification and criteria computation are
+    deterministic; provider unavailability in live mode settles the explicit
+    provider_unavailable state with partial evidence retained (Spec D4/D7).
+    """
+
+    import uuid
+
+    from lessoncanvas.modules.technical_evaluation.service import execute_evaluation
+
+    return execute_evaluation(uuid.UUID(evaluation_id))
