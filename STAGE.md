@@ -4,16 +4,16 @@
 
 | Field | Value |
 | --- | --- |
-| Snapshot Revision | `STAGE-58` |
-| Parent Snapshot | `STAGE-57` @ `4aae5c497c2f` (pre-write read, no external change) |
-| Last Reconciled At | `2026-09-01T16:33:56+08:00` |
+| Snapshot Revision | `STAGE-59` |
+| Parent Snapshot | `STAGE-58` @ `32b4d3a10310` (pre-write read, no external change) |
+| Last Reconciled At | `2026-09-01T16:36:57+08:00` |
 | Reconciled By | `ZCode feature-dev session (YMY / Project Owner driving)` |
 | Repository Ref | `main @ 13dbee6` (branch `feature/F009-technical-portfolio-evaluation` created from it) |
 | Write Coordination | `SINGLE_WRITER:ZCode feature-dev session` |
 | Lifecycle Path | `GREENFIELD` |
 | Project Phase | `COMPLETE` |
 | Overall State | `ACTIVE` |
-| Current Milestone | F009 `REVIEW` (A-009, Issue #18); all ACs evidenced incl. live protocol (6 live passes, 5 pass + 1 honest fail; worker recovery demonstration); commit+push+PR authorized, delivery in progress |
+| Current Milestone | F009 PR [#19](https://github.com/MaoyuanYang/LessonCanvas/pull/19) opened (A-009, Issue #18); merge awaits separate authorization, then DONE records |
 | Tracking Mode | `REMOTE` |
 
 ## Lifecycle Progress
@@ -31,7 +31,7 @@
 | Activity ID | Work Item | Member | Type | Skill | Skill Stage | Activity State | Work Status | Branch / Worktree | Status Authority | Next Checkpoint | Updated At |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `A-003` | `F003 Recoverable Unit Lesson Plans` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/6` | N/A - terminal (PR #7 merge `ad81c82`) | `2026-08-29T00:24:37+08:00` |
-| `A-009` | `F009 Technical Portfolio Evaluation` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `DELIVERY` | `ACTIVE` | `REVIEW` | `feature/F009-technical-portfolio-evaluation` | `https://github.com/MaoyuanYang/LessonCanvas/issues/18` | PR opened (commit+push+PR authorized 2026-09-01); merge awaits separate authorization, then DONE records | `2026-09-01T16:33:56+08:00` |
+| `A-009` | `F009 Technical Portfolio Evaluation` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `DELIVERY` | `ACTIVE` | `REVIEW` | `feature/F009-technical-portfolio-evaluation` | `https://github.com/MaoyuanYang/LessonCanvas/issues/18` | PR #19 opened 2026-09-01 (commit+push+PR authorized); merge + DONE records await authorization | `2026-09-01T16:36:57+08:00` |
 | `A-002` | `F002 Confirmed Unit Blueprint (DONE reconciliation)` | `opencode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `ACTIVE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/3` | N/A - terminal | `2026-08-28T19:10:00+08:00` |
 
 ## Gate Snapshot
