@@ -9,6 +9,7 @@ import {
   EVALUATION_OUTCOME_LABELS,
   EVALUATION_STATUS_LABELS,
   EVALUATION_UNIT_LABELS,
+  PRODUCT_VALIDATION_STATUS_LABELS,
   technicalEvaluationReport,
   type TechnicalEvaluationPass,
   type TechnicalEvaluationReport,
@@ -129,7 +130,10 @@ export default function TechnicalEvaluationReportView({
       <p className="mt-3 text-sm print:text-black">
         总体结果：
         {report.overall_outcome ? EVALUATION_OUTCOME_LABELS[report.overall_outcome] : "尚无完整判定"}
-        {"；"}产品验证状态 = 未评估（技术评估与教师产品验证为两个独立状态）。
+        {"；"}产品验证状态 ={" "}
+        {PRODUCT_VALIDATION_STATUS_LABELS[report.product_validation_status] ??
+          report.product_validation_status}
+        （技术评估与教师产品验证为两个独立状态）。
       </p>
       <p className="mt-1 text-sm print:text-black">{report.technical_note}</p>
       <p className="mt-3 text-xs text-ink-secondary no-print print:hidden">

@@ -17,6 +17,8 @@ from lessoncanvas.models import (
     GenerationRun,
     InteractionMessage,
     LessonPlanArtifact,
+    ProductValidationAssignment,
+    ProductValidationEvidence,
     Project,
     RunEvent,
     SlideDeckArtifact,
@@ -179,6 +181,42 @@ def delete_project_cascade(
         )
     session.execute(
         sql_delete(TechnicalEvaluation).where(TechnicalEvaluation.project_id == project_id)
+    )
+
+    assignment_ids = session.scalars(
+        select(ProductValidationAssignment.id).where(
+            ProductValidationAssignment.project_id == project_id
+        )
+    ).all()
+    if assignment_ids:
+        evidence_document_keys = [
+            key
+            for (key,) in session.execute(
+                select(ProductValidationEvidence.document_object_key).where(
+                    ProductValidationEvidence.assignment_id.in_(assignment_ids),
+                    ProductValidationEvidence.document_object_key.is_not(None),
+                )
+            )
+        ]
+        if evidence_document_keys:
+            from lessoncanvas.adapters.storage import StorageAdapter
+            from lessoncanvas.settings import get_settings
+
+            evidence_storage = StorageAdapter(bucket=get_settings().s3_bucket_artifacts)
+            for key in evidence_document_keys:
+                try:
+                    evidence_storage.delete(key)
+                except Exception:
+                    failures.append(f"object:{key}")
+        session.execute(
+            sql_delete(ProductValidationEvidence).where(
+                ProductValidationEvidence.assignment_id.in_(assignment_ids)
+            )
+        )
+    session.execute(
+        sql_delete(ProductValidationAssignment).where(
+            ProductValidationAssignment.project_id == project_id
+        )
     )
 
     session.execute(sql_delete(BlueprintDraft).where(BlueprintDraft.project_id == project_id))

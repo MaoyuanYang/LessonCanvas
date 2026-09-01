@@ -21,6 +21,7 @@ from sqlalchemy import create_engine, text
 from lessoncanvas.settings import get_settings
 
 TABLES = (
+    "product_validation_evidence, product_validation_assignments, "
     "technical_evaluation_results, technical_evaluations, "
     "run_events, exercise_artifacts, slide_deck_artifacts, lesson_plan_artifacts, "
     "generation_runs, delivery_exports, alignment_overrides, trace_events, "

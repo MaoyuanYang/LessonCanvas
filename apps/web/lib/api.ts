@@ -1230,3 +1230,257 @@ export const EVALUATION_CRITERION_LABELS: Record<string, string> = {
   "M-COVER": "对齐覆盖深度",
   "M-JUDGE": "模型评判意见",
 };
+
+// --- F010 Teacher Product Validation ---------------------------------------
+
+export interface RubricScoreEntry {
+  score: number;
+  note: string;
+}
+
+export interface SevereFindingEntry {
+  class: string;
+  lesson_reference: string | number;
+  evidence: string;
+}
+
+export interface RubricEvidencePayload {
+  scores: Record<string, RubricScoreEntry>;
+  severe_findings: SevereFindingEntry[];
+  structural_rework_required: boolean;
+  structural_rework_reason: string | null;
+  overall_comment?: string;
+  attestation: { evaluator_reference: string; completed_date: string };
+}
+
+export interface ProductValidationOutcomeDetail {
+  outcome: "passed" | "failed";
+  core_mean: number;
+  core_mean_threshold: number;
+  severe_finding_count: number;
+  structural_rework_required: boolean;
+  violated_rules: string[];
+}
+
+export interface ProductValidationAssignmentRow {
+  id: string;
+  unit_key: string;
+  dataset_revision: string;
+  rubric_revision: string;
+  state: string;
+  staleness: { reason: string; superseded_by: string } | null;
+  not_complete_reason: string | null;
+  outcome: "passed" | "failed" | null;
+  outcome_detail: ProductValidationOutcomeDetail | null;
+  created?: boolean;
+  created_at: string;
+  concluded_at: string | null;
+}
+
+export interface ProductValidationOverview {
+  rubric_revision: string;
+  overall_status: string;
+  bounded_conclusion: string;
+  assignments: ProductValidationAssignmentRow[];
+}
+
+export interface ProductValidationEvidenceHistoryRow {
+  id: string;
+  evidence_revision: string;
+  status: string;
+  capture_channel: string;
+  outcome: "passed" | "failed";
+  outcome_detail: ProductValidationOutcomeDetail;
+  evidence: RubricEvidencePayload;
+  document: {
+    filename: string | null;
+    content_type: string | null;
+    size_bytes: number | null;
+    checksum: string | null;
+    downloadable: boolean;
+  };
+  created_at: string;
+  superseded_by_evidence_id: string | null;
+}
+
+export interface ProductValidationDetail {
+  id: string;
+  unit_key: string;
+  dataset_revision: string;
+  rubric_revision: string;
+  package: {
+    brief_version: number;
+    blueprint_version: number;
+    lessons: Array<{
+      index: number;
+      title: string | null;
+      members: Record<string, { state: string; artifact_id?: string }>;
+    }>;
+  };
+  state: string;
+  staleness: { reason: string; superseded_by: string } | null;
+  not_complete_reason: string | null;
+  created_at: string;
+  concluded_at: string | null;
+  evidence_history: ProductValidationEvidenceHistoryRow[];
+  rubric_sheet: {
+    rubric_revision: string;
+    title: string;
+    dimensions: Array<{ key: string; label: string; description: string }>;
+    severe_finding_classes: Array<{ class: string; label: string }>;
+    structural_rework_question: string;
+  };
+}
+
+export async function productValidationOverview(
+  token: string | null,
+  projectId: string,
+): Promise<ProductValidationOverview> {
+  return apiFetch<ProductValidationOverview>(`/projects/${projectId}/product-validation`, {
+    token,
+  });
+}
+
+export async function productValidationCreateAssignment(
+  token: string | null,
+  projectId: string,
+  unitKey: string,
+): Promise<ProductValidationAssignmentRow> {
+  return apiFetch<ProductValidationAssignmentRow>(
+    `/projects/${projectId}/product-validation/assignments`,
+    { method: "POST", body: { unit_key: unitKey }, token },
+  );
+}
+
+export async function productValidationDetail(
+  token: string | null,
+  projectId: string,
+  assignmentId: string,
+): Promise<ProductValidationDetail> {
+  return apiFetch<ProductValidationDetail>(
+    `/projects/${projectId}/product-validation/assignments/${assignmentId}`,
+    { token },
+  );
+}
+
+export async function productValidationConclude(
+  token: string | null,
+  projectId: string,
+  assignmentId: string,
+  reason: string,
+): Promise<ProductValidationAssignmentRow> {
+  return apiFetch<ProductValidationAssignmentRow>(
+    `/projects/${projectId}/product-validation/assignments/${assignmentId}/conclusion`,
+    { method: "POST", body: { reason }, token },
+  );
+}
+
+export async function productValidationImportEvidence(
+  token: string | null,
+  projectId: string,
+  assignmentId: string,
+  evidenceRevision: string,
+  evidence: RubricEvidencePayload,
+  document: File,
+): Promise<{
+  id: string;
+  evidence_revision: string;
+  status: string;
+  capture_channel: string;
+  outcome: "passed" | "failed";
+  outcome_detail: ProductValidationOutcomeDetail;
+  created: boolean;
+  created_at: string;
+}> {
+  const form = new FormData();
+  form.append("evidence_revision", evidenceRevision);
+  form.append("evidence", JSON.stringify(evidence));
+  form.append("document", document);
+  const headers: Record<string, string> = { accept: "application/json" };
+  if (token) headers.authorization = `Bearer ${token}`;
+  let response: Response;
+  try {
+    response = await fetch(
+      `${apiBaseUrl()}/projects/${projectId}/product-validation/assignments/${assignmentId}/evidence`,
+      { method: "POST", headers, body: form },
+    );
+  } catch {
+    throw new ApiClientError("UNEXPECTED", "network unavailable", 0, null, {});
+  }
+  const payload = await response.json().catch(() => null);
+  if (!response.ok) {
+    const errorBody = payload?.error ?? {};
+    throw new ApiClientError(
+      errorBody.code ?? "UNEXPECTED",
+      errorBody.message ?? "request failed",
+      response.status,
+      errorBody.correlation_id ?? null,
+      errorBody.details ?? {},
+    );
+  }
+  return payload;
+}
+
+export async function downloadProductValidationDocument(
+  token: string | null,
+  projectId: string,
+  assignmentId: string,
+  evidenceId: string,
+): Promise<Blob> {
+  const response = await fetch(
+    `${apiBaseUrl()}/projects/${projectId}/product-validation/assignments/${assignmentId}/evidence/${evidenceId}/document`,
+    { headers: token ? { Authorization: `Bearer ${token}` } : {} },
+  );
+  if (!response.ok) {
+    throw new ApiClientError(
+      "UNEXPECTED_SYSTEM" as ApiErrorCode,
+      "下载失败，请稍后重试。",
+      response.status,
+      null,
+      {},
+    );
+  }
+  return response.blob();
+}
+
+export const PRODUCT_VALIDATION_STATUS_LABELS: Record<string, string> = {
+  not_evaluated: "未评估",
+  in_progress: "进行中",
+  not_complete: "未完成",
+  passed: "通过",
+  failed: "失败",
+};
+
+export const PRODUCT_VALIDATION_STATE_LABELS: Record<string, string> = {
+  pending_evidence: "待证据",
+  passed: "通过",
+  failed: "失败",
+  not_complete: "未完成",
+  stale: "已过时（历史）",
+};
+
+export const PRODUCT_VALIDATION_STALE_REASON_LABELS: Record<string, string> = {
+  newer_confirmed_pair: "已有更新的确认版本对",
+  package_changed: "当前包的工件记录已变化",
+};
+
+export const RUBRIC_DIMENSION_LABELS: Record<string, string> = {
+  knowledge_correctness: "知识准确性",
+  language_quality: "语言质量",
+  exercise_answer_correctness: "练习与答案正确性",
+  objective_alignment: "目标对齐",
+  teaching_usability: "教学可用性",
+};
+
+export const SEVERE_FINDING_CLASS_LABELS: Record<string, string> = {
+  knowledge_error: "知识错误",
+  language_error: "语言错误",
+  answer_error: "答案错误",
+  objective_alignment_error: "目标对齐错误",
+};
+
+export const PRODUCT_VALIDATION_RULE_LABELS: Record<string, string> = {
+  severe_finding_present: "存在严重问题",
+  core_mean_below_threshold: "核心均值低于 4.0",
+  structural_rework_required: "需要结构性返工",
+};

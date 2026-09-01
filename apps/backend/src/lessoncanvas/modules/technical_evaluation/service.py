@@ -307,6 +307,14 @@ def _config_signature(entry: dict) -> str:
     return json.dumps(entry["model_config"], sort_keys=True, ensure_ascii=False)
 
 
+def _product_validation_status(session, project_id) -> str:
+    """F010: live product-validation status derived from recorded assignments
+    (Spec D6/D7); lazy import keeps the module boundary acyclic."""
+    from lessoncanvas.modules.product_validation import service as pv_service
+
+    return pv_service.derive_overall_status(session, project_id)
+
+
 def evaluation_report(session: Session, project_id: uuid.UUID) -> dict:
     overview = evaluation_overview(session, project_id)
     passes = overview["passes"]
@@ -384,8 +392,9 @@ def evaluation_report(session: Session, project_id: uuid.UUID) -> dict:
             key: sorted(values) for key, values in sorted(blocking_outcomes.items())
         },
         "overall_outcome": set_outcome,
-        "product_validation_status": "not_evaluated",
+        "product_validation_status": _product_validation_status(session, project_id),
         "technical_note": (
-            "技术评估与教师产品验证为两个独立状态；产品验证状态在 F010 前保持未评估。"
+            "技术评估与教师产品验证为两个独立状态；技术结果不代表课堂可用性，"
+            "产品验证以外部教师评审证据为准。"
         ),
     }

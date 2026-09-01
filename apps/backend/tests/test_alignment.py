@@ -21,7 +21,6 @@ from lessoncanvas.models import (
     RunEvent,
     SlideDeckArtifact,
 )
-from lessoncanvas.modules.alignment_evaluation import service as alignment_service
 from lessoncanvas.settings import get_settings
 
 CORPUS = "\n".join(
@@ -263,8 +262,10 @@ def test_product_status_cannot_leave_not_evaluated(client, auth):
     project_id = _confirmed_blueprint_project(client, auth)
     _complete_unit(client, auth, project_id)
     alignment = _alignment(client, auth, project_id)
-    assert alignment["product_validation_status"] == alignment_service.PRODUCT_VALIDATION_STATUS
-    assert alignment_service.PRODUCT_VALIDATION_STATUS == "not_evaluated"
+    # F010 extended the contract: the value is now derived live from recorded
+    # product-validation assignments; with none, it stays not_evaluated and
+    # F008 alignment still never merges it with technical status.
+    assert alignment["product_validation_status"] == "not_evaluated"
 
 
 # --- TS-004: validated export blocked, draft available ---------------------

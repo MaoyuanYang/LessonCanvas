@@ -12,6 +12,7 @@ import {
   downloadDeliveryExport,
   getAlignment,
   listDeliveryExports,
+  PRODUCT_VALIDATION_STATUS_LABELS,
   recordAlignmentOverride,
   withdrawAlignmentOverride,
   type AlignmentFinding,
@@ -240,8 +241,20 @@ export function AlignmentPanel({
         >
           技术校验状态：{validated ? "技术校验通过" : "未完成（存在未解决严重问题）"}
         </span>
-        <span className="rounded bg-stale/10 px-2 py-0.5 text-xs font-medium text-stale">
-          产品验证状态：未评估
+        <span
+          className={`rounded px-2 py-0.5 text-xs font-medium ${
+            alignment.product_validation_status === "passed"
+              ? "bg-evidence/10 text-evidence"
+              : alignment.product_validation_status === "failed"
+                ? "bg-severe/10 text-severe"
+                : alignment.product_validation_status === "not_evaluated"
+                  ? "bg-stale/10 text-stale"
+                  : "bg-warning/10 text-warning"
+          }`}
+        >
+          产品验证状态：
+          {PRODUCT_VALIDATION_STATUS_LABELS[alignment.product_validation_status] ??
+            alignment.product_validation_status}
         </span>
       </div>
 
