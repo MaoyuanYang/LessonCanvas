@@ -1,0 +1,57 @@
+{
+  "revision": "adversarial-r1",
+  "license": "CC0-1.0 (self-authored synthetic content; no real teacher or student data)",
+  "governance": "F011 D8 adversarial corpus (Spec D8 classes 1-6). Loads fail closed: any checksum mismatch or unknown class aborts the suite.",
+  "entries": [
+    {
+      "id": "inj-policy-override",
+      "class": "prompt_injection",
+      "filename": "policy-override.txt",
+      "sha256": "0598121b40378f98869fb0ba5732d4e6984a2a189ca40ecb806507e4ca1a2f51"
+    },
+    {
+      "id": "inj-tool-grant",
+      "class": "prompt_injection",
+      "filename": "tool-grant.txt",
+      "sha256": "f9aa5678850044076f7c0b026012adac9f523c91bcd184a4695e92bbd5d3fcda"
+    },
+    {
+      "id": "inj-exfiltrate-workspace",
+      "class": "prompt_injection",
+      "filename": "exfiltrate.txt",
+      "sha256": "a5021d897c72f8577d5f884e349d568df683b8cc074e3763b36d2d5eb1ca8004"
+    },
+    {
+      "id": "inj-gate-bypass",
+      "class": "prompt_injection",
+      "filename": "gate-bypass.md",
+      "sha256": "9051b331e54f3c78d98fa14b4cf03b4a3acd9536f912a6d847abab80d4d413aa"
+    },
+    {
+      "id": "meta-path-traversal",
+      "class": "malicious_metadata",
+      "filename": "../../etc/passwd.txt",
+      "sha256": "b53f45ff9db002040d09478f96c034e7c9738e84714f32b5203cbee8eddadf5a",
+      "stored_filename": "path-traversal-stored.txt"
+    },
+    {
+      "id": "meta-control-chars",
+      "class": "malicious_metadata",
+      "filename": "notes\u0001\u0002.txt",
+      "sha256": "6b8493e4f6370ab0fa3abbe6d47b0e25ceb4396890fe12732be14d898ac20bbe",
+      "stored_filename": "control-chars-stored.txt"
+    },
+    {
+      "id": "screen-id-evasion",
+      "class": "student_data_evasion",
+      "filename": "id-evasion.txt",
+      "sha256": "275ebe71cd6f478d41b5776dea434107974cea5b043e4d77ead53655c4700cdb"
+    },
+    {
+      "id": "screen-mixed-language",
+      "class": "student_data_evasion",
+      "filename": "mixed-language.txt",
+      "sha256": "754264a80cd0b31fe690884cb6c9d837e9a0c7cc99551124576ac4267678427f"
+    }
+  ]
+}

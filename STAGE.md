@@ -4,16 +4,16 @@
 
 | Field | Value |
 | --- | --- |
-| Snapshot Revision | `STAGE-65` |
-| Parent Snapshot | `STAGE-64` @ `c0618ca56a6e` (pre-write read, no external change) |
-| Last Reconciled At | `2026-09-01T20:25:15+08:00` |
+| Snapshot Revision | `STAGE-70` |
+| Parent Snapshot | `STAGE-69` @ `d38b49bd48da` (pre-write read, no external change) |
+| Last Reconciled At | `2026-09-01T23:59:00+08:00` |
 | Reconciled By | `ZCode feature-dev session (YMY / Project Owner driving)` |
 | Repository Ref | `main @ 683172b` (PR #21 merge) |
 | Write Coordination | `SINGLE_WRITER:ZCode feature-dev session` |
 | Lifecycle Path | `GREENFIELD` |
 | Project Phase | `COMPLETE` |
 | Overall State | `ACTIVE` |
-| Current Milestone | F010 Teacher Product Validation DONE (PR #21 merge `683172b`; real-teacher reviews deferred by owner per D9, follow-up import pending); next actionable F011 (P0) / F012 / F013 — F010 completes their dependency surface where applicable |
+| Current Milestone | F011 Public Multi-Account Guardrails `REVIEW` on `feature/F011-public-multi-account-guardrails` (implementation T0–T12 complete 2026-09-01: backend 454 passed + ruff clean; web 83/83 + eslint/tsc/build clean; uv/pnpm audit clean; review.md recorded with IF-1..IF-4 fixed; TS-018 env-gated with substitute coverage). Delivery pending authorization. F010 DONE (PR #21 merge `683172b`); F012 waits on F011; F013 (P1) unclaimed |
 | Tracking Mode | `REMOTE` |
 
 ## Lifecycle Progress
@@ -30,6 +30,7 @@
 
 | Activity ID | Work Item | Member | Type | Skill | Skill Stage | Activity State | Work Status | Branch / Worktree | Status Authority | Next Checkpoint | Updated At |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `A-011` | `F011 Public Multi-Account Guardrails` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `REVIEW` | `ACTIVE` | `REVIEW` | `feature/F011-public-multi-account-guardrails` | `https://github.com/MaoyuanYang/LessonCanvas/issues/22` | `Delivery authorization (commit/push/PR); ROADMAP/Issue projection sync` | `2026-09-01T23:59:00+08:00` |
 | `A-010` | `F010 Teacher Product Validation` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/20` | N/A - terminal (PR #21 merge `683172b`) | `2026-09-01T20:25:15+08:00` |
 | `A-003` | `F003 Recoverable Unit Lesson Plans` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/6` | N/A - terminal (PR #7 merge `ad81c82`) | `2026-08-29T00:24:37+08:00` |
 | `A-002` | `F002 Confirmed Unit Blueprint (DONE reconciliation)` | `opencode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `ACTIVE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/3` | N/A - terminal | `2026-08-28T19:10:00+08:00` |
@@ -77,6 +78,9 @@
 | F010 | `UI READY` | `PASS` | `specs/F010-teacher-product-validation/ux-ui.md` UI READY Record @ `ux-ui-f010-r1` / `35fe2b9b1417` |
 | F010 | `TEST DESIGN READY` | `PASS` | `specs/F010-teacher-product-validation/test-design.md` Record @ `test-design-f010-r1` / `eaa31cd897d6` |
 | F010 | `DONE` | `PASS` | PR #21 merge `683172b`; DONE evidence manifest in `specs/F010-teacher-product-validation/spec.md` Gate Record |
+| F011 | `SPEC READY` | `PASS` | `specs/F011-public-multi-account-guardrails/spec.md` Gate Record @ `d27deee5bfc8` (decision log D1–D11: D2 relaxed limits, D3 no-operator-role + disclosure, D4(b) content-free retained ledger, D6 fast-fail included; ROADMAP projection @ `e758364d566d`) |
+| F011 | `UI READY` | `PASS` | `specs/F011-public-multi-account-guardrails/ux-ui.md` UI READY Record @ `ux-ui-f011-r1` / `ab827a69abd6` (owner-ratified 2026-09-01) |
+| F011 | `TEST DESIGN READY` | `PASS` | `specs/F011-public-multi-account-guardrails/test-design.md` Record @ `test-design-f011-r1` / `d4ceb6eb0d30`, TS-001..TS-019 (approved 2026-09-01); Plan `plan-f011-r1` @ `850c40e8e41a` valid; `Roadmap Status: READY` then `IN_PROGRESS` recorded 2026-09-01 |
 
 ## Blockers and Conflicts
 

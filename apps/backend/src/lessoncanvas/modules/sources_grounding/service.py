@@ -34,11 +34,16 @@ def create_source(
 ) -> Source:
     project = get_owned_project_or_raise(session, workspace_id, project_id)
     extension = policy.validate_upload(filename, len(content), rights_acknowledged)
+    # F011 D9 race safety: lock the owning project row so concurrent uploads
+    # count a stable set; exactly the cap succeeds, never an overshoot.
+    session.execute(select(Project).where(Project.id == project.id).with_for_update())
     count = len(
         session.scalars(
             select(Source).where(
                 Source.project_id == project.id,
-                Source.status.in_(["processing", "ready", "failed", "rejected"]),
+                Source.status.in_(
+                    ["processing", "ready", "failed", "rejected", "delete_failed"]
+                ),
             )
         ).all()
     )
@@ -131,13 +136,32 @@ def delete_source(
     actor: str,
     project_id: uuid.UUID,
     source_id: uuid.UUID,
-) -> None:
+) -> bool:
+    """Delete a source and its object; True when fully deleted.
+
+    On object-store failure the row settles delete_failed (visible, repairable)
+    and returns False — the private object must never be stranded silently.
+    """
     source = get_source(session, workspace_id, project_id, source_id)
     if source.object_key:
         try:
             storage.delete(source.object_key)
         except Exception:
-            pass
+            # F011 D5: an object-store failure must stay visible and
+            # repairable; silently dropping the row would strand private
+            # content with no recovery path. A re-issued delete converges it.
+            source.status = "delete_failed"
+            session.add(
+                AuditEvent(
+                    workspace_id=workspace_id,
+                    actor=actor,
+                    action="source.deletion_failed",
+                    target_type="source",
+                    target_id=str(source.id),
+                )
+            )
+            session.flush()
+            return False
     session.query(SourceChunk).filter(SourceChunk.source_id == source.id).delete()
     session.delete(source)
     session.add(
@@ -150,3 +174,4 @@ def delete_source(
         )
     )
     session.flush()
+    return True

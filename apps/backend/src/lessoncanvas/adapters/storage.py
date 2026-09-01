@@ -40,6 +40,28 @@ class StorageAdapter:
         response = self._client.get_object(Bucket=self._bucket, Key=key)
         return response["Body"].read()
 
+    def exists(self, key: str) -> bool:
+        """F011 deletion-completeness verification: object presence probe."""
+        try:
+            self._client.head_object(Bucket=self._bucket, Key=key)
+            return True
+        except Exception:
+            return False
+
+    def list_prefix(self, prefix: str) -> list[str]:
+        """F011 deletion-completeness verification: keys under a prefix."""
+        keys: list[str] = []
+        token: str | None = None
+        while True:
+            kwargs = {"Bucket": self._bucket, "Prefix": prefix}
+            if token:
+                kwargs["ContinuationToken"] = token
+            response = self._client.list_objects_v2(**kwargs)
+            keys.extend(item["Key"] for item in response.get("Contents", []))
+            if not response.get("IsTruncated"):
+                return keys
+            token = response["NextContinuationToken"]
+
     def delete(self, key: str) -> None:
         self._client.delete_object(Bucket=self._bucket, Key=key)
 

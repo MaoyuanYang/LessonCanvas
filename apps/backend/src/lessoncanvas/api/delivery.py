@@ -20,6 +20,7 @@ from lessoncanvas.api.errors import (
 from lessoncanvas.models import BlueprintVersion, BriefVersion, DeliveryExport
 from lessoncanvas.modules.alignment_evaluation import delivery
 from lessoncanvas.modules.alignment_evaluation.service import MissingPairError
+from lessoncanvas.modules.identity_workspace import service as iw_service
 from lessoncanvas.modules.identity_workspace.service import (
     NotFoundError as ServiceNotFound,
 )
@@ -145,6 +146,10 @@ def download(
         )
     except Exception as err:  # noqa: BLE001 - storage miss must not fake success
         raise NotFoundError("export package not found") from err
+    iw_service.audit_download(
+        session, workspace.id, workspace.clerk_user_id, "delivery_export", export.id
+    )
+    session.commit()
     filename = f"lessoncanvas-{export.label}-export-{str(export.id)[:8]}.zip"
     return Response(
         content=content,

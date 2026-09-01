@@ -20,6 +20,7 @@ from lessoncanvas.models import (
     LessonPlanArtifact,
     RunEvent,
     SlideDeckArtifact,
+    Workspace,
 )
 from lessoncanvas.settings import get_settings
 
@@ -36,6 +37,19 @@ class MissingVersionsError(Exception):
 
 class NothingToRegenerateError(Exception):
     """The version transition affects no lessons of this family (Spec D2)."""
+
+
+class RunAdmissionError(Exception):
+    """The workspace already holds its concurrent generation-run slots (F011 D2).
+
+    Carries the active run ids so the caller can point the teacher at the
+    running work instead of a bare denial.
+    """
+
+    def __init__(self, active_run_ids: list[str], limit: int) -> None:
+        super().__init__("workspace concurrent generation limit reached")
+        self.active_run_ids = active_run_ids
+        self.limit = limit
 
 
 class PrerequisiteNotMetError(Exception):
@@ -71,6 +85,38 @@ def current_blueprint_version(session: Session, project_id: uuid.UUID) -> Bluepr
         .where(BlueprintVersion.project_id == project_id)
         .order_by(BlueprintVersion.version.desc())
     )
+
+
+# F011 D2 admission set: runs that still occupy a concurrent-generation slot.
+# Superseded runs stop at a safe checkpoint and no longer consume a slot.
+ACTIVE_RUN_STATUSES = ("queued", "generating", "validating")
+
+
+def count_active_generation_runs(session: Session, workspace_id: uuid.UUID) -> int:
+    return session.execute(
+        select(func.count())
+        .select_from(GenerationRun)
+        .where(
+            GenerationRun.workspace_id == workspace_id,
+            GenerationRun.status.in_(ACTIVE_RUN_STATUSES),
+        )
+    ).scalar_one()
+
+
+def admit_run(session: Session, workspace_id: uuid.UUID) -> None:
+    """F011 D2 admission: serialize starts per workspace via a row lock so the
+    concurrent-run count cannot overshoot; duplicates keep converging on the
+    run-identity constraint rather than consuming admission."""
+    session.execute(select(Workspace).where(Workspace.id == workspace_id).with_for_update())
+    cap = get_settings().max_concurrent_generation_runs_per_workspace
+    active_ids = session.scalars(
+        select(GenerationRun.id).where(
+            GenerationRun.workspace_id == workspace_id,
+            GenerationRun.status.in_(ACTIVE_RUN_STATUSES),
+        )
+    ).all()
+    if len(active_ids) >= cap:
+        raise RunAdmissionError([str(run_id) for run_id in active_ids], cap)
 
 
 # F007 transition-aware current-run rule: the run bound to the current
@@ -288,6 +334,7 @@ def start_generation(
         raise NothingToRegenerateError(
             "no affected lessons for lesson plans under the current version transition"
         )
+    admit_run(session, workspace_id)
     run = GenerationRun(
         project_id=project_id,
         workspace_id=workspace_id,
@@ -373,6 +420,7 @@ def start_deck_generation(
     if not lessons:
         raise MissingVersionsError("confirmed blueprint contains no lessons")
 
+    admit_run(session, workspace_id)
     run = GenerationRun(
         project_id=project_id,
         workspace_id=workspace_id,
@@ -468,6 +516,7 @@ def start_exercise_generation(
     if not lessons:
         raise MissingVersionsError("confirmed blueprint contains no lessons")
 
+    admit_run(session, workspace_id)
     run = GenerationRun(
         project_id=project_id,
         workspace_id=workspace_id,

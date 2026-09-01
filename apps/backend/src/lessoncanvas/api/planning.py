@@ -1,11 +1,11 @@
 import json
 import uuid
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from lessoncanvas.api.deps import SessionDep, WorkspaceDep
+from lessoncanvas.api.deps import SessionDep, WorkspaceDep, require_expensive_rate
 from lessoncanvas.api.errors import NotFoundError, ProviderTransientError, QuotaExceededError
 from lessoncanvas.api.errors import RequirementError as ApiRequirementError
 from lessoncanvas.modules.discovery_planning import planning as planning_service
@@ -61,7 +61,8 @@ def _run_or_404(session, workspace, project_id):
         raise NotFoundError("planning run not found") from err
 
 
-@router.post("/start", response_model=PlanningOut)
+@router.post("/start", response_model=PlanningOut,
+             dependencies=[Depends(require_expensive_rate)])
 def start(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep) -> PlanningOut:
     _owned(session, workspace, project_id)
     brief_version = current_brief_version(session, project_id)

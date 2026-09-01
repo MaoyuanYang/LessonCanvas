@@ -52,6 +52,15 @@ class Settings(BaseSettings):
     evidence_inventory_page_default: int = 50
     evidence_narration_quota_per_workspace: int = 50
 
+    # F011 public-demo guardrails (Spec D2 relaxed set, owner-confirmed 2026-09-01).
+    # PostgreSQL is the single rate truth; window boundaries are deterministic.
+    rate_window_seconds: int = 60
+    rate_general_per_window: int = 240
+    rate_expensive_per_window: int = 120
+    max_concurrent_generation_runs_per_workspace: int = 2
+    max_concurrent_sse_streams_per_workspace: int = 6
+    upload_daily_bytes_per_workspace: int = 200 * 1024 * 1024
+
 
 @lru_cache
 def get_settings() -> Settings:

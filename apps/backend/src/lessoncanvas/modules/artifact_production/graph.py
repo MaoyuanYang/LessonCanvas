@@ -20,6 +20,7 @@ from lessoncanvas.modules.artifact_production.docx_tools import (
     render_lesson_plan_docx,
     validate_lesson_plan_docx,
 )
+from lessoncanvas.modules.artifact_production.fastfail import settle_vanished_run
 from lessoncanvas.modules.discovery_planning.graph import record_trace
 from lessoncanvas.modules.run_orchestration import service as run_service
 
@@ -406,6 +407,11 @@ def execute_generation(run_id: str, graph=None) -> str:
     try:
         compiled.invoke({"run_id": run_id})
     except ProviderTransientError:
+        raise
+    except Exception as error:
+        settled = settle_vanished_run(run_id, error)
+        if settled is not None:
+            return settled
         raise
     return _final_status(run_id)
 

@@ -1,7 +1,16 @@
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, UniqueConstraint, func
+from sqlalchemy import (
+    BigInteger,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -53,7 +62,65 @@ class QuotaCounter(Base):
     )
     key: Mapped[str] = mapped_column(String(64), nullable=False)
     used: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    limit: Mapped[int] = mapped_column(Integer, nullable=False)
+    limit: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+
+
+class RateWindowCounter(Base):
+    """Fixed-window request/byte counters; PostgreSQL is the rate truth (F011 D1/D2)."""
+
+    __tablename__ = "rate_window_counters"
+    __table_args__ = (
+        UniqueConstraint(
+            "workspace_id", "limit_class", "window_start", name="uq_rate_window_identity"
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=False
+    )
+    limit_class: Mapped[str] = mapped_column(String(32), nullable=False)
+    window_start: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    bytes_accum: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
+
+
+class RetainedSecurityEvent(Base):
+    """Content-free security ledger that survives workspace deletion (F011 D4(b)).
+
+    Columns are deliberately limited to action, workspace id, and time; prompts,
+    filenames, titles, and traces must never be stored here.
+    """
+
+    __tablename__ = "retained_security_events"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False, index=True)
+    action: Mapped[str] = mapped_column(String(64), nullable=False)
+    occurred_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
+class DeletionResidual(Base):
+    """Metadata-only residual ledger driving deletion repair (F011 D5).
+
+    A failed cascade pass records the store/key identifiers that outlived it;
+    a re-issued delete converges them. No foreign keys: rows must survive the
+    rows they reference. Never content — keys and table names only.
+    """
+
+    __tablename__ = "deletion_residuals"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False, index=True)
+    project_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), nullable=True, index=True
+    )
+    store: Mapped[str] = mapped_column(String(64), nullable=False)
+    object_key: Mapped[str | None] = mapped_column(Text, nullable=True)
+    table_name: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
 class AuditEvent(Base):
@@ -81,7 +148,7 @@ class Source(Base):
         UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=False, index=True
     )
     filename: Mapped[str] = mapped_column(String(255), nullable=False)
-    content_type: Mapped[str] = mapped_column(String(64), nullable=False)
+    content_type: Mapped[str] = mapped_column(String(128), nullable=False)
     size_bytes: Mapped[int] = mapped_column(Integer, nullable=False)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="processing")
     rejection_code: Mapped[str | None] = mapped_column(String(64), nullable=True)

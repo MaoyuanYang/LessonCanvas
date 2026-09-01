@@ -5,14 +5,23 @@ import json
 import time
 import uuid
 
-from fastapi import APIRouter, Header
+from fastapi import APIRouter, Depends, Header
 from fastapi.responses import Response, StreamingResponse
 from pydantic import BaseModel
 
-from lessoncanvas.api.deps import SessionDep, WorkspaceDep
-from lessoncanvas.api.errors import NotFoundError, RequirementError, StaleVersionError
+from lessoncanvas.api.deps import SessionDep, WorkspaceDep, require_expensive_rate
+from lessoncanvas.api.errors import (
+    NotFoundError,
+    RequirementError,
+    StaleVersionError,
+)
+from lessoncanvas.api.errors import (
+    RunAdmissionError as ApiRunAdmissionError,
+)
+from lessoncanvas.api.sse_registry import acquire_stream_slot, release_stream_slot
 from lessoncanvas.db import SessionLocal
 from lessoncanvas.models import GenerationRun, LessonPlanArtifact
+from lessoncanvas.modules.identity_workspace import service as iw_service
 from lessoncanvas.modules.identity_workspace.service import (
     NotFoundError as ServiceNotFound,
 )
@@ -88,7 +97,8 @@ def _dispatch(run: GenerationRun) -> None:
         generate_unit.delay(str(run.id))
 
 
-@router.post("/start", response_model=GenerationSnapshot)
+@router.post("/start", response_model=GenerationSnapshot,
+             dependencies=[Depends(require_expensive_rate)])
 def start(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep):
     _owned(session, workspace, project_id)
     try:
@@ -102,6 +112,11 @@ def start(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep):
         raise RequirementError(
             "the current version transition affects no lesson plans; nothing to regenerate",
             {"affected_lessons": []},
+        ) from err
+    except run_service.RunAdmissionError as err:
+        raise ApiRunAdmissionError(
+            "workspace concurrent generation limit reached",
+            {"limit": err.limit, "active_run_ids": err.active_run_ids},
         ) from err
     session.commit()
     if created:
@@ -145,47 +160,54 @@ def events(
     except (TypeError, ValueError):
         cursor = 0
 
+    settings = get_settings()
+    acquire_stream_slot(workspace.id, settings.max_concurrent_sse_streams_per_workspace)
+    workspace_id = workspace.id
+
     def event_stream():
         nonlocal cursor
-        started = time.monotonic()
-        last_emit = started
-        while True:
-            stream_session = SessionLocal()
-            try:
-                run_uuid = uuid.UUID(run_id)
-                rows = run_service.replay_events(stream_session, run_uuid, after_seq=cursor)
-                current = stream_session.get(GenerationRun, run_uuid)
-                status_now = current.status if current else "missing_run"
-            finally:
-                stream_session.close()
-            for event in rows:
-                cursor = event.seq
-                payload = json.loads(event.payload_json)
-                data = {
-                    "run_id": run_id,
-                    "seq": event.seq,
-                    "event_type": event.event_type,
-                    "payload": payload,
-                    "created_at": event.created_at.isoformat(),
-                }
-                body = json.dumps(data, ensure_ascii=False)
-                yield f"id: {event.seq}\nevent: {event.event_type}\ndata: {body}\n\n"
-            if rows:
-                last_emit = time.monotonic()
-            if status_now in TERMINAL_STATUSES and not rows:
-                yield "event: end\ndata: {}\n\n"
-                return
-            if time.monotonic() - last_emit > STREAM_KEEPALIVE_SECONDS:
-                last_emit = time.monotonic()
-                # SSE comment keepalive: per-lesson model calls leave the wire
-                # silent for tens of seconds; idle-timeout intermediaries would
-                # otherwise drop the stream mid-run (F003 early-drop root cause,
-                # fixed in F006; comment frames are ignored by every consumer).
-                yield ": keepalive\n\n"
-            if time.monotonic() - started > STREAM_MAX_SECONDS:
-                yield "event: timeout\ndata: {}\n\n"
-                return
-            time.sleep(STREAM_POLL_SECONDS)
+        try:
+            started = time.monotonic()
+            last_emit = started
+            while True:
+                stream_session = SessionLocal()
+                try:
+                    run_uuid = uuid.UUID(run_id)
+                    rows = run_service.replay_events(stream_session, run_uuid, after_seq=cursor)
+                    current = stream_session.get(GenerationRun, run_uuid)
+                    status_now = current.status if current else "missing_run"
+                finally:
+                    stream_session.close()
+                for event in rows:
+                    cursor = event.seq
+                    payload = json.loads(event.payload_json)
+                    data = {
+                        "run_id": run_id,
+                        "seq": event.seq,
+                        "event_type": event.event_type,
+                        "payload": payload,
+                        "created_at": event.created_at.isoformat(),
+                    }
+                    body = json.dumps(data, ensure_ascii=False)
+                    yield f"id: {event.seq}\nevent: {event.event_type}\ndata: {body}\n\n"
+                if rows:
+                    last_emit = time.monotonic()
+                if status_now in TERMINAL_STATUSES and not rows:
+                    yield "event: end\ndata: {}\n\n"
+                    return
+                if time.monotonic() - last_emit > STREAM_KEEPALIVE_SECONDS:
+                    last_emit = time.monotonic()
+                    # SSE comment keepalive: per-lesson model calls leave the wire
+                    # silent for tens of seconds; idle-timeout intermediaries would
+                    # otherwise drop the stream mid-run (F003 early-drop root cause,
+                    # fixed in F006; comment frames are ignored by every consumer).
+                    yield ": keepalive\n\n"
+                if time.monotonic() - started > STREAM_MAX_SECONDS:
+                    yield "event: timeout\ndata: {}\n\n"
+                    return
+                time.sleep(STREAM_POLL_SECONDS)
+        finally:
+            release_stream_slot(workspace_id)
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
@@ -220,6 +242,10 @@ def download(
     except Exception as err:  # noqa: BLE001 - storage miss must not fake success
         raise NotFoundError("lesson plan not found") from err
 
+    iw_service.audit_download(
+        session, workspace.id, workspace.clerk_user_id, "lesson_plan", artifact.id
+    )
+    session.commit()
     filename = f"lesson-{artifact.lesson_index:02d}.docx"
     return Response(
         content=content,

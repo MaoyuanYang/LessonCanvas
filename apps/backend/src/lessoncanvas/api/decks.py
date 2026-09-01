@@ -6,15 +6,23 @@ import json
 import time
 import uuid
 
-from fastapi import APIRouter, Header
+from fastapi import APIRouter, Depends, Header
 from fastapi.responses import Response, StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import select as sa_select
 
-from lessoncanvas.api.deps import SessionDep, WorkspaceDep
-from lessoncanvas.api.errors import NotFoundError, RequirementError, StaleVersionError
+from lessoncanvas.api.deps import SessionDep, WorkspaceDep, require_expensive_rate
+from lessoncanvas.api.errors import (
+    NotFoundError,
+    RequirementError,
+    StaleVersionError,
+)
+from lessoncanvas.api.errors import (
+    RunAdmissionError as ApiRunAdmissionError,
+)
 from lessoncanvas.db import SessionLocal
 from lessoncanvas.models import GenerationRun, SlideDeckArtifact
+from lessoncanvas.modules.identity_workspace import service as iw_service
 from lessoncanvas.modules.identity_workspace.service import (
     NotFoundError as ServiceNotFound,
 )
@@ -90,7 +98,8 @@ def _dispatch(run: GenerationRun) -> None:
         generate_decks.delay(str(run.id))
 
 
-@router.post("/start", response_model=DeckGenerationSnapshot)
+@router.post("/start", response_model=DeckGenerationSnapshot,
+             dependencies=[Depends(require_expensive_rate)])
 def start(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep):
     _owned(session, workspace, project_id)
     try:
@@ -114,6 +123,11 @@ def start(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep):
         raise RequirementError(
             "the current version transition affects no lessons here; nothing to regenerate",
             {"affected_lessons": []},
+        ) from err
+    except run_service.RunAdmissionError as err:
+        raise ApiRunAdmissionError(
+            "workspace concurrent generation limit reached",
+            {"limit": err.limit, "active_run_ids": err.active_run_ids},
         ) from err
     session.commit()
     if created:
@@ -224,6 +238,10 @@ def download(
     except Exception as err:  # noqa: BLE001 - storage miss must not fake success
         raise NotFoundError("slide deck not found") from err
 
+    iw_service.audit_download(
+        session, workspace.id, workspace.clerk_user_id, "slide_deck", artifact.id
+    )
+    session.commit()
     filename = f"deck-lesson-{artifact.lesson_index:02d}.pptx"
     return Response(
         content=content,
