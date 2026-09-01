@@ -400,3 +400,82 @@ class RunEvent(Base):
     payload_json: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     __table_args__ = (UniqueConstraint("run_id", "seq", name="uq_run_event_seq"),)
+
+
+class AlignmentOverride(Base):
+    """F008 owner decision resolving a disputed conflict-class severe finding
+    (Spec D2). Derived findings are never persisted; only this decision is."""
+
+    __tablename__ = "alignment_overrides"
+    __table_args__ = (
+        UniqueConstraint(
+            "project_id",
+            "brief_version_id",
+            "blueprint_version_id",
+            "finding_key",
+            "status",
+            name="uq_alignment_override_active",
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("projects.id"), nullable=False, index=True
+    )
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=False, index=True
+    )
+    brief_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("brief_versions.id"), nullable=False
+    )
+    blueprint_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("blueprint_versions.id"), nullable=False
+    )
+    finding_key: Mapped[str] = mapped_column(String(128), nullable=False)
+    reason: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False, default="recorded")
+    created_by: Mapped[str] = mapped_column(String(128), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    withdrawn_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class DeliveryExport(Base):
+    """F008 delivery export bound to one immutable version pair and its
+    artifact manifest (Spec D8). Package and report snapshot objects live in
+    the private artifacts bucket."""
+
+    __tablename__ = "delivery_exports"
+    __table_args__ = (
+        UniqueConstraint(
+            "project_id",
+            "brief_version_id",
+            "blueprint_version_id",
+            "label",
+            "manifest_digest",
+            name="uq_delivery_export_identity",
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("projects.id"), nullable=False, index=True
+    )
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=False, index=True
+    )
+    brief_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("brief_versions.id"), nullable=False
+    )
+    blueprint_version_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("blueprint_versions.id"), nullable=False
+    )
+    label: Mapped[str] = mapped_column(String(16), nullable=False)
+    manifest_json: Mapped[str] = mapped_column(Text, nullable=False)
+    manifest_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    package_object_key: Mapped[str | None] = mapped_column(Text, nullable=True)
+    report_object_key: Mapped[str | None] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(String(16), nullable=False, default="building")
+    failure_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_by: Mapped[str] = mapped_column(String(128), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    ready_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

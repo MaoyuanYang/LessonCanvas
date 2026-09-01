@@ -56,6 +56,8 @@ LessonCanvas should feel like a modern curriculum-design desk: editorial, precis
 - Success labels state the exact achieved status; a generic success color cannot collapse saved, confirmed, generated, technically validated, and product-validated meanings.
 - Disabled, permission, offline, stale, and superseded treatments use shared status language and preserve the navigation/recovery behavior defined by UX.
 - A severe finding may coexist with draft export, but validated-completion treatment remains blocked until correction or an explicit teacher-recorded override.
+- The alignment view presents technical package status and product-validation status as two adjacent, semantically distinct statuses; a validated technical package never renders as product validation.
+- The printable alignment report is a dedicated print-styled route: semantic headings, bound versions, honest label, findings with overrides, and the status pair; app chrome is hidden when printing.
 
 ## Content and Iconography
 

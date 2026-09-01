@@ -80,6 +80,7 @@ export function RunOutcomeBanners({
   failedLessonIndexes,
   noun,
   error,
+  viewAlignment,
 }: {
   status: string;
   totalCount: number;
@@ -87,12 +88,25 @@ export function RunOutcomeBanners({
   failedLessonIndexes: number[];
   noun: string;
   error?: string | null;
+  viewAlignment?: () => void;
 }) {
   return (
     <>
       {status === "complete" ? (
         <Alert tone="info">
           全部 {totalCount} 课{noun}已生成并通过结构校验，可逐课下载。
+          {viewAlignment ? (
+            <>
+              {" "}
+              <button
+                type="button"
+                className="underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-focus"
+                onClick={viewAlignment}
+              >
+                查看对齐情况
+              </button>
+            </>
+          ) : null}
         </Alert>
       ) : null}
       {status === "superseded" ? (

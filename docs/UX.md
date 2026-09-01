@@ -57,6 +57,22 @@ Open a run or artifact
 - Interruption / return: expanded technical views are optional and do not change project state.
 - Permission boundary: a teacher sees only traces for their own project. Portfolio sample runs use synthetic data; private teacher runs are never republished as portfolio samples under the current privacy decision.
 
+### Review Alignment and Deliver
+
+```text
+Open the current confirmed version in the unit workspace
+-> inspect objective coverage and per-lesson completeness across all artifact families
+-> inspect severity-grouped findings with evidence and recovery actions
+-> correct intent, regenerate targeted work, or record a reasoned override for a disputed finding
+-> watch the technical package status recalculate; product validation stays a separate not-evaluated status
+-> export the labelled draft package at any time, or deliver the validated package once severe findings are resolved
+-> print the alignment report (current state or an export-time snapshot)
+```
+
+- Failure path: unresolved severe findings keep the validated delivery blocked with the blockers named; a build failure or a version switch during export settles the export failed instead of delivering a partial or mixed package.
+- Interruption / return: findings and statuses recompute deterministically from recorded state; overrides and export history stay bound to their versions and are never presented as current after a newer version.
+- Permission boundary: only the workspace owner sees alignment results, records overrides, exports, or downloads the package.
+
 ### Manage Teaching Preferences
 
 ```text

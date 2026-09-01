@@ -73,7 +73,17 @@ export function ExercisePanel({
 }: {
   projectId: string;
   onNavigate?:
-    | ((tab: "sources" | "discovery" | "brief" | "blueprint" | "generation" | "decks" | "exercises") => void)
+    | ((
+        tab:
+          | "sources"
+          | "discovery"
+          | "brief"
+          | "blueprint"
+          | "generation"
+          | "decks"
+          | "exercises"
+          | "alignment",
+      ) => void)
     | undefined;
 }) {
   const { getToken } = useAuth();
@@ -415,6 +425,7 @@ export function ExercisePanel({
         failedLessonIndexes={failedLessons.map((a) => a.lesson_index)}
         noun="练习"
         error={error}
+        viewAlignment={onNavigate ? () => onNavigate("alignment") : undefined}
       />
 
       <NarrationRegion lines={narrationLines} />
