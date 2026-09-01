@@ -54,7 +54,13 @@ function narrationText(event: GenerationStreamEvent): string | null {
   return null;
 }
 
-export function GenerationPanel({ projectId }: { projectId: string }) {
+export function GenerationPanel({
+  projectId,
+  onNavigate,
+}: {
+  projectId: string;
+  onNavigate?: (tab: "alignment") => void;
+}) {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const isDesktop = useDesktop();
@@ -280,6 +286,7 @@ export function GenerationPanel({ projectId }: { projectId: string }) {
         failedLessonIndexes={failedLessons.map((a) => a.lesson_index)}
         noun="教案"
         error={error}
+        viewAlignment={onNavigate ? () => onNavigate("alignment") : undefined}
       />
 
       <NarrationRegion lines={narrationLines} />

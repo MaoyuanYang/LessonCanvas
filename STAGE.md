@@ -4,16 +4,16 @@
 
 | Field | Value |
 | --- | --- |
-| Snapshot Revision | `STAGE-42` |
-| Parent Snapshot | `STAGE-41` @ `379708f3ac03` |
-| Last Reconciled At | `2026-09-01T00:20:00+08:00` |
+| Snapshot Revision | `STAGE-48` |
+| Parent Snapshot | `STAGE-47` @ (pre-write read, no external change) |
+| Last Reconciled At | `2026-09-01T06:30:00+08:00` |
 | Reconciled By | `ZCode feature-dev session (YMY / Project Owner driving)` |
 | Repository Ref | `main @ 2b36d73` |
 | Write Coordination | `SINGLE_WRITER:ZCode feature-dev session` |
 | Lifecycle Path | `GREENFIELD` |
 | Project Phase | `COMPLETE` |
 | Overall State | `ACTIVE` |
-| Current Milestone | F007 DONE (PR #15 merge `2b36d73`); next actionable is F008 refinement |
+| Current Milestone | F008 NEXT (selection confirmed 2026-09-01); work-item binding in progress |
 | Tracking Mode | `REMOTE` |
 
 ## Lifecycle Progress
@@ -30,6 +30,7 @@
 
 | Activity ID | Work Item | Member | Type | Skill | Skill Stage | Activity State | Work Status | Branch / Worktree | Status Authority | Next Checkpoint | Updated At |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `A-008` | `F008 Alignment Review and Delivery` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `REVIEW` | `REVIEW` | `feature/F008-alignment-review-and-delivery` | `https://github.com/MaoyuanYang/LessonCanvas/issues/16` | `DELIVERY` pending commit/push/PR authorization | `2026-09-01T06:30:00+08:00` |
 | `A-003` | `F003 Recoverable Unit Lesson Plans` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/6` | N/A - terminal (PR #7 merge `ad81c82`) | `2026-08-29T00:24:37+08:00` |
 | `A-002` | `F002 Confirmed Unit Blueprint (DONE reconciliation)` | `opencode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `ACTIVE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/3` | N/A - terminal | `2026-08-28T19:10:00+08:00` |
 
@@ -64,6 +65,9 @@
 | F007 | `UI READY` | `PASS` | `specs/F007-versioned-targeted-regeneration/ux-ui.md` UI READY Record @ `ux-ui-f007-r1` / `97597ad3c608` |
 | F007 | `TEST DESIGN READY` | `PASS` | `specs/F007-versioned-targeted-regeneration/test-design.md` Record @ `test-design-f007-r1` / `69c9d0532f7a` |
 | F007 | `DONE` | `PASS` | PR #15 merge `2b36d73`; DONE evidence manifest in `specs/F007-versioned-targeted-regeneration/spec.md` Gate Record |
+| F008 | `SPEC READY` | `PASS` | `specs/F008-alignment-review-and-delivery/spec.md` Gate Record @ `dc301bba1a83` |
+| F008 | `UI READY` | `PASS` | `specs/F008-alignment-review-and-delivery/ux-ui.md` UI READY Record @ `ux-ui-f008-r1` / `6bca800ac896` |
+| F008 | `TEST DESIGN READY` | `PASS` | `specs/F008-alignment-review-and-delivery/test-design.md` Record @ `test-design-f008-r1` / `6d7979391f92` |
 
 ## Blockers and Conflicts
 

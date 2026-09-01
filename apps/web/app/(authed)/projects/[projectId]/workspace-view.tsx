@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AlignmentPanel } from "@/components/alignment-panel";
 import { BlueprintPanel } from "@/components/blueprint-panel";
 import { BriefPanel } from "@/components/brief-panel";
 import { DeckPanel } from "@/components/deck-panel";
@@ -20,7 +21,8 @@ export type WorkspaceTab =
   | "decks"
   | "exercises"
   | "evidence"
-  | "versions";
+  | "versions"
+  | "alignment";
 
 const TAB_LABELS: Record<WorkspaceTab, string> = {
   sources: "来源",
@@ -32,6 +34,7 @@ const TAB_LABELS: Record<WorkspaceTab, string> = {
   exercises: "练习与答案",
   evidence: "运行证据",
   versions: "版本对比",
+  alignment: "对齐与交付",
 };
 
 export default function WorkspaceView({ projectId }: { projectId: string }) {
@@ -60,11 +63,16 @@ export default function WorkspaceView({ projectId }: { projectId: string }) {
       {tab === "discovery" ? <DiscoveryPanel projectId={projectId} /> : null}
       {tab === "brief" ? <BriefPanel projectId={projectId} /> : null}
       {tab === "blueprint" ? <BlueprintPanel projectId={projectId} /> : null}
-      {tab === "generation" ? <GenerationPanel projectId={projectId} /> : null}
+      {tab === "generation" ? (
+        <GenerationPanel projectId={projectId} onNavigate={setTab} />
+      ) : null}
       {tab === "decks" ? <DeckPanel projectId={projectId} onNavigate={setTab} /> : null}
       {tab === "exercises" ? <ExercisePanel projectId={projectId} onNavigate={setTab} /> : null}
       {tab === "evidence" ? <EvidencePanel projectId={projectId} onNavigate={setTab} /> : null}
       {tab === "versions" ? <VersionComparePanel projectId={projectId} /> : null}
+      {tab === "alignment" ? (
+        <AlignmentPanel projectId={projectId} onNavigate={setTab} />
+      ) : null}
     </section>
   );
 }

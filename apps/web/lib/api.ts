@@ -923,3 +923,170 @@ export async function getCurrentTransition(
     token,
   });
 }
+
+// --- F008 Alignment Review and Delivery ---
+
+export interface AlignmentMemberFile {
+  role: string;
+  object_key: string;
+  checksum: string | null;
+}
+
+export interface AlignmentMember {
+  state: "complete" | "failed" | "in_progress" | "missing";
+  provenance?: string;
+  artifact_id?: string;
+  run_id?: string;
+  failure_reason?: string | null;
+  files?: AlignmentMemberFile[];
+}
+
+export interface AlignmentFinding {
+  key: string;
+  kind: "gap" | "conflict" | "coverage";
+  severity: "severe" | "warning";
+  title: string;
+  scope: string;
+  lesson_index?: number;
+  family?: string;
+  objective_id?: string;
+  evidence?: Record<string, unknown>;
+  overridable: boolean;
+  resolved: boolean;
+  override_id?: string;
+  recovery_action: string;
+}
+
+export interface AlignmentOverride {
+  id: string;
+  finding_key: string;
+  reason: string;
+  status: "recorded" | "withdrawn";
+  created_at: string;
+  withdrawn_at: string | null;
+}
+
+export interface AlignmentObjectiveCoverage {
+  id: string;
+  text: string | null;
+  lessons: number[];
+  support: Record<string, boolean>;
+  summary: "supported" | "partial" | "missing";
+}
+
+export interface AlignmentView {
+  brief_version: number;
+  blueprint_version: number;
+  brief_version_id: string;
+  blueprint_version_id: string;
+  technical_status: "incomplete" | "validated";
+  draft_export_available: boolean;
+  product_validation_status: string;
+  objectives: AlignmentObjectiveCoverage[];
+  lessons: {
+    lesson_index: number;
+    title: string | null;
+    members: Record<string, AlignmentMember>;
+  }[];
+  findings: AlignmentFinding[];
+  overrides: AlignmentOverride[];
+  generated_at?: string;
+}
+
+export interface DeliveryExportRow {
+  id: string;
+  label: "draft" | "validated";
+  status: "building" | "ready" | "failed";
+  brief_version: number;
+  blueprint_version: number;
+  manifest_digest: string;
+  failure_reason: string | null;
+  created_at: string;
+  ready_at: string | null;
+  download_available: boolean;
+}
+
+export async function getAlignment(token: string | null, projectId: string): Promise<AlignmentView> {
+  return apiFetch<AlignmentView>(`/projects/${projectId}/alignment`, { token });
+}
+
+export async function getAlignmentReport(
+  token: string | null,
+  projectId: string,
+): Promise<AlignmentView> {
+  return apiFetch<AlignmentView>(`/projects/${projectId}/alignment/report`, { token });
+}
+
+export async function getExportReport(
+  token: string | null,
+  projectId: string,
+  exportId: string,
+): Promise<AlignmentView> {
+  return apiFetch<AlignmentView>(`/projects/${projectId}/delivery/exports/${exportId}/report`, {
+    token,
+  });
+}
+
+export async function recordAlignmentOverride(
+  token: string | null,
+  projectId: string,
+  findingKey: string,
+  reason: string,
+): Promise<AlignmentOverride> {
+  return apiFetch<AlignmentOverride>(`/projects/${projectId}/alignment/overrides`, {
+    method: "POST",
+    body: { finding_key: findingKey, reason },
+    token,
+  });
+}
+
+export async function withdrawAlignmentOverride(
+  token: string | null,
+  projectId: string,
+  overrideId: string,
+): Promise<AlignmentOverride> {
+  return apiFetch<AlignmentOverride>(
+    `/projects/${projectId}/alignment/overrides/${overrideId}`,
+    { method: "DELETE", token },
+  );
+}
+
+export async function createDeliveryExport(
+  token: string | null,
+  projectId: string,
+  label: "draft" | "validated",
+): Promise<DeliveryExportRow> {
+  return apiFetch<DeliveryExportRow>(`/projects/${projectId}/delivery/exports`, {
+    method: "POST",
+    body: { label },
+    token,
+  });
+}
+
+export async function listDeliveryExports(
+  token: string | null,
+  projectId: string,
+): Promise<DeliveryExportRow[]> {
+  return apiFetch<DeliveryExportRow[]>(`/projects/${projectId}/delivery/exports`, { token });
+}
+
+export async function downloadDeliveryExport(
+  token: string | null,
+  projectId: string,
+  exportId: string,
+): Promise<Blob> {
+  const response = await fetch(
+    `${apiBaseUrl()}/projects/${projectId}/delivery/exports/${exportId}/download`,
+    { headers: token ? { Authorization: `Bearer ${token}` } : {} },
+  );
+  if (!response.ok) {
+    throw new ApiClientError(
+      "UNEXPECTED_SYSTEM" as ApiErrorCode,
+      "下载失败，请稍后重试。",
+      response.status,
+      null,
+      {},
+    );
+  }
+  return response.blob();
+}

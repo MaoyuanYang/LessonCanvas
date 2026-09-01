@@ -63,7 +63,7 @@ export function DeckPanel({
   onNavigate,
 }: {
   projectId: string;
-  onNavigate?: (tab: "sources" | "discovery" | "brief" | "blueprint" | "generation" | "decks") => void;
+  onNavigate?: (tab: "sources" | "discovery" | "brief" | "blueprint" | "generation" | "decks" | "alignment") => void;
 }) {
   const { getToken } = useAuth();
   const queryClient = useQueryClient();
@@ -356,6 +356,7 @@ export function DeckPanel({
         failedLessonIndexes={failedLessons.map((a) => a.lesson_index)}
         noun="课件"
         error={error}
+        viewAlignment={onNavigate ? () => onNavigate("alignment") : undefined}
       />
 
       <NarrationRegion lines={narrationLines} />

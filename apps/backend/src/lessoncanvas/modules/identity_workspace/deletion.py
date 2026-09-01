@@ -5,11 +5,13 @@ from sqlalchemy import select
 
 from lessoncanvas.models import (
     AccountDeletionEvent,
+    AlignmentOverride,
     AuditEvent,
     BlueprintDraft,
     BlueprintVersion,
     BriefDraft,
     BriefVersion,
+    DeliveryExport,
     DiscoveryRun,
     ExerciseArtifact,
     GenerationRun,
@@ -127,6 +129,42 @@ def delete_project_cascade(
             sql_delete(LessonPlanArtifact).where(LessonPlanArtifact.run_id.in_(generation_run_ids))
         )
         session.execute(sql_delete(GenerationRun).where(GenerationRun.id.in_(generation_run_ids)))
+
+    export_keys = [
+        key
+        for (key,) in session.execute(
+            select(DeliveryExport.package_object_key).where(
+                DeliveryExport.project_id == project_id,
+                DeliveryExport.package_object_key.is_not(None),
+            )
+        )
+    ]
+    export_keys += [
+        key
+        for (key,) in session.execute(
+            select(DeliveryExport.report_object_key).where(
+                DeliveryExport.project_id == project_id,
+                DeliveryExport.report_object_key.is_not(None),
+            )
+        )
+    ]
+    if export_keys:
+        from lessoncanvas.adapters.storage import StorageAdapter
+        from lessoncanvas.settings import get_settings
+
+        export_storage = StorageAdapter(bucket=get_settings().s3_bucket_artifacts)
+        for key in export_keys:
+            try:
+                export_storage.delete(key)
+            except Exception:
+                failures.append(f"object:{key}")
+
+    session.execute(
+        sql_delete(DeliveryExport).where(DeliveryExport.project_id == project_id)
+    )
+    session.execute(
+        sql_delete(AlignmentOverride).where(AlignmentOverride.project_id == project_id)
+    )
 
     session.execute(sql_delete(BlueprintDraft).where(BlueprintDraft.project_id == project_id))
     session.execute(sql_delete(BlueprintVersion).where(BlueprintVersion.project_id == project_id))

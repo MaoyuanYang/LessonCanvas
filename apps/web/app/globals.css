@@ -38,3 +38,10 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* F008 printable alignment report: hide app chrome when printing. */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
