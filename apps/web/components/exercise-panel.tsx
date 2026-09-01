@@ -16,6 +16,7 @@ import { DesktopRequiredNotice, useDesktop } from "@/components/desktop-gate";
 import { Alert, Button, ConfirmModal, EmptyState, SkeletonRows, StatusBadge } from "@/components/ui";
 import {
   ApiClientError,
+  guardrailFeedback,
   EXERCISE_DIFFICULTY_DESCRIPTIONS,
   EXERCISE_DIFFICULTY_LABELS,
   downloadExerciseFile,
@@ -141,7 +142,10 @@ export function ExercisePanel({
           setTierError("难度档位无效，请重新选择（基础 / 巩固 / 进阶）。");
         }
       } else {
-        setError(err instanceof ApiClientError ? err.message : "启动练习生成失败");
+        setError(
+          guardrailFeedback(err) ??
+            (err instanceof ApiClientError ? err.message : "启动练习生成失败"),
+        );
       }
     },
   });

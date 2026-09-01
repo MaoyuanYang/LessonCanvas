@@ -113,6 +113,7 @@ export function StatusBadge({ status }: { status: string }) {
   const labels: Record<string, { text: string; className: string }> = {
     active: { text: "进行中", className: "bg-evidence/10 text-evidence" },
     deleting: { text: "删除中", className: "bg-warning/10 text-warning" },
+    delete_failed: { text: "删除未完成", className: "bg-warning/10 text-warning" },
   };
   const entry = labels[status] ?? { text: status, className: "bg-stale/10 text-stale" };
   return (

@@ -111,6 +111,11 @@ export function SourcesPanel({ projectId }: { projectId: string }) {
                 {source.rejection_message ? (
                   <p className="mt-1 text-xs text-severe">{source.rejection_message}</p>
                 ) : null}
+                {source.status === "delete_failed" ? (
+                  <p className="mt-1 text-xs text-warning">
+                    对象存储残留，删除未完成；再次点击「删除」即可修复。
+                  </p>
+                ) : null}
               </div>
               {isDesktop ? (
                 <Button

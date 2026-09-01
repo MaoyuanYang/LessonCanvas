@@ -8,15 +8,23 @@ import time
 import uuid
 from typing import Literal
 
-from fastapi import APIRouter, Header, Query
+from fastapi import APIRouter, Depends, Header, Query
 from fastapi.responses import Response, StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import select as sa_select
 
-from lessoncanvas.api.deps import SessionDep, WorkspaceDep
-from lessoncanvas.api.errors import NotFoundError, RequirementError, StaleVersionError
+from lessoncanvas.api.deps import SessionDep, WorkspaceDep, require_expensive_rate
+from lessoncanvas.api.errors import (
+    NotFoundError,
+    RequirementError,
+    StaleVersionError,
+)
+from lessoncanvas.api.errors import (
+    RunAdmissionError as ApiRunAdmissionError,
+)
 from lessoncanvas.db import SessionLocal
 from lessoncanvas.models import ExerciseArtifact, GenerationRun
+from lessoncanvas.modules.identity_workspace import service as iw_service
 from lessoncanvas.modules.identity_workspace.service import (
     NotFoundError as ServiceNotFound,
 )
@@ -99,7 +107,8 @@ def _dispatch(run: GenerationRun) -> None:
         generate_exercises.delay(str(run.id))
 
 
-@router.post("/start", response_model=ExerciseGenerationSnapshot)
+@router.post("/start", response_model=ExerciseGenerationSnapshot,
+             dependencies=[Depends(require_expensive_rate)])
 def start(
     project_id: uuid.UUID,
     workspace: WorkspaceDep,
@@ -130,6 +139,11 @@ def start(
         raise RequirementError(
             "the current version transition affects no lessons here; nothing to regenerate",
             {"affected_lessons": []},
+        ) from err
+    except run_service.RunAdmissionError as err:
+        raise ApiRunAdmissionError(
+            "workspace concurrent generation limit reached",
+            {"limit": err.limit, "active_run_ids": err.active_run_ids},
         ) from err
     session.commit()
     if created:
@@ -242,6 +256,14 @@ def download(
     except Exception as err:  # noqa: BLE001 - storage miss must not fake success
         raise NotFoundError("exercise artifact not found") from err
 
+    iw_service.audit_download(
+        session,
+        workspace.id,
+        workspace.clerk_user_id,
+        f"exercise_{file}",
+        artifact.id,
+    )
+    session.commit()
     suffix = "exercises" if file == "exercise" else "answers"
     filename = f"{suffix}-lesson-{artifact.lesson_index:02d}.docx"
     return Response(

@@ -2,12 +2,14 @@ import uuid
 from datetime import datetime
 from typing import Annotated
 
-from fastapi import APIRouter, File, Form, UploadFile
+from fastapi import APIRouter, Depends, File, Form, UploadFile
+from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
 
 from lessoncanvas.adapters.storage import StorageAdapter
-from lessoncanvas.api.deps import SessionDep, WorkspaceDep
-from lessoncanvas.api.errors import NotFoundError, RequirementError
+from lessoncanvas.api.deps import SessionDep, WorkspaceDep, require_expensive_rate
+from lessoncanvas.api.errors import NotFoundError, QuotaExceededError, RequirementError
+from lessoncanvas.modules.identity_workspace.limits import UPLOAD_DAILY_CLASS, consume_rate
 from lessoncanvas.modules.identity_workspace.service import NotFoundError as ServiceNotFound
 from lessoncanvas.modules.sources_grounding import policy, service
 from lessoncanvas.modules.sources_grounding.tasks import parse_source
@@ -16,6 +18,8 @@ from lessoncanvas.settings import get_settings
 router = APIRouter(prefix="/projects/{project_id}/sources", tags=["sources"])
 
 storage = StorageAdapter()
+
+DAY_SECONDS = 24 * 3600
 
 
 class SourceOut(BaseModel):
@@ -53,7 +57,8 @@ def enqueue_parse(source_id: uuid.UUID) -> None:
         parse_source.delay(str(source_id))
 
 
-@router.post("", status_code=201, response_model=SourceOut)
+@router.post("", status_code=201, response_model=SourceOut,
+             dependencies=[Depends(require_expensive_rate)])
 def upload_source(
     project_id: uuid.UUID,
     workspace: WorkspaceDep,
@@ -61,7 +66,25 @@ def upload_source(
     file: Annotated[UploadFile, File()],
     rights_acknowledged: Annotated[bool, Form()] = False,
 ) -> SourceOut:
-    content = file.file.read()
+    try:
+        content = policy.validate_upload_stream(
+            file.filename or "unnamed", rights_acknowledged, file.file
+        )
+    except policy.SourcePolicyError as err:
+        session.rollback()
+        raise RequirementError(err.message, {"code": err.code}) from err
+    settings = get_settings()
+    allowed, details = consume_rate(
+        session,
+        workspace.id,
+        UPLOAD_DAILY_CLASS,
+        settings.upload_daily_bytes_per_workspace,
+        DAY_SECONDS,
+        bytes_accum=len(content),
+    )
+    session.commit()
+    if not allowed:
+        raise QuotaExceededError("daily upload volume limit reached", details)
     try:
         source = service.create_source(
             session,
@@ -110,12 +133,18 @@ def get_source(
 @router.delete("/{source_id}", status_code=204)
 def delete_source(
     project_id: uuid.UUID, source_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep
-) -> None:
+):
     try:
-        service.delete_source(
+        deleted = service.delete_source(
             session, storage, workspace.id, workspace.clerk_user_id, project_id, source_id
         )
         session.commit()
     except ServiceNotFound as err:
         session.rollback()
         raise NotFoundError("source not found") from err
+    if not deleted:
+        # F011 D5: object-store failure keeps the row visible and repairable.
+        return JSONResponse(
+            status_code=200, content={"deleted": False, "status": "delete_failed"}
+        )
+    return Response(status_code=204)

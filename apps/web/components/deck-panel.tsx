@@ -16,6 +16,7 @@ import { DesktopRequiredNotice, useDesktop } from "@/components/desktop-gate";
 import { Alert, Button, ConfirmModal, EmptyState, SkeletonRows, StatusBadge } from "@/components/ui";
 import {
   ApiClientError,
+  guardrailFeedback,
   deckGenerationResume,
   deckGenerationStart,
   deckGenerationStatus,
@@ -111,7 +112,10 @@ export function DeckPanel({
         const gate = (err.details as { gate?: string }).gate;
         setGateBlocked(gate === "blueprint" ? "blueprint" : "lesson_plans");
       } else {
-        setError(err instanceof ApiClientError ? err.message : "启动课件生成失败");
+        setError(
+          guardrailFeedback(err) ??
+            (err instanceof ApiClientError ? err.message : "启动课件生成失败"),
+        );
       }
     },
   });

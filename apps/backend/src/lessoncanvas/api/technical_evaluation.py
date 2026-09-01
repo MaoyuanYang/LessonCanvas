@@ -5,10 +5,10 @@ import uuid
 from datetime import datetime
 from typing import Any, Literal
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, ConfigDict, Field
 
-from lessoncanvas.api.deps import SessionDep, WorkspaceDep
+from lessoncanvas.api.deps import SessionDep, WorkspaceDep, require_expensive_rate
 from lessoncanvas.api.errors import NotFoundError, RequirementError
 from lessoncanvas.modules.identity_workspace.service import (
     NotFoundError as ServiceNotFound,
@@ -111,7 +111,8 @@ def overview(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep
     )
 
 
-@router.post("/runs", response_model=CreateEvaluationOut, status_code=201)
+@router.post("/runs", response_model=CreateEvaluationOut, status_code=201,
+             dependencies=[Depends(require_expensive_rate)])
 def create_run(
     project_id: uuid.UUID,
     body: CreateEvaluationIn,

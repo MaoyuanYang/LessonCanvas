@@ -18,6 +18,7 @@ from langgraph.graph import END, START, StateGraph
 from typing_extensions import TypedDict
 
 from lessoncanvas.adapters.model import ModelProviderError, get_model_adapter, parse_model_json
+from lessoncanvas.modules.artifact_production.fastfail import settle_vanished_run
 from lessoncanvas.modules.artifact_production.pptx_tools import (
     render_lesson_deck_pptx,
     slide_count_of,
@@ -440,6 +441,11 @@ def execute_deck_generation(run_id: str, graph=None) -> str:
     try:
         compiled.invoke({"run_id": run_id})
     except ProviderTransientError:
+        raise
+    except Exception as error:
+        settled = settle_vanished_run(run_id, error)
+        if settled is not None:
+            return settled
         raise
     return _final_status(run_id)
 

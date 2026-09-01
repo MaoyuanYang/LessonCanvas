@@ -1,12 +1,13 @@
 import json
 import uuid
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from lessoncanvas.api.deps import SessionDep, WorkspaceDep
+from lessoncanvas.api.deps import SessionDep, WorkspaceDep, require_expensive_rate
 from lessoncanvas.api.errors import NotFoundError, ProviderTransientError, QuotaExceededError
+from lessoncanvas.api.sse_registry import acquire_stream_slot, release_stream_slot
 from lessoncanvas.modules.discovery_planning import service
 from lessoncanvas.modules.discovery_planning.graph import RunQuotaError
 from lessoncanvas.modules.discovery_planning.narration import (
@@ -22,6 +23,7 @@ from lessoncanvas.modules.identity_workspace.service import (
 from lessoncanvas.modules.identity_workspace.service import (
     get_owned_project,
 )
+from lessoncanvas.settings import get_settings
 
 router = APIRouter(prefix="/projects/{project_id}/discovery", tags=["discovery"])
 
@@ -45,7 +47,8 @@ def _run_or_404(session, workspace, project_id):
         raise NotFoundError("project not found") from err
 
 
-@router.post("/start", response_model=DiscoveryOut)
+@router.post("/start", response_model=DiscoveryOut,
+             dependencies=[Depends(require_expensive_rate)])
 def start(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep) -> DiscoveryOut:
     _run_or_404(session, workspace, project_id)
     try:
@@ -144,42 +147,52 @@ def stream(
     run = _get_run_or_404(session, workspace, project_id)
     run_id = str(run.id)
 
+    settings = get_settings()
+    acquire_stream_slot(workspace.id, settings.max_concurrent_sse_streams_per_workspace)
+    workspace_id = workspace.id
+
     def event_stream():
-        state = get_narration(run_id)
-        index = offset
-        if state is not None:
-            while True:
-                with state.condition:
-                    tokens = list(state.tokens)
-                    stop_requested = state.stop_requested
-                    complete = state.complete
-                    if len(tokens) <= index and not complete and not stop_requested:
-                        state.condition.wait(timeout=0.5)
-                        continue
-                while index < len(tokens):
-                    yield _sse("token", {"i": index, "t": tokens[index]})
+        try:
+            state = get_narration(run_id)
+            index = offset
+            if state is not None:
+                while True:
+                    with state.condition:
+                        tokens = list(state.tokens)
+                        stop_requested = state.stop_requested
+                        complete = state.complete
+                        if len(tokens) <= index and not complete and not stop_requested:
+                            state.condition.wait(timeout=0.5)
+                            continue
+                    while index < len(tokens):
+                        yield _sse("token", {"i": index, "t": tokens[index]})
+                        index += 1
+                    if stop_requested:
+                        yield _sse("stopped", {"i": index})
+                        return
+                    if complete:
+                        yield _sse("complete", {"i": index, "text": "".join(tokens)})
+                        return
+            else:
+                from sqlalchemy import select
+
+                from lessoncanvas.models import InteractionMessage
+
+                message = session.scalar(
+                    select(InteractionMessage)
+                    .where(
+                        InteractionMessage.run_id == run.id,
+                        InteractionMessage.role == "agent",
+                    )
+                    .order_by(InteractionMessage.created_at.desc())
+                )
+                text = message.content if message else ""
+                while index < len(text):
+                    yield _sse("token", {"i": index, "t": text[index]})
                     index += 1
-                if stop_requested:
-                    yield _sse("stopped", {"i": index})
-                    return
-                if complete:
-                    yield _sse("complete", {"i": index, "text": "".join(tokens)})
-                    return
-        else:
-            from sqlalchemy import select
-
-            from lessoncanvas.models import InteractionMessage
-
-            message = session.scalar(
-                select(InteractionMessage)
-                .where(InteractionMessage.run_id == run.id, InteractionMessage.role == "agent")
-                .order_by(InteractionMessage.created_at.desc())
-            )
-            text = message.content if message else ""
-            while index < len(text):
-                yield _sse("token", {"i": index, "t": text[index]})
-                index += 1
-            yield _sse("complete", {"i": index, "text": text})
+                yield _sse("complete", {"i": index, "text": text})
+        finally:
+            release_stream_slot(workspace_id)
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 

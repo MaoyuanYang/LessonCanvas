@@ -44,6 +44,13 @@ class StaleVersionError(ApiError):
     code = "STALE_VERSION"
 
 
+class RunAdmissionError(ApiError):
+    """F011 D2 concurrent-generation admission rejection with active-run pointer."""
+
+    status_code = 409
+    code = "RUN_ADMISSION"
+
+
 def render_error(request: Request, error: ApiError) -> JSONResponse:
     return JSONResponse(
         status_code=error.status_code,

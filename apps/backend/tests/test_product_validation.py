@@ -230,6 +230,12 @@ class _StubStorage:
     def delete(self, key: str) -> None:
         self.deleted.append(key)
 
+    def list_prefix(self, prefix: str) -> list[str]:
+        return []
+
+    def exists(self, key: str) -> bool:
+        return False
+
 
 class TestModelCascade:
     def test_rows_deleted_with_project(self, db_session):

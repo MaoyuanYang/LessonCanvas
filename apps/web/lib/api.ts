@@ -19,6 +19,7 @@ export type ApiErrorCode =
   | "SOURCE_POLICY"
   | "STALE_VERSION"
   | "QUOTA_EXCEEDED"
+  | "RUN_ADMISSION"
   | "PROVIDER_TRANSIENT"
   | "PARTIAL_RECOVERY"
   | "UNEXPECTED";
@@ -105,6 +106,84 @@ export async function createProject(
 
 export async function deleteProject(token: string | null, projectId: string): Promise<void> {
   return apiFetch<void>(`/projects/${projectId}`, { method: "DELETE", token });
+}
+
+// F011 account usage and audit surfaces (Spec AC-011 / D-USAGE / D-AUDITLIST).
+
+export interface AccountWindowUsage {
+  limit: number;
+  window_seconds?: number;
+  used: number;
+  reset_at?: string;
+  retry_after_seconds?: number;
+}
+
+export interface AccountUsage {
+  request_rate: AccountWindowUsage;
+  expensive_rate: AccountWindowUsage;
+  concurrent_generation_runs: { limit: number; active: number };
+  concurrent_sse_streams: { limit: number; active: number };
+  upload_daily_bytes: AccountWindowUsage;
+  projects: { limit: number; used: number };
+  planning_runs: { limit: number; used: number };
+  evidence_narration: { limit: number; used: number };
+}
+
+export interface AccountAuditEvent {
+  action: string;
+  target_type: string;
+  target_id: string | null;
+  created_at: string;
+}
+
+export interface AccountAuditPage {
+  events: AccountAuditEvent[];
+  next_before: string | null;
+}
+
+export async function getAccountUsage(token: string | null): Promise<AccountUsage> {
+  return apiFetch<AccountUsage>("/account/usage", { token });
+}
+
+export async function getAccountAudit(
+  token: string | null,
+  limit = 50,
+  before?: string,
+): Promise<AccountAuditPage> {
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (before) params.set("before", before);
+  return apiFetch<AccountAuditPage>(`/account/audit?${params.toString()}`, { token });
+}
+
+const GUARDRAIL_LIMIT_LABELS: Record<string, string> = {
+  general: "请求速率",
+  expensive: "高频写操作速率",
+  upload_daily: "每日上传量",
+  concurrent_sse_streams: "并发实时流",
+  concurrent_generation_runs: "并发生成运行",
+  projects: "项目数量",
+  evidence_narration: "讲解生成",
+};
+
+/** F011 D-LIMITERR: named limit denial with recovery, never a vague toast. */
+export function guardrailFeedback(err: unknown): string | null {
+  if (!(err instanceof ApiClientError)) return null;
+  if (err.status === 429 && err.code === "QUOTA_EXCEEDED") {
+    const limit = typeof err.details.limit === "string" ? err.details.limit : "";
+    const label = GUARDRAIL_LIMIT_LABELS[limit] ?? "使用限额";
+    const retry = err.details.retry_after_seconds;
+    const resetNote =
+      typeof retry === "number" && retry > 0 ? `约 ${Math.min(Math.ceil(retry), 60)} 秒后自动恢复` : "";
+    return `已达${label}上限。${resetNote}可在「账号与数据 - 使用与限额」查看用量。`;
+  }
+  if (err.status === 409 && err.code === "RUN_ADMISSION") {
+    const active = Array.isArray(err.details.active_run_ids)
+      ? err.details.active_run_ids.length
+      : null;
+    const count = typeof active === "number" ? `${active} 个` : "多个";
+    return `已有 ${count}生成运行进行中（每个工作区最多 2 个）。可等待完成、安全停止后重试，或前往对应面板查看进行中的运行。`;
+  }
+  return null;
 }
 
 export interface Source {

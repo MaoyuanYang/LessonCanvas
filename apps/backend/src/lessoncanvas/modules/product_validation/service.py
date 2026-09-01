@@ -42,6 +42,33 @@ DOCUMENT_CONTENT_TYPES = {
     "image/jpeg",
 }
 
+# F011 AC-005: the declared content type must agree with the leading bytes.
+_ZIP_HEAD = b"PK\x03\x04"
+
+
+def _content_matches(content_type: str, data: bytes) -> bool:
+    head = data[:16]
+    if content_type == "application/pdf":
+        return head.startswith(b"%PDF-")
+    if content_type in (
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ):
+        return head.startswith(_ZIP_HEAD)
+    if content_type == "text/plain":
+        for trim in range(4):  # the head may cut a multi-byte character
+            try:
+                head[: len(head) - trim or None].decode("utf-8")
+                return True
+            except UnicodeDecodeError:
+                continue
+        return False
+    if content_type == "image/png":
+        return head.startswith(b"\x89PNG\r\n\x1a\n")
+    if content_type == "image/jpeg":
+        return head.startswith(b"\xff\xd8")
+    return False
+
 OVERALL_NOT_EVALUATED = "not_evaluated"
 OVERALL_IN_PROGRESS = "in_progress"
 OVERALL_NOT_COMPLETE = "not_complete"
@@ -329,6 +356,11 @@ def _store_document(
         raise ProductValidationError(
             "rubric document type is not allowed",
             {"field": "document", "allowed": sorted(DOCUMENT_CONTENT_TYPES)},
+        )
+    if not _content_matches(content_type, data):
+        raise ProductValidationError(
+            "rubric document content does not match its declared type",
+            {"field": "document", "declared": content_type},
         )
     # Filename is untrusted metadata: keep only the final path component.
     safe_name = (document.filename or "rubric-document").rsplit("/", 1)[-1].rsplit("\\", 1)[-1]

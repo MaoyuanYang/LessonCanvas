@@ -16,6 +16,7 @@ import {
 import { Alert, Button, ConfirmModal, EmptyState, SkeletonRows, StatusBadge } from "@/components/ui";
 import {
   ApiClientError,
+  guardrailFeedback,
   downloadLessonPlan,
   generationStart,
   generationStatus,
@@ -100,7 +101,7 @@ export function GenerationPanel({
       if (err instanceof ApiClientError && err.code === "REQUIREMENT") {
         setGateBlocked(true);
       } else {
-        setError(err instanceof ApiClientError ? err.message : "启动生成失败");
+        setError(guardrailFeedback(err) ?? (err instanceof ApiClientError ? err.message : "启动生成失败"));
       }
     },
   });

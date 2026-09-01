@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -12,6 +12,7 @@ from lessoncanvas.api.brief import router as brief_router
 from lessoncanvas.api.decks import deck_router as decks_artifact_router
 from lessoncanvas.api.decks import router as decks_router
 from lessoncanvas.api.delivery import router as delivery_router
+from lessoncanvas.api.deps import require_general_rate
 from lessoncanvas.api.discovery import router as discovery_router
 from lessoncanvas.api.errors import ApiError, render_error
 from lessoncanvas.api.evidence import router as evidence_router
@@ -67,25 +68,32 @@ def create_app() -> FastAPI:
             },
         )
 
-    app.include_router(projects_router)
-    app.include_router(sources_router)
-    app.include_router(discovery_router)
-    app.include_router(brief_router)
-    app.include_router(planning_router)
-    app.include_router(blueprint_router)
-    app.include_router(generation_router)
-    app.include_router(generation_lesson_router)
-    app.include_router(decks_router)
-    app.include_router(decks_artifact_router)
-    app.include_router(exercises_router)
-    app.include_router(exercises_artifact_router)
-    app.include_router(account_router)
-    app.include_router(evidence_router)
-    app.include_router(versions_router)
-    app.include_router(alignment_router)
-    app.include_router(delivery_router)
-    app.include_router(technical_evaluation_router)
-    app.include_router(product_validation_router)
+    # F011 D1/D2: the general request-rate guard covers every authenticated
+    # route uniformly; expensive-write endpoints add their own stricter class
+    # at the route level. /health stays unguarded (unauthenticated probe).
+    all_routers = (
+        projects_router,
+        sources_router,
+        discovery_router,
+        brief_router,
+        planning_router,
+        blueprint_router,
+        generation_router,
+        generation_lesson_router,
+        decks_router,
+        decks_artifact_router,
+        exercises_router,
+        exercises_artifact_router,
+        account_router,
+        evidence_router,
+        versions_router,
+        alignment_router,
+        delivery_router,
+        technical_evaluation_router,
+        product_validation_router,
+    )
+    for router in all_routers:
+        app.include_router(router, dependencies=[Depends(require_general_rate)])
 
     @app.get("/health")
     def health() -> dict[str, str]:

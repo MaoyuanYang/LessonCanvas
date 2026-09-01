@@ -1,0 +1,2 @@
+Class register (示例): student NO. 2024-0117, 身份证号 110101 20000101 1234,
+score 92, ranking 第1名. Normal unit topic: sports and health.

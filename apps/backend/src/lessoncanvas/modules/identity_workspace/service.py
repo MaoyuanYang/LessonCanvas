@@ -1,9 +1,10 @@
 import uuid
 
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from lessoncanvas.models import AuditEvent, Project, Workspace
+from lessoncanvas.models import AuditEvent, Project, RetainedSecurityEvent, Workspace
 from lessoncanvas.settings import get_settings
 
 
@@ -20,7 +21,15 @@ def resolve_workspace(session: Session, clerk_user_id: str) -> Workspace:
     if workspace is None:
         workspace = Workspace(clerk_user_id=clerk_user_id)
         session.add(workspace)
-        session.flush()
+        try:
+            session.flush()
+        except IntegrityError:
+            # F011 D9 race safety: a concurrent first request won the unique
+            # clerk_user_id insert; adopt its row instead of failing.
+            session.rollback()
+            workspace = session.scalar(
+                select(Workspace).where(Workspace.clerk_user_id == clerk_user_id)
+            )
     return workspace
 
 
@@ -39,6 +48,9 @@ def create_project(
     session: Session, workspace: Workspace, name: str, unit_hints: str | None
 ) -> Project:
     settings = get_settings()
+    # F011 D9 race safety: lock the workspace row so concurrent creates count
+    # a stable set; exactly the cap succeeds, never an overshoot.
+    session.execute(select(Workspace).where(Workspace.id == workspace.id).with_for_update())
     if _active_project_count(session, workspace.id) >= settings.max_projects_per_workspace:
         raise QuotaExceededError("project limit reached")
     project = Project(workspace_id=workspace.id, name=name, unit_hints=unit_hints)
@@ -71,6 +83,29 @@ def get_owned_project(session: Session, workspace: Workspace, project_id: uuid.U
     if project is None or project.workspace_id != workspace.id or project.status == "deleted":
         raise NotFoundError("project not found")
     return project
+
+
+def audit_download(
+    session: Session,
+    workspace_id: uuid.UUID,
+    actor: str,
+    kind: str,
+    target_id: uuid.UUID,
+) -> None:
+    """F011 D7: every private-object download is auditable by its owner and
+    mirrored into the content-free retained ledger (D4(b) scope)."""
+    session.add(
+        AuditEvent(
+            workspace_id=workspace_id,
+            actor=actor,
+            action=f"download.{kind}",
+            target_type=kind,
+            target_id=str(target_id),
+        )
+    )
+    session.add(
+        RetainedSecurityEvent(workspace_id=workspace_id, action=f"download.{kind}")
+    )
 
 
 def delete_project(session: Session, workspace: Workspace, project_id: uuid.UUID) -> Project:
