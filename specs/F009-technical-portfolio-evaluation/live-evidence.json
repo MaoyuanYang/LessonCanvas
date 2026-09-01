@@ -1,0 +1,2007 @@
+{
+  "started_at": "2026-09-01T07:53:37.651895+00:00",
+  "finished_at": "2026-09-01T07:59:34.654211+00:00",
+  "passes": [
+    {
+      "evaluation_id": "01a05c01-105e-7e9b-988d-854095b1e30a",
+      "unit_key": "travelling-around",
+      "pass_index": 1,
+      "project_id": "01a05c01-105a-7e93-9a26-fd1115e42601",
+      "created": true,
+      "status": "failed",
+      "last_status": "failed",
+      "final": {
+        "status": "completed",
+        "overall_outcome": "pass",
+        "criteria": [
+          {
+            "key": "C-ART-1",
+            "classification": "blocking",
+            "outcome": "pass",
+            "measured": null
+          },
+          {
+            "key": "C-GROUND-1",
+            "classification": "blocking",
+            "outcome": "pass",
+            "measured": null
+          },
+          {
+            "key": "C-MEM-1",
+            "classification": "blocking",
+            "outcome": "pass",
+            "measured": null
+          },
+          {
+            "key": "C-TRACE-1",
+            "classification": "blocking",
+            "outcome": "pass",
+            "measured": null
+          },
+          {
+            "key": "M-COST",
+            "classification": "diagnostic",
+            "outcome": null,
+            "measured": {
+              "estimated_cost_usd": 0.012376,
+              "events_with_cost": 15,
+              "events_total": 33,
+              "model_events_missing_usage": 0,
+              "narration_events_missing_usage": 0
+            }
+          },
+          {
+            "key": "M-COVER",
+            "classification": "diagnostic",
+            "outcome": null,
+            "measured": {
+              "finding_severity_distribution": {
+                "severe": 0,
+                "warning": 0,
+                "info": 0
+              },
+              "package_status": null
+            }
+          },
+          {
+            "key": "M-LAT",
+            "classification": "diagnostic",
+            "outcome": null,
+            "measured": {
+              "model.build_draft": {
+                "count": 1,
+                "p50_ms": 2027,
+                "max_ms": 2027
+              },
+              "model.gap_analysis": {
+                "count": 1,
+                "p50_ms": 787,
+                "max_ms": 787
+              },
+              "model.generation_write_deck": {
+                "count": 3,
+                "p50_ms": 6744,
+                "max_ms": 7537
+              },
+              "model.generation_write_exercises": {
+                "count": 3,
+                "p50_ms": 7590,
+                "max_ms": 9457
+              },
+              "model.generation_write_lesson": {
+                "count": 3,
+                "p50_ms": 6892,
+                "max_ms": 7759
+              },
+              "model.planning_build_draft": {
+                "count": 1,
+                "p50_ms": 3074,
+                "max_ms": 3074
+              },
+              "model.planning_gap_analysis": {
+                "count": 3,
+                "p50_ms": 1189,
+                "max_ms": 1991
+              },
+              "tool.render_lesson_deck_pptx": {
+                "count": 3,
+                "p50_ms": 19,
+                "max_ms": 21
+              },
+              "tool.render_lesson_exercises_docx": {
+                "count": 3,
+                "p50_ms": 22,
+                "max_ms": 24
+              },
+              "tool.render_lesson_plan_docx": {
+                "count": 3,
+                "p50_ms": 20,
+                "max_ms": 22
+              },
+              "tool.validate_exercise_pair": {
+                "count": 3,
+                "p50_ms": 35,
+                "max_ms": 43
+              },
+              "tool.validate_lesson_deck_pptx": {
+                "count": 3,
+                "p50_ms": 5,
+                "max_ms": 9
+              },
+              "tool.validate_lesson_plan_docx": {
+                "count": 3,
+                "p50_ms": 5,
+                "max_ms": 5
+              }
+            }
+          }
+        ],
+        "failure_reason": null
+      },
+      "rerun_note": "first attempt failed at harness level (planning-draft timing); harness hardened with bounded draft waits and the pass re-executed"
+    },
+    {
+      "evaluation_id": "01a05bf5-c5aa-73b7-90d7-300148cda61b",
+      "unit_key": "travelling-around",
+      "pass_index": 2,
+      "project_id": "01a05bf5-9a88-70a0-a9cb-1b01e0d3e057",
+      "created": true,
+      "status": "completed",
+      "last_status": "completed",
+      "final": {
+        "status": "completed",
+        "overall_outcome": "fail",
+        "criteria": [
+          {
+            "key": "C-ART-1",
+            "classification": "blocking",
+            "outcome": "fail",
+            "measured": null
+          },
+          {
+            "key": "C-GROUND-1",
+            "classification": "blocking",
+            "outcome": "pass",
+            "measured": null
+          },
+          {
+            "key": "C-MEM-1",
+            "classification": "blocking",
+            "outcome": "pass",
+            "measured": null
+          },
+          {
+            "key": "C-TRACE-1",
+            "classification": "blocking",
+            "outcome": "pass",
+            "measured": null
+          },
+          {
+            "key": "M-COST",
+            "classification": "diagnostic",
+            "outcome": null,
+            "measured": {
+              "estimated_cost_usd": 0.014061,
+              "events_with_cost": 14,
+              "events_total": 34,
+              "model_events_missing_usage": 0,
+              "narration_events_missing_usage": 0
+            }
+          },
+          {
+            "key": "M-COVER",
+            "classification": "diagnostic",
+            "outcome": null,
+            "measured": {
+              "finding_severity_distribution": {
+                "severe": 1,
+                "warning": 0,
+                "info": 0
+              },
+              "package_status": null
+            }
+          },
+          {
+            "key": "M-LAT",
+            "classification": "diagnostic",
+            "outcome": null,
+            "measured": {
+              "model.generation_write_deck": {
+                "count": 4,
+                "p50_ms": 8672,
+                "max_ms": 9712
+              },
+              "model.generation_write_exercises": {
+                "count": 3,
+                "p50_ms": 8329,
+                "max_ms": 8715
+              },
+              "model.generation_write_lesson": {
+                "count": 3,
+                "p50_ms": 7401,
+                "max_ms": 7649
+              },
+              "model.planning_build_draft": {
+                "count": 1,
+                "p50_ms": 2982,
+                "max_ms": 2982
+              },
+              "model.planning_gap_analysis": {
+                "count": 3,
+                "p50_ms": 1455,
+                "max_ms": 1990
+              },
+              "tool.render_lesson_deck_pptx": {
+                "count": 4,
+                "p50_ms": 21,
+                "max_ms": 22
+              },
+              "tool.render_lesson_exercises_docx": {
+                "count": 3,
+                "p50_ms": 21,
+                "max_ms": 24
+              },
+              "tool.render_lesson_plan_docx": {
+                "count": 3,
+                "p50_ms": 12,
+                "max_ms": 14
+              },
+              "tool.validate_exercise_pair": {
+                "count": 3,
+                "p50_ms": 40,
+                "max_ms": 42
+              },
+              "tool.validate_lesson_deck_pptx": {
+                "count": 4,
+                "p50_ms": 3,
+                "max_ms": 5
+              },
+              "tool.validate_lesson_plan_docx": {
+                "count": 3,
+                "p50_ms": 4,
+                "max_ms": 5
+              }
+            }
+          }
+        ],
+        "failure_reason": null
+      }
+    },
+    {
+      "evaluation_id": "01a05bf7-121b-7778-8201-67c74538358d",
+      "unit_key": "natural-disasters",
+      "pass_index": 1,
+      "project_id": "01a05bf7-121a-7fc9-b2b6-5e5c1d4a2236",
+      "created": true,
+      "status": "completed",
+      "last_status": "completed",
+      "final": {
+        "status": "completed",
+        "overall_outcome": "pass",
+        "criteria": [
+          {
+            "key": "C-ART-1",
+            "classification": "blocking",
+            "outcome": "pass",
+            "measured": null
+          },
+          {
+            "key": "C-GROUND-1",
+            "classification": "blocking",
+            "outcome": "pass",
+            "measured": null
+          },
+          {
+            "key": "C-MEM-1",
+            "classification": "blocking",
+            "outcome": "pass",
+            "measured": null
+          },
+          {
+            "key": "C-TRACE-1",
+            "classification": "blocking",
+            "outcome": "pass",
+            "measured": null
+          },
+          {
+            "key": "M-COST",
+            "classification": "diagnostic",
+            "outcome": null,
+            "measured": {
+              "estimated_cost_usd": 0.011011,
+              "events_with_cost": 14,
+              "events_total": 32,
+              "model_events_missing_usage": 0,
+              "narration_events_missing_usage": 0
+            }
+          },
+          {
+            "key": "M-COVER",
+            "classification": "diagnostic",
+            "outcome": null,
+            "measured": {
+              "finding_severity_distribution": {
+                "severe": 0,
+                "warning": 0,
+                "info": 0
+              },
+              "package_status": null
+            }
+          },
+          {
+            "key": "M-LAT",
+            "classification": "diagnostic",
+            "outcome": null,
+            "measured": {
+              "model.build_draft": {
+                "count": 1,
+                "p50_ms": 2435,
+                "max_ms": 2435
+              },
+              "model.gap_analysis": {
+                "count": 1,
+                "p50_ms": 597,
+                "max_ms": 597
+              },
+              "model.generation_write_deck": {
+                "count": 3,
+                "p50_ms": 6446,
+                "max_ms": 7275
+              },
+              "model.generation_write_exercises": {
+                "count": 3,
+                "p50_ms": 6557,
+                "max_ms": 8025
+              },
+              "model.generation_write_lesson": {
+                "count": 3,
+                "p50_ms": 6227,
+                "max_ms": 6506
+              },
+              "model.planning_build_draft": {
+                "count": 1,
+                "p50_ms": 4054,
+                "max_ms": 4054
+              },
+              "model.planning_gap_analysis": {
+                "count": 2,
+                "p50_ms": 1444,
+                "max_ms": 1444
+              },
+              "tool.render_lesson_deck_pptx": {
+                "count": 3,
+                "p50_ms": 16,
+                "max_ms": 18
+              },
+              "tool.render_lesson_exercises_docx": {
+                "count": 3,
+                "p50_ms": 21,
+                "max_ms": 22
+              },
+              "tool.render_lesson_plan_docx": {
+                "count": 3,
+                "p50_ms": 12,
+                "max_ms": 12
+              },
+              "tool.validate_exercise_pair": {
+                "count": 3,
+                "p50_ms": 36,
+                "max_ms": 39
+              },
+              "tool.validate_lesson_deck_pptx": {
+                "count": 3,
+                "p50_ms": 4,
+                "max_ms": 5
+              },
+              "tool.validate_lesson_plan_docx": {
+                "count": 3,
+                "p50_ms": 3,
+                "max_ms": 3
+              }
+            }
+          }
+        ],
+        "failure_reason": null
+      }
+    },
+    {
+      "evaluation_id": "01a05bf8-19a6-7945-8a82-8bcb13137740",
+      "unit_key": "natural-disasters",
+      "pass_index": 2,
+      "project_id": "01a05bf7-121a-7fc9-b2b6-5e5c1d4a2236",
+      "created": true,
+      "status": "completed",
+      "last_status": "completed",
+      "final": {
+        "status": "completed",
+        "overall_outcome": "pass",
+        "criteria": [
+          {
+            "key": "C-ART-1",
+            "classification": "blocking",
+            "outcome": "pass",
+            "measured": null
+          },
+          {
+            "key": "C-GROUND-1",
+            "classification": "blocking",
+            "outcome": "pass",
+            "measured": null
+          },
+          {
+            "key": "C-MEM-1",
+            "classification": "blocking",
+            "outcome": "pass",
+            "measured": null
+          },
+          {
+            "key": "C-TRACE-1",
+            "classification": "blocking",
+            "outcome": "pass",
+            "measured": null
+          },
+          {
+            "key": "M-COST",
+            "classification": "diagnostic",
+            "outcome": null,
+            "measured": {
+              "estimated_cost_usd": 0.010219,
+              "events_with_cost": 12,
+              "events_total": 30,
+              "model_events_missing_usage": 0,
+              "narration_events_missing_usage": 0
+            }
+          },
+          {
+            "key": "M-COVER",
+            "classification": "diagnostic",
+            "outcome": null,
+            "measured": {
+              "finding_severity_distribution": {
+                "severe": 0,
+                "warning": 0,
+                "info": 0
+              },
+              "package_status": null
+            }
+          },
+          {
+            "key": "M-LAT",
+            "classification": "diagnostic",
+            "outcome": null,
+            "measured": {
+              "model.generation_write_deck": {
+                "count": 3,
+                "p50_ms": 5597,
+                "max_ms": 7081
+              },
+              "model.generation_write_exercises": {
+                "count": 3,
+                "p50_ms": 5864,
+                "max_ms": 5991
+              },
+              "model.generation_write_lesson": {
+                "count": 3,
+                "p50_ms": 6781,
+                "max_ms": 6908
+              },
+              "model.planning_build_draft": {
+                "count": 1,
+                "p50_ms": 3430,
+                "max_ms": 3430
+              },
+              "model.planning_gap_analysis": {
+                "count": 2,
+                "p50_ms": 2133,
+                "max_ms": 2133
+              },
+              "tool.render_lesson_deck_pptx": {
+                "count": 3,
+                "p50_ms": 15,
+                "max_ms": 18
+              },
+              "tool.render_lesson_exercises_docx": {
+                "count": 3,
+                "p50_ms": 21,
+                "max_ms": 21
+              },
+              "tool.render_lesson_plan_docx": {
+                "count": 3,
+                "p50_ms": 12,
+                "max_ms": 12
+              },
+              "tool.validate_exercise_pair": {
+                "count": 3,
+                "p50_ms": 33,
+                "max_ms": 35
+              },
+              "tool.validate_lesson_deck_pptx": {
+                "count": 3,
+                "p50_ms": 3,
+                "max_ms": 4
+              },
+              "tool.validate_lesson_plan_docx": {
+                "count": 3,
+                "p50_ms": 3,
+                "max_ms": 3
+              }
+            }
+          }
+        ],
+        "failure_reason": null
+      }
+    },
+    {
+      "evaluation_id": "01a05bf9-0ab1-791a-ac94-dc5f0967b9d3",
+      "unit_key": "cultural-heritage",
+      "pass_index": 1,
+      "project_id": "01a05bf9-0ab0-7c6a-964e-54e844669cfc",
+      "created": true,
+      "status": "completed",
+      "last_status": "completed",
+      "final": {
+        "status": "completed",
+        "overall_outcome": "pass",
+        "criteria": [
+          {
+            "key": "C-ART-1",
+            "classification": "blocking",
+            "outcome": "pass",
+            "measured": null
+          },
+          {
+            "key": "C-GROUND-1",
+            "classification": "blocking",
+            "outcome": "pass",
+            "measured": null
+          },
+          {
+            "key": "C-MEM-1",
+            "classification": "blocking",
+            "outcome": "pass",
+            "measured": null
+          },
+          {
+            "key": "C-TRACE-1",
+            "classification": "blocking",
+            "outcome": "pass",
+            "measured": null
+          },
+          {
+            "key": "M-COST",
+            "classification": "diagnostic",
+            "outcome": null,
+            "measured": {
+              "estimated_cost_usd": 0.011389,
+              "events_with_cost": 14,
+              "events_total": 32,
+              "model_events_missing_usage": 0,
+              "narration_events_missing_usage": 0
+            }
+          },
+          {
+            "key": "M-COVER",
+            "classification": "diagnostic",
+            "outcome": null,
+            "measured": {
+              "finding_severity_distribution": {
+                "severe": 0,
+                "warning": 0,
+                "info": 0
+              },
+              "package_status": null
+            }
+          },
+          {
+            "key": "M-LAT",
+            "classification": "diagnostic",
+            "outcome": null,
+            "measured": {
+              "model.build_draft": {
+                "count": 1,
+                "p50_ms": 2642,
+                "max_ms": 2642
+              },
+              "model.gap_analysis": {
+                "count": 1,
+                "p50_ms": 1006,
+                "max_ms": 1006
+              },
+              "model.generation_write_deck": {
+                "count": 3,
+                "p50_ms": 8043,
+                "max_ms": 8167
+              },
+              "model.generation_write_exercises": {
+                "count": 3,
+                "p50_ms": 6592,
+                "max_ms": 6940
+              },
+              "model.generation_write_lesson": {
+                "count": 3,
+                "p50_ms": 5805,
+                "max_ms": 7034
+              },
+              "model.planning_build_draft": {
+                "count": 1,
+                "p50_ms": 3814,
+                "max_ms": 3814
+              },
+              "model.planning_gap_analysis": {
+                "count": 2,
+                "p50_ms": 1497,
+                "max_ms": 1497
+              },
+              "tool.render_lesson_deck_pptx": {
+                "count": 3,
+                "p50_ms": 18,
+                "max_ms": 19
+              },
+              "tool.render_lesson_exercises_docx": {
+                "count": 3,
+                "p50_ms": 23,
+                "max_ms": 27
+              },
+              "tool.render_lesson_plan_docx": {
+                "count": 3,
+                "p50_ms": 12,
+                "max_ms": 12
+              },
+              "tool.validate_exercise_pair": {
+                "count": 3,
+                "p50_ms": 36,
+                "max_ms": 38
+              },
+              "tool.validate_lesson_deck_pptx": {
+                "count": 3,
+                "p50_ms": 4,
+                "max_ms": 4
+              },
+              "tool.validate_lesson_plan_docx": {
+                "count": 3,
+                "p50_ms": 3,
+                "max_ms": 3
+              }
+            }
+          }
+        ],
+        "failure_reason": null
+      }
+    },
+    {
+      "evaluation_id": "01a05bfa-2257-795f-8c64-f00e5df42b0f",
+      "unit_key": "cultural-heritage",
+      "pass_index": 2,
+      "project_id": "01a05bf9-0ab0-7c6a-964e-54e844669cfc",
+      "created": true,
+      "status": "completed",
+      "last_status": "completed",
+      "final": {
+        "status": "completed",
+        "overall_outcome": "pass",
+        "criteria": [
+          {
+            "key": "C-ART-1",
+            "classification": "blocking",
+            "outcome": "pass",
+            "measured": null
+          },
+          {
+            "key": "C-GROUND-1",
+            "classification": "blocking",
+            "outcome": "pass",
+            "measured": null
+          },
+          {
+            "key": "C-MEM-1",
+            "classification": "blocking",
+            "outcome": "pass",
+            "measured": null
+          },
+          {
+            "key": "C-TRACE-1",
+            "classification": "blocking",
+            "outcome": "pass",
+            "measured": null
+          },
+          {
+            "key": "M-COST",
+            "classification": "diagnostic",
+            "outcome": null,
+            "measured": {
+              "estimated_cost_usd": 0.009727,
+              "events_with_cost": 12,
+              "events_total": 30,
+              "model_events_missing_usage": 0,
+              "narration_events_missing_usage": 0
+            }
+          },
+          {
+            "key": "M-COVER",
+            "classification": "diagnostic",
+            "outcome": null,
+            "measured": {
+              "finding_severity_distribution": {
+                "severe": 0,
+                "warning": 0,
+                "info": 0
+              },
+              "package_status": null
+            }
+          },
+          {
+            "key": "M-LAT",
+            "classification": "diagnostic",
+            "outcome": null,
+            "measured": {
+              "model.generation_write_deck": {
+                "count": 3,
+                "p50_ms": 6272,
+                "max_ms": 6334
+              },
+              "model.generation_write_exercises": {
+                "count": 3,
+                "p50_ms": 5715,
+                "max_ms": 5944
+              },
+              "model.generation_write_lesson": {
+                "count": 3,
+                "p50_ms": 5931,
+                "max_ms": 7257
+              },
+              "model.planning_build_draft": {
+                "count": 1,
+                "p50_ms": 3210,
+                "max_ms": 3210
+              },
+              "model.planning_gap_analysis": {
+                "count": 2,
+                "p50_ms": 1475,
+                "max_ms": 1475
+              },
+              "tool.render_lesson_deck_pptx": {
+                "count": 3,
+                "p50_ms": 14,
+                "max_ms": 19
+              },
+              "tool.render_lesson_exercises_docx": {
+                "count": 3,
+                "p50_ms": 22,
+                "max_ms": 22
+              },
+              "tool.render_lesson_plan_docx": {
+                "count": 3,
+                "p50_ms": 12,
+                "max_ms": 12
+              },
+              "tool.validate_exercise_pair": {
+                "count": 3,
+                "p50_ms": 32,
+                "max_ms": 34
+              },
+              "tool.validate_lesson_deck_pptx": {
+                "count": 3,
+                "p50_ms": 3,
+                "max_ms": 6
+              },
+              "tool.validate_lesson_plan_docx": {
+                "count": 3,
+                "p50_ms": 3,
+                "max_ms": 3
+              }
+            }
+          }
+        ],
+        "failure_reason": null
+      }
+    }
+  ],
+  "reports": {
+    "01a05bf5-9a88-70a0-a9cb-1b01e0d3e057": {
+      "dataset_revision": "eval-datasets-r1",
+      "dataset_governance_error": null,
+      "passes": [
+        {
+          "evaluation_id": "01a05bf5-9a8d-7b14-8edf-6e3bec33bca0",
+          "unit_key": "travelling-around",
+          "pass_index": 1,
+          "mode": "live",
+          "scenario": "full_pipeline",
+          "status": "failed",
+          "overall_outcome": null,
+          "failure_reason": "NotFoundError: blueprint draft not found [harness.py:264 <- harness.py:190 <- blueprint.py:530 <- blueprint.py:443]",
+          "dataset_revision": "eval-datasets-r1",
+          "model_config": {
+            "model_adapter": "deepseek",
+            "model": "deepseek-chat",
+            "checkpoint_backend": "memory",
+            "tasks_eager": true,
+            "max_model_calls_per_run": 20
+          },
+          "memory_state": {
+            "memory_state": "empty (F013 not implemented)"
+          },
+          "brief_version_id": null,
+          "blueprint_version_id": null,
+          "created_at": "2026-09-01T07:53:37.677602+00:00",
+          "completed_at": "2026-09-01T07:53:48.711662+00:00",
+          "criteria": [],
+          "superseded_configuration": false
+        },
+        {
+          "evaluation_id": "01a05bf5-c5aa-73b7-90d7-300148cda61b",
+          "unit_key": "travelling-around",
+          "pass_index": 2,
+          "mode": "live",
+          "scenario": "full_pipeline",
+          "status": "completed",
+          "overall_outcome": "fail",
+          "failure_reason": null,
+          "dataset_revision": "eval-datasets-r1",
+          "model_config": {
+            "model_adapter": "deepseek",
+            "model": "deepseek-chat",
+            "checkpoint_backend": "memory",
+            "tasks_eager": true,
+            "max_model_calls_per_run": 20
+          },
+          "memory_state": {
+            "memory_state": "empty (F013 not implemented)"
+          },
+          "brief_version_id": "01a05bf5-c5b1-7b32-b3cf-ba91c2ec16c5",
+          "blueprint_version_id": "01a05bf5-e413-7239-85cc-4faf1a478f6a",
+          "created_at": "2026-09-01T07:53:48.714628+00:00",
+          "completed_at": "2026-09-01T07:55:13.814708+00:00",
+          "criteria": [
+            {
+              "criterion_key": "C-ART-1",
+              "classification": "blocking",
+              "outcome": "fail",
+              "measured": null,
+              "evidence": {
+                "severe_finding_keys": [
+                  "gap:slide_deck:3:not_downloadable"
+                ],
+                "technical_package_status": null,
+                "note": "reuses the F008 deterministic alignment read model"
+              }
+            },
+            {
+              "criterion_key": "C-GROUND-1",
+              "classification": "blocking",
+              "outcome": "pass",
+              "measured": null,
+              "evidence": {
+                "citation_count": 3,
+                "unresolved": [],
+                "checked_against_sources": [
+                  "01a05bf5-9be1-74f9-a630-18d57eaba198",
+                  "01a05bf5-9c2b-7821-9468-305a8235ec61"
+                ]
+              }
+            },
+            {
+              "criterion_key": "C-MEM-1",
+              "classification": "blocking",
+              "outcome": "pass",
+              "measured": null,
+              "evidence": {
+                "memory_state": "empty (F013 not implemented)"
+              }
+            },
+            {
+              "criterion_key": "C-TRACE-1",
+              "classification": "blocking",
+              "outcome": "pass",
+              "measured": null,
+              "evidence": {
+                "runs": [
+                  {
+                    "run_id": "01a05bf5-c5b3-78c6-b93d-d6c1f31d1b48",
+                    "model_calls": 4,
+                    "traced_model_calls": 4
+                  },
+                  {
+                    "run_id": "01a05bf5-e418-7d7e-88e0-9a21742b2538",
+                    "model_calls": 3,
+                    "traced_model_calls": 3,
+                    "run_events": 13
+                  },
+                  {
+                    "run_id": "01a05bf6-3596-787a-b47c-18fae1fcf837",
+                    "model_calls": 4,
+                    "traced_model_calls": 4,
+                    "run_events": 15
+                  },
+                  {
+                    "run_id": "01a05bf6-b3f9-7c67-af62-047c0cba1fe8",
+                    "model_calls": 3,
+                    "traced_model_calls": 3,
+                    "run_events": 13
+                  }
+                ],
+                "violations": []
+              }
+            },
+            {
+              "criterion_key": "M-COST",
+              "classification": "diagnostic",
+              "outcome": null,
+              "measured": {
+                "estimated_cost_usd": 0.014061,
+                "events_with_cost": 14,
+                "events_total": 34,
+                "model_events_missing_usage": 0,
+                "narration_events_missing_usage": 0
+              },
+              "evidence": {
+                "run_ids": [
+                  "01a05bf5-c5b3-78c6-b93d-d6c1f31d1b48",
+                  "01a05bf5-e418-7d7e-88e0-9a21742b2538",
+                  "01a05bf6-3596-787a-b47c-18fae1fcf837",
+                  "01a05bf6-b3f9-7c67-af62-047c0cba1fe8"
+                ]
+              }
+            },
+            {
+              "criterion_key": "M-COVER",
+              "classification": "diagnostic",
+              "outcome": null,
+              "measured": {
+                "finding_severity_distribution": {
+                  "severe": 1,
+                  "warning": 0,
+                  "info": 0
+                },
+                "package_status": null
+              },
+              "evidence": {
+                "source": "F008 alignment read model"
+              }
+            },
+            {
+              "criterion_key": "M-LAT",
+              "classification": "diagnostic",
+              "outcome": null,
+              "measured": {
+                "model.generation_write_deck": {
+                  "count": 4,
+                  "p50_ms": 8672,
+                  "max_ms": 9712
+                },
+                "model.generation_write_exercises": {
+                  "count": 3,
+                  "p50_ms": 8329,
+                  "max_ms": 8715
+                },
+                "model.generation_write_lesson": {
+                  "count": 3,
+                  "p50_ms": 7401,
+                  "max_ms": 7649
+                },
+                "model.planning_build_draft": {
+                  "count": 1,
+                  "p50_ms": 2982,
+                  "max_ms": 2982
+                },
+                "model.planning_gap_analysis": {
+                  "count": 3,
+                  "p50_ms": 1455,
+                  "max_ms": 1990
+                },
+                "tool.render_lesson_deck_pptx": {
+                  "count": 4,
+                  "p50_ms": 21,
+                  "max_ms": 22
+                },
+                "tool.render_lesson_exercises_docx": {
+                  "count": 3,
+                  "p50_ms": 21,
+                  "max_ms": 24
+                },
+                "tool.render_lesson_plan_docx": {
+                  "count": 3,
+                  "p50_ms": 12,
+                  "max_ms": 14
+                },
+                "tool.validate_exercise_pair": {
+                  "count": 3,
+                  "p50_ms": 40,
+                  "max_ms": 42
+                },
+                "tool.validate_lesson_deck_pptx": {
+                  "count": 4,
+                  "p50_ms": 3,
+                  "max_ms": 5
+                },
+                "tool.validate_lesson_plan_docx": {
+                  "count": 3,
+                  "p50_ms": 4,
+                  "max_ms": 5
+                }
+              },
+              "evidence": {
+                "run_ids": [
+                  "01a05bf5-c5b3-78c6-b93d-d6c1f31d1b48",
+                  "01a05bf5-e418-7d7e-88e0-9a21742b2538",
+                  "01a05bf6-3596-787a-b47c-18fae1fcf837",
+                  "01a05bf6-b3f9-7c67-af62-047c0cba1fe8"
+                ]
+              }
+            }
+          ],
+          "superseded_configuration": false
+        }
+      ],
+      "comparisons": [
+        {
+          "evaluation_id": "01a05bf5-9a8d-7b14-8edf-6e3bec33bca0",
+          "unit_key": "travelling-around",
+          "pass_index": 1,
+          "comparison_available": true,
+          "comparison_unavailable_reason": null,
+          "comparable_pass_indexes": [
+            2
+          ]
+        },
+        {
+          "evaluation_id": "01a05bf5-c5aa-73b7-90d7-300148cda61b",
+          "unit_key": "travelling-around",
+          "pass_index": 2,
+          "comparison_available": false,
+          "comparison_unavailable_reason": "对比数据不足",
+          "comparable_pass_indexes": []
+        }
+      ],
+      "blocking_criterion_outcomes": {
+        "C-ART-1": [
+          "fail"
+        ],
+        "C-GROUND-1": [
+          "pass"
+        ],
+        "C-MEM-1": [
+          "pass"
+        ],
+        "C-TRACE-1": [
+          "pass"
+        ]
+      },
+      "overall_outcome": "fail",
+      "product_validation_status": "not_evaluated",
+      "technical_note": "技术评估与教师产品验证为两个独立状态；产品验证状态在 F010 前保持未评估。"
+    },
+    "01a05bf7-121a-7fc9-b2b6-5e5c1d4a2236": {
+      "dataset_revision": "eval-datasets-r1",
+      "dataset_governance_error": null,
+      "passes": [
+        {
+          "evaluation_id": "01a05bf7-121b-7778-8201-67c74538358d",
+          "unit_key": "natural-disasters",
+          "pass_index": 1,
+          "mode": "live",
+          "scenario": "full_pipeline",
+          "status": "completed",
+          "overall_outcome": "pass",
+          "failure_reason": null,
+          "dataset_revision": "eval-datasets-r1",
+          "model_config": {
+            "model_adapter": "deepseek",
+            "model": "deepseek-chat",
+            "checkpoint_backend": "memory",
+            "tasks_eager": true,
+            "max_model_calls_per_run": 20
+          },
+          "memory_state": {
+            "memory_state": "empty (F013 not implemented)"
+          },
+          "brief_version_id": "01a05bf7-1e1e-7b4c-9d93-a765555670ad",
+          "blueprint_version_id": "01a05bf7-38f4-7194-a7ad-fb719096d3aa",
+          "created_at": "2026-09-01T07:55:13.819439+00:00",
+          "completed_at": "2026-09-01T07:56:21.283688+00:00",
+          "criteria": [
+            {
+              "criterion_key": "C-ART-1",
+              "classification": "blocking",
+              "outcome": "pass",
+              "measured": null,
+              "evidence": {
+                "severe_finding_keys": [],
+                "technical_package_status": null,
+                "note": "reuses the F008 deterministic alignment read model"
+              }
+            },
+            {
+              "criterion_key": "C-GROUND-1",
+              "classification": "blocking",
+              "outcome": "pass",
+              "measured": null,
+              "evidence": {
+                "citation_count": 3,
+                "unresolved": [],
+                "checked_against_sources": [
+                  "01a05bf7-1221-7115-a190-fa9895b6a1b3",
+                  "01a05bf7-122d-7a56-96ef-f6edd6906853"
+                ]
+              }
+            },
+            {
+              "criterion_key": "C-MEM-1",
+              "classification": "blocking",
+              "outcome": "pass",
+              "measured": null,
+              "evidence": {
+                "memory_state": "empty (F013 not implemented)"
+              }
+            },
+            {
+              "criterion_key": "C-TRACE-1",
+              "classification": "blocking",
+              "outcome": "pass",
+              "measured": null,
+              "evidence": {
+                "runs": [
+                  {
+                    "run_id": "01a05bf7-1237-7119-8307-27d3f0bdc96d",
+                    "model_calls": 2,
+                    "traced_model_calls": 2
+                  },
+                  {
+                    "run_id": "01a05bf7-1e20-7540-8f6f-9d366a45a5a8",
+                    "model_calls": 3,
+                    "traced_model_calls": 3
+                  },
+                  {
+                    "run_id": "01a05bf7-38f6-7ba7-b999-54f0f10d42ab",
+                    "model_calls": 3,
+                    "traced_model_calls": 3,
+                    "run_events": 13
+                  },
+                  {
+                    "run_id": "01a05bf7-7cd5-77a5-b8ec-eadd30408a3d",
+                    "model_calls": 3,
+                    "traced_model_calls": 3,
+                    "run_events": 13
+                  },
+                  {
+                    "run_id": "01a05bf7-c9ad-78b4-b828-3bb186b338c2",
+                    "model_calls": 3,
+                    "traced_model_calls": 3,
+                    "run_events": 13
+                  }
+                ],
+                "violations": []
+              }
+            },
+            {
+              "criterion_key": "M-COST",
+              "classification": "diagnostic",
+              "outcome": null,
+              "measured": {
+                "estimated_cost_usd": 0.011011,
+                "events_with_cost": 14,
+                "events_total": 32,
+                "model_events_missing_usage": 0,
+                "narration_events_missing_usage": 0
+              },
+              "evidence": {
+                "run_ids": [
+                  "01a05bf7-1237-7119-8307-27d3f0bdc96d",
+                  "01a05bf7-1e20-7540-8f6f-9d366a45a5a8",
+                  "01a05bf7-38f6-7ba7-b999-54f0f10d42ab",
+                  "01a05bf7-7cd5-77a5-b8ec-eadd30408a3d",
+                  "01a05bf7-c9ad-78b4-b828-3bb186b338c2"
+                ]
+              }
+            },
+            {
+              "criterion_key": "M-COVER",
+              "classification": "diagnostic",
+              "outcome": null,
+              "measured": {
+                "finding_severity_distribution": {
+                  "severe": 0,
+                  "warning": 0,
+                  "info": 0
+                },
+                "package_status": null
+              },
+              "evidence": {
+                "source": "F008 alignment read model"
+              }
+            },
+            {
+              "criterion_key": "M-LAT",
+              "classification": "diagnostic",
+              "outcome": null,
+              "measured": {
+                "model.build_draft": {
+                  "count": 1,
+                  "p50_ms": 2435,
+                  "max_ms": 2435
+                },
+                "model.gap_analysis": {
+                  "count": 1,
+                  "p50_ms": 597,
+                  "max_ms": 597
+                },
+                "model.generation_write_deck": {
+                  "count": 3,
+                  "p50_ms": 6446,
+                  "max_ms": 7275
+                },
+                "model.generation_write_exercises": {
+                  "count": 3,
+                  "p50_ms": 6557,
+                  "max_ms": 8025
+                },
+                "model.generation_write_lesson": {
+                  "count": 3,
+                  "p50_ms": 6227,
+                  "max_ms": 6506
+                },
+                "model.planning_build_draft": {
+                  "count": 1,
+                  "p50_ms": 4054,
+                  "max_ms": 4054
+                },
+                "model.planning_gap_analysis": {
+                  "count": 2,
+                  "p50_ms": 1444,
+                  "max_ms": 1444
+                },
+                "tool.render_lesson_deck_pptx": {
+                  "count": 3,
+                  "p50_ms": 16,
+                  "max_ms": 18
+                },
+                "tool.render_lesson_exercises_docx": {
+                  "count": 3,
+                  "p50_ms": 21,
+                  "max_ms": 22
+                },
+                "tool.render_lesson_plan_docx": {
+                  "count": 3,
+                  "p50_ms": 12,
+                  "max_ms": 12
+                },
+                "tool.validate_exercise_pair": {
+                  "count": 3,
+                  "p50_ms": 36,
+                  "max_ms": 39
+                },
+                "tool.validate_lesson_deck_pptx": {
+                  "count": 3,
+                  "p50_ms": 4,
+                  "max_ms": 5
+                },
+                "tool.validate_lesson_plan_docx": {
+                  "count": 3,
+                  "p50_ms": 3,
+                  "max_ms": 3
+                }
+              },
+              "evidence": {
+                "run_ids": [
+                  "01a05bf7-1237-7119-8307-27d3f0bdc96d",
+                  "01a05bf7-1e20-7540-8f6f-9d366a45a5a8",
+                  "01a05bf7-38f6-7ba7-b999-54f0f10d42ab",
+                  "01a05bf7-7cd5-77a5-b8ec-eadd30408a3d",
+                  "01a05bf7-c9ad-78b4-b828-3bb186b338c2"
+                ]
+              }
+            }
+          ],
+          "superseded_configuration": false
+        },
+        {
+          "evaluation_id": "01a05bf8-19a6-7945-8a82-8bcb13137740",
+          "unit_key": "natural-disasters",
+          "pass_index": 2,
+          "mode": "live",
+          "scenario": "full_pipeline",
+          "status": "completed",
+          "overall_outcome": "pass",
+          "failure_reason": null,
+          "dataset_revision": "eval-datasets-r1",
+          "model_config": {
+            "model_adapter": "deepseek",
+            "model": "deepseek-chat",
+            "checkpoint_backend": "memory",
+            "tasks_eager": true,
+            "max_model_calls_per_run": 20
+          },
+          "memory_state": {
+            "memory_state": "empty (F013 not implemented)"
+          },
+          "brief_version_id": "01a05bf8-19ad-7d8f-949c-93f5c1dd696a",
+          "blueprint_version_id": "01a05bf8-355e-7be8-9392-8ef8f927dbbd",
+          "created_at": "2026-09-01T07:56:21.286622+00:00",
+          "completed_at": "2026-09-01T07:57:22.990174+00:00",
+          "criteria": [
+            {
+              "criterion_key": "C-ART-1",
+              "classification": "blocking",
+              "outcome": "pass",
+              "measured": null,
+              "evidence": {
+                "severe_finding_keys": [],
+                "technical_package_status": null,
+                "note": "reuses the F008 deterministic alignment read model"
+              }
+            },
+            {
+              "criterion_key": "C-GROUND-1",
+              "classification": "blocking",
+              "outcome": "pass",
+              "measured": null,
+              "evidence": {
+                "citation_count": 3,
+                "unresolved": [],
+                "checked_against_sources": [
+                  "01a05bf7-1221-7115-a190-fa9895b6a1b3",
+                  "01a05bf7-122d-7a56-96ef-f6edd6906853"
+                ]
+              }
+            },
+            {
+              "criterion_key": "C-MEM-1",
+              "classification": "blocking",
+              "outcome": "pass",
+              "measured": null,
+              "evidence": {
+                "memory_state": "empty (F013 not implemented)"
+              }
+            },
+            {
+              "criterion_key": "C-TRACE-1",
+              "classification": "blocking",
+              "outcome": "pass",
+              "measured": null,
+              "evidence": {
+                "runs": [
+                  {
+                    "run_id": "01a05bf8-19b0-7d91-a052-d86e10a1bc96",
+                    "model_calls": 3,
+                    "traced_model_calls": 3
+                  },
+                  {
+                    "run_id": "01a05bf8-3560-7253-a25b-32bb20387da4",
+                    "model_calls": 3,
+                    "traced_model_calls": 3,
+                    "run_events": 13
+                  },
+                  {
+                    "run_id": "01a05bf8-7e44-7449-bf2a-37485c9a4af1",
+                    "model_calls": 3,
+                    "traced_model_calls": 3,
+                    "run_events": 13
+                  },
+                  {
+                    "run_id": "01a05bf8-c581-71dc-9fa4-8e82b37ca9da",
+                    "model_calls": 3,
+                    "traced_model_calls": 3,
+                    "run_events": 13
+                  }
+                ],
+                "violations": []
+              }
+            },
+            {
+              "criterion_key": "M-COST",
+              "classification": "diagnostic",
+              "outcome": null,
+              "measured": {
+                "estimated_cost_usd": 0.010219,
+                "events_with_cost": 12,
+                "events_total": 30,
+                "model_events_missing_usage": 0,
+                "narration_events_missing_usage": 0
+              },
+              "evidence": {
+                "run_ids": [
+                  "01a05bf8-19b0-7d91-a052-d86e10a1bc96",
+                  "01a05bf8-3560-7253-a25b-32bb20387da4",
+                  "01a05bf8-7e44-7449-bf2a-37485c9a4af1",
+                  "01a05bf8-c581-71dc-9fa4-8e82b37ca9da"
+                ]
+              }
+            },
+            {
+              "criterion_key": "M-COVER",
+              "classification": "diagnostic",
+              "outcome": null,
+              "measured": {
+                "finding_severity_distribution": {
+                  "severe": 0,
+                  "warning": 0,
+                  "info": 0
+                },
+                "package_status": null
+              },
+              "evidence": {
+                "source": "F008 alignment read model"
+              }
+            },
+            {
+              "criterion_key": "M-LAT",
+              "classification": "diagnostic",
+              "outcome": null,
+              "measured": {
+                "model.generation_write_deck": {
+                  "count": 3,
+                  "p50_ms": 5597,
+                  "max_ms": 7081
+                },
+                "model.generation_write_exercises": {
+                  "count": 3,
+                  "p50_ms": 5864,
+                  "max_ms": 5991
+                },
+                "model.generation_write_lesson": {
+                  "count": 3,
+                  "p50_ms": 6781,
+                  "max_ms": 6908
+                },
+                "model.planning_build_draft": {
+                  "count": 1,
+                  "p50_ms": 3430,
+                  "max_ms": 3430
+                },
+                "model.planning_gap_analysis": {
+                  "count": 2,
+                  "p50_ms": 2133,
+                  "max_ms": 2133
+                },
+                "tool.render_lesson_deck_pptx": {
+                  "count": 3,
+                  "p50_ms": 15,
+                  "max_ms": 18
+                },
+                "tool.render_lesson_exercises_docx": {
+                  "count": 3,
+                  "p50_ms": 21,
+                  "max_ms": 21
+                },
+                "tool.render_lesson_plan_docx": {
+                  "count": 3,
+                  "p50_ms": 12,
+                  "max_ms": 12
+                },
+                "tool.validate_exercise_pair": {
+                  "count": 3,
+                  "p50_ms": 33,
+                  "max_ms": 35
+                },
+                "tool.validate_lesson_deck_pptx": {
+                  "count": 3,
+                  "p50_ms": 3,
+                  "max_ms": 4
+                },
+                "tool.validate_lesson_plan_docx": {
+                  "count": 3,
+                  "p50_ms": 3,
+                  "max_ms": 3
+                }
+              },
+              "evidence": {
+                "run_ids": [
+                  "01a05bf8-19b0-7d91-a052-d86e10a1bc96",
+                  "01a05bf8-3560-7253-a25b-32bb20387da4",
+                  "01a05bf8-7e44-7449-bf2a-37485c9a4af1",
+                  "01a05bf8-c581-71dc-9fa4-8e82b37ca9da"
+                ]
+              }
+            }
+          ],
+          "superseded_configuration": false
+        }
+      ],
+      "comparisons": [
+        {
+          "evaluation_id": "01a05bf7-121b-7778-8201-67c74538358d",
+          "unit_key": "natural-disasters",
+          "pass_index": 1,
+          "comparison_available": true,
+          "comparison_unavailable_reason": null,
+          "comparable_pass_indexes": [
+            2
+          ]
+        },
+        {
+          "evaluation_id": "01a05bf8-19a6-7945-8a82-8bcb13137740",
+          "unit_key": "natural-disasters",
+          "pass_index": 2,
+          "comparison_available": true,
+          "comparison_unavailable_reason": null,
+          "comparable_pass_indexes": [
+            1
+          ]
+        }
+      ],
+      "blocking_criterion_outcomes": {
+        "C-ART-1": [
+          "pass"
+        ],
+        "C-GROUND-1": [
+          "pass"
+        ],
+        "C-MEM-1": [
+          "pass"
+        ],
+        "C-TRACE-1": [
+          "pass"
+        ]
+      },
+      "overall_outcome": "missing_evidence",
+      "product_validation_status": "not_evaluated",
+      "technical_note": "技术评估与教师产品验证为两个独立状态；产品验证状态在 F010 前保持未评估。"
+    },
+    "01a05bf9-0ab0-7c6a-964e-54e844669cfc": {
+      "dataset_revision": "eval-datasets-r1",
+      "dataset_governance_error": null,
+      "passes": [
+        {
+          "evaluation_id": "01a05bf9-0ab1-791a-ac94-dc5f0967b9d3",
+          "unit_key": "cultural-heritage",
+          "pass_index": 1,
+          "mode": "live",
+          "scenario": "full_pipeline",
+          "status": "completed",
+          "overall_outcome": "pass",
+          "failure_reason": null,
+          "dataset_revision": "eval-datasets-r1",
+          "model_config": {
+            "model_adapter": "deepseek",
+            "model": "deepseek-chat",
+            "checkpoint_backend": "memory",
+            "tasks_eager": true,
+            "max_model_calls_per_run": 20
+          },
+          "memory_state": {
+            "memory_state": "empty (F013 not implemented)"
+          },
+          "brief_version_id": "01a05bf9-191d-7b24-a7d6-53effd80c243",
+          "blueprint_version_id": "01a05bf9-32fd-7caa-82f6-d48e9d08247d",
+          "created_at": "2026-09-01T07:57:22.993910+00:00",
+          "completed_at": "2026-09-01T07:58:34.580239+00:00",
+          "criteria": [
+            {
+              "criterion_key": "C-ART-1",
+              "classification": "blocking",
+              "outcome": "pass",
+              "measured": null,
+              "evidence": {
+                "severe_finding_keys": [],
+                "technical_package_status": null,
+                "note": "reuses the F008 deterministic alignment read model"
+              }
+            },
+            {
+              "criterion_key": "C-GROUND-1",
+              "classification": "blocking",
+              "outcome": "pass",
+              "measured": null,
+              "evidence": {
+                "citation_count": 3,
+                "unresolved": [],
+                "checked_against_sources": [
+                  "01a05bf9-0aba-7e11-add3-8f196e5ccc1d",
+                  "01a05bf9-0ac5-7280-8e77-ccb1a41839fa"
+                ]
+              }
+            },
+            {
+              "criterion_key": "C-MEM-1",
+              "classification": "blocking",
+              "outcome": "pass",
+              "measured": null,
+              "evidence": {
+                "memory_state": "empty (F013 not implemented)"
+              }
+            },
+            {
+              "criterion_key": "C-TRACE-1",
+              "classification": "blocking",
+              "outcome": "pass",
+              "measured": null,
+              "evidence": {
+                "runs": [
+                  {
+                    "run_id": "01a05bf9-0acf-7fce-aa35-aeb4ce94d882",
+                    "model_calls": 2,
+                    "traced_model_calls": 2
+                  },
+                  {
+                    "run_id": "01a05bf9-1920-7232-b8b6-1e736f218706",
+                    "model_calls": 3,
+                    "traced_model_calls": 3
+                  },
+                  {
+                    "run_id": "01a05bf9-32ff-7e64-8e54-84b41c5e4267",
+                    "model_calls": 3,
+                    "traced_model_calls": 3,
+                    "run_events": 13
+                  },
+                  {
+                    "run_id": "01a05bf9-7a8c-7f38-9981-7be329f644fe",
+                    "model_calls": 3,
+                    "traced_model_calls": 3,
+                    "run_events": 13
+                  },
+                  {
+                    "run_id": "01a05bf9-d2be-73e6-a2c6-28e04dde68d6",
+                    "model_calls": 3,
+                    "traced_model_calls": 3,
+                    "run_events": 13
+                  }
+                ],
+                "violations": []
+              }
+            },
+            {
+              "criterion_key": "M-COST",
+              "classification": "diagnostic",
+              "outcome": null,
+              "measured": {
+                "estimated_cost_usd": 0.011389,
+                "events_with_cost": 14,
+                "events_total": 32,
+                "model_events_missing_usage": 0,
+                "narration_events_missing_usage": 0
+              },
+              "evidence": {
+                "run_ids": [
+                  "01a05bf9-0acf-7fce-aa35-aeb4ce94d882",
+                  "01a05bf9-1920-7232-b8b6-1e736f218706",
+                  "01a05bf9-32ff-7e64-8e54-84b41c5e4267",
+                  "01a05bf9-7a8c-7f38-9981-7be329f644fe",
+                  "01a05bf9-d2be-73e6-a2c6-28e04dde68d6"
+                ]
+              }
+            },
+            {
+              "criterion_key": "M-COVER",
+              "classification": "diagnostic",
+              "outcome": null,
+              "measured": {
+                "finding_severity_distribution": {
+                  "severe": 0,
+                  "warning": 0,
+                  "info": 0
+                },
+                "package_status": null
+              },
+              "evidence": {
+                "source": "F008 alignment read model"
+              }
+            },
+            {
+              "criterion_key": "M-LAT",
+              "classification": "diagnostic",
+              "outcome": null,
+              "measured": {
+                "model.build_draft": {
+                  "count": 1,
+                  "p50_ms": 2642,
+                  "max_ms": 2642
+                },
+                "model.gap_analysis": {
+                  "count": 1,
+                  "p50_ms": 1006,
+                  "max_ms": 1006
+                },
+                "model.generation_write_deck": {
+                  "count": 3,
+                  "p50_ms": 8043,
+                  "max_ms": 8167
+                },
+                "model.generation_write_exercises": {
+                  "count": 3,
+                  "p50_ms": 6592,
+                  "max_ms": 6940
+                },
+                "model.generation_write_lesson": {
+                  "count": 3,
+                  "p50_ms": 5805,
+                  "max_ms": 7034
+                },
+                "model.planning_build_draft": {
+                  "count": 1,
+                  "p50_ms": 3814,
+                  "max_ms": 3814
+                },
+                "model.planning_gap_analysis": {
+                  "count": 2,
+                  "p50_ms": 1497,
+                  "max_ms": 1497
+                },
+                "tool.render_lesson_deck_pptx": {
+                  "count": 3,
+                  "p50_ms": 18,
+                  "max_ms": 19
+                },
+                "tool.render_lesson_exercises_docx": {
+                  "count": 3,
+                  "p50_ms": 23,
+                  "max_ms": 27
+                },
+                "tool.render_lesson_plan_docx": {
+                  "count": 3,
+                  "p50_ms": 12,
+                  "max_ms": 12
+                },
+                "tool.validate_exercise_pair": {
+                  "count": 3,
+                  "p50_ms": 36,
+                  "max_ms": 38
+                },
+                "tool.validate_lesson_deck_pptx": {
+                  "count": 3,
+                  "p50_ms": 4,
+                  "max_ms": 4
+                },
+                "tool.validate_lesson_plan_docx": {
+                  "count": 3,
+                  "p50_ms": 3,
+                  "max_ms": 3
+                }
+              },
+              "evidence": {
+                "run_ids": [
+                  "01a05bf9-0acf-7fce-aa35-aeb4ce94d882",
+                  "01a05bf9-1920-7232-b8b6-1e736f218706",
+                  "01a05bf9-32ff-7e64-8e54-84b41c5e4267",
+                  "01a05bf9-7a8c-7f38-9981-7be329f644fe",
+                  "01a05bf9-d2be-73e6-a2c6-28e04dde68d6"
+                ]
+              }
+            }
+          ],
+          "superseded_configuration": false
+        },
+        {
+          "evaluation_id": "01a05bfa-2257-795f-8c64-f00e5df42b0f",
+          "unit_key": "cultural-heritage",
+          "pass_index": 2,
+          "mode": "live",
+          "scenario": "full_pipeline",
+          "status": "completed",
+          "overall_outcome": "pass",
+          "failure_reason": null,
+          "dataset_revision": "eval-datasets-r1",
+          "model_config": {
+            "model_adapter": "deepseek",
+            "model": "deepseek-chat",
+            "checkpoint_backend": "memory",
+            "tasks_eager": true,
+            "max_model_calls_per_run": 20
+          },
+          "memory_state": {
+            "memory_state": "empty (F013 not implemented)"
+          },
+          "brief_version_id": "01a05bfa-229c-752e-aa6f-8578074da8cc",
+          "blueprint_version_id": "01a05bfa-3a6d-7000-a4fc-ae30c1b7f366",
+          "created_at": "2026-09-01T07:58:34.583209+00:00",
+          "completed_at": "2026-09-01T07:59:34.641242+00:00",
+          "criteria": [
+            {
+              "criterion_key": "C-ART-1",
+              "classification": "blocking",
+              "outcome": "pass",
+              "measured": null,
+              "evidence": {
+                "severe_finding_keys": [],
+                "technical_package_status": null,
+                "note": "reuses the F008 deterministic alignment read model"
+              }
+            },
+            {
+              "criterion_key": "C-GROUND-1",
+              "classification": "blocking",
+              "outcome": "pass",
+              "measured": null,
+              "evidence": {
+                "citation_count": 3,
+                "unresolved": [],
+                "checked_against_sources": [
+                  "01a05bf9-0aba-7e11-add3-8f196e5ccc1d",
+                  "01a05bf9-0ac5-7280-8e77-ccb1a41839fa"
+                ]
+              }
+            },
+            {
+              "criterion_key": "C-MEM-1",
+              "classification": "blocking",
+              "outcome": "pass",
+              "measured": null,
+              "evidence": {
+                "memory_state": "empty (F013 not implemented)"
+              }
+            },
+            {
+              "criterion_key": "C-TRACE-1",
+              "classification": "blocking",
+              "outcome": "pass",
+              "measured": null,
+              "evidence": {
+                "runs": [
+                  {
+                    "run_id": "01a05bfa-229f-7dad-992e-3bb0203a24ae",
+                    "model_calls": 3,
+                    "traced_model_calls": 3
+                  },
+                  {
+                    "run_id": "01a05bfa-3a71-759c-9888-acb99b2b36e4",
+                    "model_calls": 3,
+                    "traced_model_calls": 3,
+                    "run_events": 13
+                  },
+                  {
+                    "run_id": "01a05bfa-83e2-7b59-a180-751c6794e95b",
+                    "model_calls": 3,
+                    "traced_model_calls": 3,
+                    "run_events": 13
+                  },
+                  {
+                    "run_id": "01a05bfa-c84d-7864-ac1b-23df64ffd9db",
+                    "model_calls": 3,
+                    "traced_model_calls": 3,
+                    "run_events": 13
+                  }
+                ],
+                "violations": []
+              }
+            },
+            {
+              "criterion_key": "M-COST",
+              "classification": "diagnostic",
+              "outcome": null,
+              "measured": {
+                "estimated_cost_usd": 0.009727,
+                "events_with_cost": 12,
+                "events_total": 30,
+                "model_events_missing_usage": 0,
+                "narration_events_missing_usage": 0
+              },
+              "evidence": {
+                "run_ids": [
+                  "01a05bfa-229f-7dad-992e-3bb0203a24ae",
+                  "01a05bfa-3a71-759c-9888-acb99b2b36e4",
+                  "01a05bfa-83e2-7b59-a180-751c6794e95b",
+                  "01a05bfa-c84d-7864-ac1b-23df64ffd9db"
+                ]
+              }
+            },
+            {
+              "criterion_key": "M-COVER",
+              "classification": "diagnostic",
+              "outcome": null,
+              "measured": {
+                "finding_severity_distribution": {
+                  "severe": 0,
+                  "warning": 0,
+                  "info": 0
+                },
+                "package_status": null
+              },
+              "evidence": {
+                "source": "F008 alignment read model"
+              }
+            },
+            {
+              "criterion_key": "M-LAT",
+              "classification": "diagnostic",
+              "outcome": null,
+              "measured": {
+                "model.generation_write_deck": {
+                  "count": 3,
+                  "p50_ms": 6272,
+                  "max_ms": 6334
+                },
+                "model.generation_write_exercises": {
+                  "count": 3,
+                  "p50_ms": 5715,
+                  "max_ms": 5944
+                },
+                "model.generation_write_lesson": {
+                  "count": 3,
+                  "p50_ms": 5931,
+                  "max_ms": 7257
+                },
+                "model.planning_build_draft": {
+                  "count": 1,
+                  "p50_ms": 3210,
+                  "max_ms": 3210
+                },
+                "model.planning_gap_analysis": {
+                  "count": 2,
+                  "p50_ms": 1475,
+                  "max_ms": 1475
+                },
+                "tool.render_lesson_deck_pptx": {
+                  "count": 3,
+                  "p50_ms": 14,
+                  "max_ms": 19
+                },
+                "tool.render_lesson_exercises_docx": {
+                  "count": 3,
+                  "p50_ms": 22,
+                  "max_ms": 22
+                },
+                "tool.render_lesson_plan_docx": {
+                  "count": 3,
+                  "p50_ms": 12,
+                  "max_ms": 12
+                },
+                "tool.validate_exercise_pair": {
+                  "count": 3,
+                  "p50_ms": 32,
+                  "max_ms": 34
+                },
+                "tool.validate_lesson_deck_pptx": {
+                  "count": 3,
+                  "p50_ms": 3,
+                  "max_ms": 6
+                },
+                "tool.validate_lesson_plan_docx": {
+                  "count": 3,
+                  "p50_ms": 3,
+                  "max_ms": 3
+                }
+              },
+              "evidence": {
+                "run_ids": [
+                  "01a05bfa-229f-7dad-992e-3bb0203a24ae",
+                  "01a05bfa-3a71-759c-9888-acb99b2b36e4",
+                  "01a05bfa-83e2-7b59-a180-751c6794e95b",
+                  "01a05bfa-c84d-7864-ac1b-23df64ffd9db"
+                ]
+              }
+            }
+          ],
+          "superseded_configuration": false
+        }
+      ],
+      "comparisons": [
+        {
+          "evaluation_id": "01a05bf9-0ab1-791a-ac94-dc5f0967b9d3",
+          "unit_key": "cultural-heritage",
+          "pass_index": 1,
+          "comparison_available": true,
+          "comparison_unavailable_reason": null,
+          "comparable_pass_indexes": [
+            2
+          ]
+        },
+        {
+          "evaluation_id": "01a05bfa-2257-795f-8c64-f00e5df42b0f",
+          "unit_key": "cultural-heritage",
+          "pass_index": 2,
+          "comparison_available": true,
+          "comparison_unavailable_reason": null,
+          "comparable_pass_indexes": [
+            1
+          ]
+        }
+      ],
+      "blocking_criterion_outcomes": {
+        "C-ART-1": [
+          "pass"
+        ],
+        "C-GROUND-1": [
+          "pass"
+        ],
+        "C-MEM-1": [
+          "pass"
+        ],
+        "C-TRACE-1": [
+          "pass"
+        ]
+      },
+      "overall_outcome": "missing_evidence",
+      "product_validation_status": "not_evaluated",
+      "technical_note": "技术评估与教师产品验证为两个独立状态；产品验证状态在 F010 前保持未评估。"
+    }
+  }
+}

@@ -90,50 +90,99 @@ class DeepSeekAdapter:
             latency_ms=latency,
         )
 
-    def stream(self, system: str, user: str):
+    def stream_with_usage(self, system: str, user: str):
+        """Stream tokens and surface final usage (F009 D9).
+
+        The provider is asked to include stream usage; the returned holder is
+        populated only if the provider actually reports it — callers must
+        record missing usage as not-recorded, never zero."""
+
         settings = get_settings()
-        with httpx.stream(
-            "POST",
-            f"{settings.deepseek_base_url}/chat/completions",
-            headers={"Authorization": f"Bearer {settings.deepseek_api_key}"},
-            json={
-                "model": settings.deepseek_model,
-                "messages": [
-                    {"role": "system", "content": system},
-                    {"role": "user", "content": user},
-                ],
-                "temperature": 0.2,
-                "stream": True,
-            },
-            timeout=60,
-        ) as response:
-            response.raise_for_status()
-            for line in response.iter_lines():
-                if not line or not line.startswith("data:"):
-                    continue
-                payload_text = line[len("data:") :].strip()
-                if payload_text == "[DONE]":
-                    break
-                try:
-                    payload = json.loads(payload_text)
-                except json.JSONDecodeError:
-                    continue
-                delta = payload.get("choices", [{}])[0].get("delta", {})
-                token = delta.get("content")
-                if token:
-                    yield token
+        usage: dict = {}
+
+        def generator():
+            with httpx.stream(
+                "POST",
+                f"{settings.deepseek_base_url}/chat/completions",
+                headers={"Authorization": f"Bearer {settings.deepseek_api_key}"},
+                json={
+                    "model": settings.deepseek_model,
+                    "messages": [
+                        {"role": "system", "content": system},
+                        {"role": "user", "content": user},
+                    ],
+                    "temperature": 0.2,
+                    "stream": True,
+                    "stream_options": {"include_usage": True},
+                },
+                timeout=60,
+            ) as response:
+                response.raise_for_status()
+                for line in response.iter_lines():
+                    if not line or not line.startswith("data:"):
+                        continue
+                    payload_text = line[len("data:") :].strip()
+                    if payload_text == "[DONE]":
+                        break
+                    try:
+                        payload = json.loads(payload_text)
+                    except json.JSONDecodeError:
+                        continue
+                    if isinstance(payload.get("usage"), dict):
+                        usage.update(payload["usage"])
+                    choices = payload.get("choices") or [{}]
+                    token = choices[0].get("delta", {}).get("content")
+                    if token:
+                        yield token
+
+        return generator(), usage
+
+    def stream(self, system: str, user: str):
+        tokens, _usage = self.stream_with_usage(system, user)
+        yield from tokens
 
 
 class FakeModelAdapter:
     _transient_failures: dict[str, int] = {}
+    _eval_faults: dict | None = None
 
     @classmethod
     def reset_transient_failures(cls) -> None:
         cls._transient_failures.clear()
 
+    @classmethod
+    def activate_eval_faults(cls, spec: dict | None) -> None:
+        """F009 eval-gated fault injection (Spec D4): honored only when the
+        fake adapter and the evaluation-environment flag are both active.
+        Production configurations can never arm these faults."""
+
+        settings = get_settings()
+        if spec is None:
+            cls._eval_faults = None
+            return
+        if settings.model_adapter != "fake" or not settings.eval_fault_profile:
+            raise ModelProviderError(
+                "eval faults are gated to fake-adapter evaluation environments"
+            )
+        cls._eval_faults = spec
+
+    def _eval_fault_action(self, kind: str, lesson_index: int | None) -> str | None:
+        faults = self._eval_faults or {}
+        spec = faults.get(kind)
+        if not spec or lesson_index is None or spec.get("lesson_index") != lesson_index:
+            return None
+        return str(spec.get("mode") or "")
+
     def complete(self, system: str, user: str) -> ModelResponse:
         data = json.loads(user)
         kind = data.get("kind")
+        lesson = data.get("lesson") or {}
+        lesson_index = lesson.get("lesson_index") if isinstance(lesson, dict) else None
+        action = self._eval_fault_action(str(kind), lesson_index)
+        if action == "provider_persistent":
+            raise ModelProviderError("model provider unavailable")
+        if action == "truncated_json":
+            return ModelResponse(text='{"lesson_plan": {"title": "trunc', latency_ms=1)
         if kind == "gap_analysis":
             known = set(data.get("known_fields", []))
             required = data.get("required_fields", [])
@@ -179,10 +228,23 @@ class FakeModelAdapter:
             raise ModelProviderError("model provider unavailable")
         return ModelResponse(text=json.dumps({}), latency_ms=1)
 
-    def stream(self, system: str, user: str):
+    def stream_with_usage(self, system: str, user: str):
         data = json.loads(user)
         text = data.get("narration", "这是叙述文本。")
-        yield from (text[i : i + 4] for i in range(0, len(text), 4))
+        usage: dict = {}
+
+        def generator():
+            # Deterministic synthetic usage so deterministic suites exercise
+            # the capture contract; the live adapter reports real usage.
+            usage["prompt_tokens"] = max(1, len(user) // 4)
+            usage["completion_tokens"] = max(1, len(text) // 2)
+            yield from (text[i : i + 4] for i in range(0, len(text), 4))
+
+        return generator(), usage
+
+    def stream(self, system: str, user: str):
+        tokens, _usage = self.stream_with_usage(system, user)
+        yield from tokens
 
 
 def _fake_generation_plan(data: dict) -> dict:

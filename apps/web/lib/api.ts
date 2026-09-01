@@ -1090,3 +1090,143 @@ export async function downloadDeliveryExport(
   }
   return response.blob();
 }
+
+// --- F009 Technical Portfolio Evaluation ---
+
+export interface TechnicalEvaluationCriterion {
+  criterion_key: string;
+  classification: "blocking" | "diagnostic";
+  outcome: "pass" | "fail" | "missing_evidence" | null;
+  measured: Record<string, unknown> | null;
+  evidence: Record<string, unknown>;
+}
+
+export interface TechnicalEvaluationPass {
+  evaluation_id: string;
+  unit_key: string;
+  pass_index: number;
+  mode: "live" | "deterministic";
+  scenario: string;
+  status: string;
+  overall_outcome: "pass" | "fail" | "missing_evidence" | null;
+  failure_reason: string | null;
+  dataset_revision: string;
+  superseded_configuration: boolean;
+  model_config: Record<string, unknown>;
+  memory_state: Record<string, unknown>;
+  brief_version_id: string | null;
+  blueprint_version_id: string | null;
+  created_at: string | null;
+  completed_at: string | null;
+  criteria: TechnicalEvaluationCriterion[];
+}
+
+export interface TechnicalEvaluationOverview {
+  dataset_revision: string | null;
+  dataset_governance_error: string | null;
+  passes: TechnicalEvaluationPass[];
+}
+
+export interface TechnicalEvaluationComparison {
+  evaluation_id: string;
+  unit_key: string;
+  pass_index: number;
+  comparison_available: boolean;
+  comparison_unavailable_reason: string | null;
+  comparable_pass_indexes: number[];
+}
+
+export interface TechnicalEvaluationReport {
+  dataset_revision: string | null;
+  dataset_governance_error: string | null;
+  passes: TechnicalEvaluationPass[];
+  comparisons: TechnicalEvaluationComparison[];
+  blocking_criterion_outcomes: Record<string, string[]>;
+  overall_outcome: "pass" | "fail" | "missing_evidence" | null;
+  product_validation_status: string;
+  technical_note: string;
+}
+
+export async function technicalEvaluationOverview(
+  token: string | null,
+  projectId: string,
+): Promise<TechnicalEvaluationOverview> {
+  return apiFetch<TechnicalEvaluationOverview>(
+    `/projects/${projectId}/technical-evaluation`,
+    { token },
+  );
+}
+
+export async function technicalEvaluationCreate(
+  token: string | null,
+  projectId: string,
+  input: { unit_key: string; pass_index: number; mode: "live" | "deterministic"; scenario?: string },
+): Promise<{ evaluation: TechnicalEvaluationPass; created: boolean }> {
+  return apiFetch<{ evaluation: TechnicalEvaluationPass; created: boolean }>(
+    `/projects/${projectId}/technical-evaluation/runs`,
+    { method: "POST", body: input, token },
+  );
+}
+
+export async function technicalEvaluationRunDetail(
+  token: string | null,
+  projectId: string,
+  evaluationId: string,
+): Promise<TechnicalEvaluationPass> {
+  return apiFetch<TechnicalEvaluationPass>(
+    `/projects/${projectId}/technical-evaluation/runs/${evaluationId}`,
+    { token },
+  );
+}
+
+export async function technicalEvaluationReport(
+  token: string | null,
+  projectId: string,
+): Promise<TechnicalEvaluationReport> {
+  return apiFetch<TechnicalEvaluationReport>(
+    `/projects/${projectId}/technical-evaluation/report`,
+    { token },
+  );
+}
+
+export const EVALUATION_STATUS_LABELS: Record<string, string> = {
+  queued: "排队中",
+  active: "进行中",
+  partial_evidence: "部分证据",
+  completed: "已完成",
+  provider_unavailable: "供应商不可用",
+  failed: "失败",
+};
+
+export const EVALUATION_OUTCOME_LABELS: Record<string, string> = {
+  pass: "通过",
+  fail: "未通过",
+  missing_evidence: "证据缺失",
+};
+
+export const EVALUATION_UNIT_LABELS: Record<string, string> = {
+  "travelling-around": "环游世界（英文输出）",
+  "natural-disasters": "自然灾害（中文输出）",
+  "cultural-heritage": "文化遗产（双语输出）",
+};
+
+export const EVALUATION_MODE_LABELS: Record<string, string> = {
+  deterministic: "确定性（脚本模型）",
+  live: "真实模型",
+};
+
+export const EVALUATION_CRITERION_LABELS: Record<string, string> = {
+  "C-TRACE-1": "执行轨迹完整",
+  "C-GROUND-1": "引用可解析",
+  "C-ART-1": "产物族完整",
+  "C-IDEM-1": "重复提交幂等",
+  "C-SUPER-1": "版本取代安全",
+  "C-RECOV-1": "故障恢复不重复计费",
+  "C-RENDER-1": "截断输出显式失败",
+  "C-MEM-1": "记忆状态已钉扎",
+  "M-LAT": "延迟分布",
+  "M-COST": "成本估算",
+  "M-VAR": "跨遍方差",
+  "M-COVER": "对齐覆盖深度",
+  "M-JUDGE": "模型评判意见",
+};

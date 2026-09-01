@@ -1,0 +1,17 @@
+{
+  "run_id": "01a05c0b-c631-7926-a438-ad162941f982",
+  "project_id": "01a05c0b-5350-78b4-a1a7-17441c660c95",
+  "status_at_kill": "generating",
+  "preserved_lesson_checksums_before_kill": {
+    "3": null,
+    "1": "e0372aa7ee3f49d4ee782fb02f3125deb974d9e26e8d1b995c92707d7f113fba",
+    "2": null
+  },
+  "model_calls_before_kill": 2,
+  "final_status": "complete",
+  "model_calls_final": 4,
+  "preserved_checksums_identical": true,
+  "all_artifacts_complete": true,
+  "timestamp": "2026-09-01T16:28:14+0800",
+  "recovery_note": "Worker SIGKILLed mid-run after lesson 1 (2 model calls); after worker restart the same idempotent run was re-dispatched and resumed from its checkpoint: all 3 lessons complete, lesson-1 checksum byte-identical, model_calls 2->4 (exactly the two remaining lessons; no duplicate billing for completed scope)."
+}

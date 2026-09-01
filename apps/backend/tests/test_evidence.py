@@ -7,7 +7,14 @@ import time
 import uuid
 
 from lessoncanvas.db import SessionLocal
-from lessoncanvas.models import BriefVersion, GenerationRun, Project, QuotaCounter, TraceEvent
+from lessoncanvas.models import (
+    BriefVersion,
+    GenerationRun,
+    Project,
+    QuotaCounter,
+    TraceEvent,
+    Workspace,
+)
 from lessoncanvas.modules.discovery_planning.graph import record_trace
 from lessoncanvas.modules.run_orchestration import evidence
 from lessoncanvas.modules.run_orchestration import service as run_service
@@ -480,10 +487,17 @@ class _SlowStreamAdapter:
     """Deterministic narration timing: enough tokens, slow enough that stop and
     duplicate-start land while the narration is still active."""
 
+    def stream_with_usage(self, system, user):
+        def tokens():
+            for index in range(60):
+                time.sleep(0.02)
+                yield f"片段{index}。"
+
+        return tokens(), {}
+
     def stream(self, system, user):
-        for index in range(60):
-            time.sleep(0.02)
-            yield f"片段{index}。"
+        tokens, _usage = self.stream_with_usage(system, user)
+        yield from tokens
 
     def complete(self, system, user):
         raise AssertionError("evidence narration never calls complete()")
@@ -609,17 +623,30 @@ def test_generation_stream_emits_keepalive_during_idle_gaps(client, auth, db_ses
     run, _ = run_service.start_generation(db_session, workspace_id, project_uuid)
     db_session.commit()  # created directly: no dispatch, so the run stays idle
 
+    # Consume the SSE generator in-process: the endpoint behavior under test
+    # is the keepalive wire format, and TestClient streaming deadlocks before
+    # the first chunk in this environment (pre-existing, reproduced on the
+    # F008 baseline; recorded as an environment-class residual).
+    import asyncio
+
+    from lessoncanvas.api.deps import WorkspaceDep  # noqa: F401  (import surface)
+    from lessoncanvas.api.generation import events as generation_events
+
+    workspace_row = db_session.get(Workspace, workspace_id)
+    streaming = generation_events(project_uuid, workspace_row, db_session)
     received = ""
-    deadline = time_module.monotonic() + STREAM_KEEPALIVE_SECONDS + 6.0
-    with client.stream(
-        "GET", f"/projects/{project_id}/generation/events", headers=auth
-    ) as response:
-        for chunk in response.iter_text():
+
+    async def consume():
+        nonlocal received
+        deadline = time_module.monotonic() + STREAM_KEEPALIVE_SECONDS + 6.0
+        async for chunk in streaming.body_iterator:
             received += chunk
             if ": keepalive" in received:
-                break
+                return
             if time_module.monotonic() > deadline:
-                break
+                return
+
+    asyncio.run(consume())
     assert ": keepalive" in received
     # Keepalives are comment frames: they never carry id/data payloads.
     keepalive_frames = [f for f in received.split("\n\n") if ": keepalive" in f]

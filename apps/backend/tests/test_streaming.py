@@ -73,10 +73,17 @@ def test_stop_does_not_cancel_and_reconnect_replays(client, auth, monkeypatch):
     release = threading.Event()
 
     class BlockingFake:
+        def stream_with_usage(self, system, user):
+            def tokens():
+                yield "第一部分。"
+                release.wait(5)
+                yield "第二部分完整结束。"
+
+            return tokens(), {}
+
         def stream(self, system, user):
-            yield "第一部分。"
-            release.wait(5)
-            yield "第二部分完整结束。"
+            tokens, _usage = self.stream_with_usage(system, user)
+            yield from tokens
 
     monkeypatch.setattr(narration_module, "get_model_adapter", lambda: BlockingFake())
 

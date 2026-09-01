@@ -1,0 +1,10 @@
+LessonCanvas Evaluation Dataset | License: CC0-1.0 | Self-authored synthetic content; contains no private teacher or student material.
+
+单元主题：文化遗产——活态传承与当代守护
+课时数：3
+学情：高二学生，英语水平中上，能用英语进行基本讨论，需提升双语转换与深度表达能力
+教学目标：理解物质与非物质文化遗产的区别；掌握文化遗产主题双语词汇；能用中英双语介绍一项传统工艺并说明其当代价值
+教材定位：自编合成单元（主题语境对应人教版高中英语必修第二册 Unit 1 Cultural Heritage，语料为本数据集自创）
+输出语言：中英双语
+评估倾向：形成性评价为主
+课时分配：共6课时，每课2课时，评估聚焦双语工艺介绍与守护建议展示

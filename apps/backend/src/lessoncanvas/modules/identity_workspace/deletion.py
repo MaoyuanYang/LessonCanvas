@@ -22,6 +22,8 @@ from lessoncanvas.models import (
     SlideDeckArtifact,
     Source,
     SourceChunk,
+    TechnicalEvaluation,
+    TechnicalEvaluationResult,
     TraceEvent,
     Workspace,
 )
@@ -164,6 +166,19 @@ def delete_project_cascade(
     )
     session.execute(
         sql_delete(AlignmentOverride).where(AlignmentOverride.project_id == project_id)
+    )
+
+    evaluation_ids = session.scalars(
+        select(TechnicalEvaluation.id).where(TechnicalEvaluation.project_id == project_id)
+    ).all()
+    if evaluation_ids:
+        session.execute(
+            sql_delete(TechnicalEvaluationResult).where(
+                TechnicalEvaluationResult.evaluation_id.in_(evaluation_ids)
+            )
+        )
+    session.execute(
+        sql_delete(TechnicalEvaluation).where(TechnicalEvaluation.project_id == project_id)
     )
 
     session.execute(sql_delete(BlueprintDraft).where(BlueprintDraft.project_id == project_id))
