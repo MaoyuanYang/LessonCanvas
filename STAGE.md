@@ -4,16 +4,16 @@
 
 | Field | Value |
 | --- | --- |
-| Snapshot Revision | `STAGE-60` |
-| Parent Snapshot | `STAGE-59` @ `922bf5487955` (pre-write read, no external change) |
-| Last Reconciled At | `2026-09-01T16:49:54+08:00` |
+| Snapshot Revision | `STAGE-64` |
+| Parent Snapshot | `STAGE-63` @ `ad3275e6a696` (pre-write read, no external change) |
+| Last Reconciled At | `2026-09-01T20:13:04+08:00` |
 | Reconciled By | `ZCode feature-dev session (YMY / Project Owner driving)` |
-| Repository Ref | `main @ 6eed93f` (PR #19 merge) |
+| Repository Ref | `main @ 352db99` |
 | Write Coordination | `SINGLE_WRITER:ZCode feature-dev session` |
 | Lifecycle Path | `GREENFIELD` |
 | Project Phase | `COMPLETE` |
 | Overall State | `ACTIVE` |
-| Current Milestone | F009 DONE (PR #19 merge `6eed93f`); next actionable F010 (P1) / F011 (P0) — F009 completes their dependency |
+| Current Milestone | F010 Teacher Product Validation `REVIEW` (A-010, Issue #20) — implementation T0–T5 complete on `feature/F010-teacher-product-validation` (backend/web suites green), self review recorded (SF-1/SF-2 fixed); delivery pending TS-014 teacher protocol + authorization; F011/F012/F013 remain `DRAFT` |
 | Tracking Mode | `REMOTE` |
 
 ## Lifecycle Progress
@@ -30,6 +30,7 @@
 
 | Activity ID | Work Item | Member | Type | Skill | Skill Stage | Activity State | Work Status | Branch / Worktree | Status Authority | Next Checkpoint | Updated At |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `A-010` | `F010 Teacher Product Validation` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `REVIEW` | `ACTIVE` | `REVIEW` | `feature/F010-teacher-product-validation` | `https://github.com/MaoyuanYang/LessonCanvas/issues/20` | TS-014 teacher protocol + delivery authorization | `2026-09-01T20:13:04+08:00` |
 | `A-003` | `F003 Recoverable Unit Lesson Plans` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/6` | N/A - terminal (PR #7 merge `ad81c82`) | `2026-08-29T00:24:37+08:00` |
 | `A-002` | `F002 Confirmed Unit Blueprint (DONE reconciliation)` | `opencode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `ACTIVE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/3` | N/A - terminal | `2026-08-28T19:10:00+08:00` |
 
@@ -72,6 +73,9 @@
 | F009 | `UI READY` | `PASS` | `specs/F009-technical-portfolio-evaluation/ux-ui.md` UI READY Record @ `ux-ui-f009-r1` / `d3860c7a8c05` |
 | F009 | `TEST DESIGN READY` | `PASS` | `specs/F009-technical-portfolio-evaluation/test-design.md` Record @ `test-design-f009-r1` / `5a7fc2df6b13` |
 | F009 | `DONE` | `PASS` | PR #19 merge `6eed93f`; DONE evidence manifest in `specs/F009-technical-portfolio-evaluation/spec.md` Gate Record |
+| F010 | `SPEC READY` | `PASS` | `specs/F010-teacher-product-validation/spec.md` Gate Record @ `66a3c94329a9` (decision log D1–D9; ROADMAP projection @ `6c7128eccd4b`) |
+| F010 | `UI READY` | `PASS` | `specs/F010-teacher-product-validation/ux-ui.md` UI READY Record @ `ux-ui-f010-r1` / `35fe2b9b1417` |
+| F010 | `TEST DESIGN READY` | `PASS` | `specs/F010-teacher-product-validation/test-design.md` Record @ `test-design-f010-r1` / `eaa31cd897d6` |
 
 ## Blockers and Conflicts
 

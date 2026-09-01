@@ -26,9 +26,15 @@ FAMILY_ARTIFACT_MODEL = {
     "exercise": ExerciseArtifact,
 }
 
-# Product validation stays a separate, F010-owned status; F008 can only ever
-# report it as not evaluated (Spec D6).
-PRODUCT_VALIDATION_STATUS = "not_evaluated"
+
+def _product_validation_status(session: Session, project_id: uuid.UUID) -> str:
+    """F010: the live product-validation status is derived from recorded
+    assignments and imported evidence; alignment itself never computes or
+    merges it with technical status (Spec D6/D7). Lazy import keeps the
+    module boundary acyclic."""
+    from lessoncanvas.modules.product_validation import service as pv_service
+
+    return pv_service.derive_overall_status(session, project_id)
 
 FAMILY_LABELS = {
     "lesson_plan": "lesson plan",
@@ -375,7 +381,7 @@ def compute_alignment(session: Session, project_id: uuid.UUID) -> dict:
         "blueprint_version_id": str(blueprint.id),
         "technical_status": technical_status,
         "draft_export_available": True,
-        "product_validation_status": PRODUCT_VALIDATION_STATUS,
+        "product_validation_status": _product_validation_status(session, project_id),
         "objectives": objective_coverage,
         "lessons": lesson_rows,
         "findings": findings,

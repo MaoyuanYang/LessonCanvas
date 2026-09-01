@@ -2,7 +2,12 @@
 
 import { useAuth } from "@clerk/nextjs";
 import { useQuery } from "@tanstack/react-query";
-import { getAlignmentReport, getExportReport, type AlignmentView } from "@/lib/api";
+import {
+  getAlignmentReport,
+  getExportReport,
+  PRODUCT_VALIDATION_STATUS_LABELS,
+  type AlignmentView,
+} from "@/lib/api";
 
 const FAMILY_LABELS: Record<string, string> = {
   lesson_plan: "教案",
@@ -69,7 +74,10 @@ export default function PrintReportView({
       </p>
       <p className="mt-3 text-sm print:text-black">
         状态：技术校验状态 = {validated ? "技术校验通过" : "未完成"}
-        {"；"}产品验证状态 = 未评估（两者独立呈现，技术校验不代表课堂可用性）。
+        {"；"}产品验证状态 ={" "}
+        {PRODUCT_VALIDATION_STATUS_LABELS[report.product_validation_status] ??
+          report.product_validation_status}
+        （两者独立呈现，技术校验不代表课堂可用性）。
       </p>
 
       <section aria-label="目标覆盖汇总" className="mt-6">

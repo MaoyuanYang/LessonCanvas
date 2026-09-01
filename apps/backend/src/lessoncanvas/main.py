@@ -20,6 +20,7 @@ from lessoncanvas.api.exercises import router as exercises_router
 from lessoncanvas.api.generation import lesson_router as generation_lesson_router
 from lessoncanvas.api.generation import router as generation_router
 from lessoncanvas.api.planning import router as planning_router
+from lessoncanvas.api.product_validation import router as product_validation_router
 from lessoncanvas.api.projects import router as projects_router
 from lessoncanvas.api.sources import router as sources_router
 from lessoncanvas.api.technical_evaluation import router as technical_evaluation_router
@@ -84,6 +85,7 @@ def create_app() -> FastAPI:
     app.include_router(alignment_router)
     app.include_router(delivery_router)
     app.include_router(technical_evaluation_router)
+    app.include_router(product_validation_router)
 
     @app.get("/health")
     def health() -> dict[str, str]:

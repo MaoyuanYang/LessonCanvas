@@ -12,7 +12,6 @@ from lessoncanvas.api.deps import SessionDep, WorkspaceDep
 from lessoncanvas.api.errors import NotFoundError, RequirementError, StaleVersionError
 from lessoncanvas.models import AlignmentOverride, AuditEvent, utcnow
 from lessoncanvas.modules.alignment_evaluation import service as alignment_service
-from lessoncanvas.modules.alignment_evaluation.service import PRODUCT_VALIDATION_STATUS
 from lessoncanvas.modules.identity_workspace.service import (
     NotFoundError as ServiceNotFound,
 )
@@ -67,7 +66,6 @@ def get_report(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionD
     _owned(session, workspace, project_id)
     alignment = _alignment_or_422(session, project_id)
     alignment["generated_at"] = utcnow().isoformat()
-    alignment["product_validation_status"] = PRODUCT_VALIDATION_STATUS
     return alignment
 
 

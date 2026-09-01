@@ -556,3 +556,86 @@ class TechnicalEvaluationResult(Base):
     measured_json: Mapped[str] = mapped_column(Text, nullable=True)
     evidence_json: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class ProductValidationAssignment(Base):
+    """F010 product-validation assignment: one immutable complete package
+    identity fixed for external-teacher review (Spec D2/D5/D8). Staleness is
+    a read-side derivation over this identity and stores no column."""
+
+    __tablename__ = "product_validation_assignments"
+    __table_args__ = (
+        UniqueConstraint(
+            "project_id",
+            "unit_key",
+            "package_digest",
+            name="uq_product_validation_assignment_identity",
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("projects.id"), nullable=False, index=True
+    )
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=False, index=True
+    )
+    unit_key: Mapped[str] = mapped_column(String(64), nullable=False)
+    dataset_revision: Mapped[str] = mapped_column(String(32), nullable=False)
+    brief_version_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("brief_versions.id"), nullable=True
+    )
+    blueprint_version_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("blueprint_versions.id"), nullable=True
+    )
+    package_json: Mapped[str] = mapped_column(Text, nullable=False)
+    package_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    rubric_revision: Mapped[str] = mapped_column(String(32), nullable=False)
+    state: Mapped[str] = mapped_column(String(24), nullable=False, default="pending_evidence")
+    not_complete_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_by: Mapped[str] = mapped_column(String(128), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
+    concluded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class ProductValidationEvidence(Base):
+    """F010 imported external-teacher rubric evidence with its deterministically
+    computed outcome (Spec D3/D6/D8). One current submission revision per
+    assignment; superseded revisions stay historical and immutable. The
+    assignment's ``rubric_revision`` names the fixed rubric schema; this row's
+    ``evidence_revision`` names the submission revision (r1, r2, ...)."""
+
+    __tablename__ = "product_validation_evidence"
+    __table_args__ = (
+        UniqueConstraint(
+            "assignment_id",
+            "evidence_revision",
+            name="uq_product_validation_evidence_revision",
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
+    assignment_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("product_validation_assignments.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    evidence_revision: Mapped[str] = mapped_column(String(32), nullable=False)
+    evidence_json: Mapped[str] = mapped_column(Text, nullable=False)
+    capture_channel: Mapped[str] = mapped_column(String(32), nullable=False)
+    document_object_key: Mapped[str | None] = mapped_column(Text, nullable=True)
+    document_filename: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    document_content_type: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    document_size_bytes: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    document_checksum: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    outcome: Mapped[str] = mapped_column(String(16), nullable=False)
+    outcome_json: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False, default="current")
+    superseded_by_evidence_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("product_validation_evidence.id"), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
