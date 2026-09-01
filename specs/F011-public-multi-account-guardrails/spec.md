@@ -217,3 +217,23 @@ All five DRAFT open questions and the blocking refinement decisions are resolved
 - Exact error code strings and retry-after field shapes (Implementation Plan + API doc sync)
 - Disclosure and usage copy wording, placement, and small-screen layout (`ux-ui.md`)
 - Pixel-level UI and complete Test Design (`ux-ui.md`, `test-design.md`)
+
+## Gate Record: DONE
+
+- Status: `PASS`
+- Validation time: 2026-09-01
+- Decision Authority: `YMY / Project Owner` — full delivery flow authorized interactively on 2026-09-01 ("全部授权": commit/push/PR/merge/Issue update); merge performed as merge commit `42fd778` (PR #23)
+- Conditions met:
+  - All 11 ACs satisfied with automated or recorded evidence (backend 454 passed, 1 env-gated skip + ruff clean; web 83/83 + eslint 0 errors + tsc/build clean); TS-018 authenticated E2E environment-gated with green component substitute coverage and a recorded resume condition (M-1, repo precedent class)
+  - Review: no Critical findings; implementation-found defects IF-1..IF-4 fixed with tests before review; residuals M-1/M-2/L-1..L-3 owner-visible in review.md and the Test Design execution snapshot
+  - Security evidence: uv audit 0 findings; pnpm audit 0 findings via workspace overrides (postcss >=8.5.18, sharp >=0.35.0); tracked-tree credential scan clean
+  - Documentation sync: API/DATABASE/TESTING updated with F011 resolutions; Spec enumerations truthful; ROADMAP/STAGE/Issue #22 synchronized (auto-closed by merge)
+  - Delivery: PR [#23](https://github.com/MaoyuanYang/LessonCanvas/pull/23) merged `42fd778`; main re-verified (backend 454 passed + ruff clean; web 83/83 + tsc clean)
+- DONE evidence manifest (working-tree SHA-256 prefixes at gate time):
+  - `spec.md` @ `d27deee5bfc8` (pre-DONE content; this record appended after)
+  - `ux-ui.md` @ `875da011e55e`
+  - `test-design.md` @ `66c431920e95` (incl. execution snapshot)
+  - `plan.md` @ `850c40e8e41a`
+  - `review.md` @ `216c63239c6e`
+  - `specs/ROADMAP.md` @ `e9f799d3445c` (pre-DONE)
+- Follow-up (owner-visible, non-blocking): run the authenticated guardrails E2E under stable auth and append evidence (M-1); F012 must verify the D10 provider constraint set against the actually selected cloud providers and re-check the SSE single-process assumption for the deployed topology.

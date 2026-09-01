@@ -4,16 +4,16 @@
 
 | Field | Value |
 | --- | --- |
-| Snapshot Revision | `STAGE-70` |
-| Parent Snapshot | `STAGE-69` @ `d38b49bd48da` (pre-write read, no external change) |
-| Last Reconciled At | `2026-09-01T23:59:00+08:00` |
+| Snapshot Revision | `STAGE-71` |
+| Parent Snapshot | `STAGE-70` @ `a5d444f57df2` (pre-write read, no external change) |
+| Last Reconciled At | `2026-09-02T00:20:00+08:00` |
 | Reconciled By | `ZCode feature-dev session (YMY / Project Owner driving)` |
-| Repository Ref | `main @ 683172b` (PR #21 merge) |
+| Repository Ref | `main @ 42fd778` (PR #23 merge) |
 | Write Coordination | `SINGLE_WRITER:ZCode feature-dev session` |
 | Lifecycle Path | `GREENFIELD` |
 | Project Phase | `COMPLETE` |
 | Overall State | `ACTIVE` |
-| Current Milestone | F011 Public Multi-Account Guardrails `REVIEW` on `feature/F011-public-multi-account-guardrails` (implementation T0–T12 complete 2026-09-01: backend 454 passed + ruff clean; web 83/83 + eslint/tsc/build clean; uv/pnpm audit clean; review.md recorded with IF-1..IF-4 fixed; TS-018 env-gated with substitute coverage). Delivery pending authorization. F010 DONE (PR #21 merge `683172b`); F012 waits on F011; F013 (P1) unclaimed |
+| Current Milestone | F011 Public Multi-Account Guardrails DONE (PR #23 merge `42fd778`; main re-verified backend 454 + web 83/83; env-gated E2E residual M-1 with resume condition). Next actionable F012 Deployed Portfolio Proof (P0; must verify F011 D10 provider constraints and the SSE single-process assumption against the deployed topology) / F013 Teacher Memory (P1) |
 | Tracking Mode | `REMOTE` |
 
 ## Lifecycle Progress
@@ -30,7 +30,6 @@
 
 | Activity ID | Work Item | Member | Type | Skill | Skill Stage | Activity State | Work Status | Branch / Worktree | Status Authority | Next Checkpoint | Updated At |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `A-011` | `F011 Public Multi-Account Guardrails` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `REVIEW` | `ACTIVE` | `REVIEW` | `feature/F011-public-multi-account-guardrails` | `https://github.com/MaoyuanYang/LessonCanvas/issues/22` | `Delivery authorization (commit/push/PR); ROADMAP/Issue projection sync` | `2026-09-01T23:59:00+08:00` |
 | `A-010` | `F010 Teacher Product Validation` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/20` | N/A - terminal (PR #21 merge `683172b`) | `2026-09-01T20:25:15+08:00` |
 | `A-003` | `F003 Recoverable Unit Lesson Plans` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/6` | N/A - terminal (PR #7 merge `ad81c82`) | `2026-08-29T00:24:37+08:00` |
 | `A-002` | `F002 Confirmed Unit Blueprint (DONE reconciliation)` | `opencode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `ACTIVE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/3` | N/A - terminal | `2026-08-28T19:10:00+08:00` |
@@ -81,6 +80,7 @@
 | F011 | `SPEC READY` | `PASS` | `specs/F011-public-multi-account-guardrails/spec.md` Gate Record @ `d27deee5bfc8` (decision log D1–D11: D2 relaxed limits, D3 no-operator-role + disclosure, D4(b) content-free retained ledger, D6 fast-fail included; ROADMAP projection @ `e758364d566d`) |
 | F011 | `UI READY` | `PASS` | `specs/F011-public-multi-account-guardrails/ux-ui.md` UI READY Record @ `ux-ui-f011-r1` / `ab827a69abd6` (owner-ratified 2026-09-01) |
 | F011 | `TEST DESIGN READY` | `PASS` | `specs/F011-public-multi-account-guardrails/test-design.md` Record @ `test-design-f011-r1` / `d4ceb6eb0d30`, TS-001..TS-019 (approved 2026-09-01); Plan `plan-f011-r1` @ `850c40e8e41a` valid; `Roadmap Status: READY` then `IN_PROGRESS` recorded 2026-09-01 |
+| F011 | `DONE` | `PASS` | PR #23 merge `42fd778`; DONE evidence manifest in `specs/F011-public-multi-account-guardrails/spec.md` Gate Record |
 
 ## Blockers and Conflicts
 
@@ -99,6 +99,7 @@
 
 | Activity ID | Work Item | Member | Outcome | Final Work Status | Final Status Authority | Delivery Evidence | Completed At |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| `A-011` | `F011 Public Multi-Account Guardrails` | `ZCode feature-dev session` | Public multi-account guardrails delivered end to end (PostgreSQL-authoritative nested rate windows, admission + SSE/upload caps, upload hardening with bomb guards, race-safe quotas and workspace resolution, deletion completeness incl. checkpoints with metadata-only residual repair, worker fast-fail F006 M-2, download audits + usage/audit surfaces + D4(b) retained ledger, governed adversarial corpus + 71-path sweep + 5-workspace journey; latent F001 content_type defect fixed; dependency audits clean) | `DONE` | Issue #22 (auto-closed by merge) | PR #23 merge `42fd778` | `2026-09-02` |
 | `A-010` | `F010 Teacher Product Validation` | `ZCode feature-dev session` | Teacher product validation delivered end to end (fixed rubric-r1, version-bound assignments with staleness, deterministic zero-model outcomes, owner-mediated evidence import with private original documents, honest not-complete, live separate status on all shared surfaces; SF-1/SF-2 review fixes; real-teacher reviews deferred by owner per D9 with follow-up import pending) | `DONE` | Issue #20 (auto-closed by merge) | PR #21 merge `683172b` | `2026-09-01` |
 | `A-009` | `F009 Technical Portfolio Evaluation` | `ZCode feature-dev session` | Technical portfolio evaluation end to end (governed synthetic dataset, deterministic blocking/diagnostic criteria engine, idempotent scripted harness with eval-gated fault injection, owner API + report, evidence-panel region; F006 L-1 narration token capture; truncated-response reclassification fix; six live DeepSeek passes with one honest per-pass failure + real-worker recovery demonstration) | `DONE` | Issue #18 (auto-closed by merge) | PR #19 merge `6eed93f` | `2026-09-01` |
 | `A-008` | `F008 Alignment Review and Delivery` | `ZCode feature-dev session` | Alignment review and delivery end to end (deterministic coverage/findings, reasoned overrides with audit, draft/validated labelled ZIP export, printable report; SF-1 retry defect fixed with regression test) | `DONE` | Issue #16 (auto-closed by merge) | PR #17 merge `1982ac9` | `2026-09-01` |
