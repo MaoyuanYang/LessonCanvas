@@ -4,16 +4,16 @@
 
 | Field | Value |
 | --- | --- |
-| Snapshot Revision | `STAGE-59` |
-| Parent Snapshot | `STAGE-58` @ `32b4d3a10310` (pre-write read, no external change) |
-| Last Reconciled At | `2026-09-01T16:36:57+08:00` |
+| Snapshot Revision | `STAGE-60` |
+| Parent Snapshot | `STAGE-59` @ `922bf5487955` (pre-write read, no external change) |
+| Last Reconciled At | `2026-09-01T16:49:54+08:00` |
 | Reconciled By | `ZCode feature-dev session (YMY / Project Owner driving)` |
-| Repository Ref | `main @ 13dbee6` (branch `feature/F009-technical-portfolio-evaluation` created from it) |
+| Repository Ref | `main @ 6eed93f` (PR #19 merge) |
 | Write Coordination | `SINGLE_WRITER:ZCode feature-dev session` |
 | Lifecycle Path | `GREENFIELD` |
 | Project Phase | `COMPLETE` |
 | Overall State | `ACTIVE` |
-| Current Milestone | F009 PR [#19](https://github.com/MaoyuanYang/LessonCanvas/pull/19) opened (A-009, Issue #18); merge awaits separate authorization, then DONE records |
+| Current Milestone | F009 DONE (PR #19 merge `6eed93f`); next actionable F010 (P1) / F011 (P0) — F009 completes their dependency |
 | Tracking Mode | `REMOTE` |
 
 ## Lifecycle Progress
@@ -31,7 +31,6 @@
 | Activity ID | Work Item | Member | Type | Skill | Skill Stage | Activity State | Work Status | Branch / Worktree | Status Authority | Next Checkpoint | Updated At |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `A-003` | `F003 Recoverable Unit Lesson Plans` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/6` | N/A - terminal (PR #7 merge `ad81c82`) | `2026-08-29T00:24:37+08:00` |
-| `A-009` | `F009 Technical Portfolio Evaluation` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `DELIVERY` | `ACTIVE` | `REVIEW` | `feature/F009-technical-portfolio-evaluation` | `https://github.com/MaoyuanYang/LessonCanvas/issues/18` | PR #19 opened 2026-09-01 (commit+push+PR authorized); merge + DONE records await authorization | `2026-09-01T16:36:57+08:00` |
 | `A-002` | `F002 Confirmed Unit Blueprint (DONE reconciliation)` | `opencode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `ACTIVE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/3` | N/A - terminal | `2026-08-28T19:10:00+08:00` |
 
 ## Gate Snapshot
@@ -72,6 +71,7 @@
 | F009 | `SPEC READY` | `PASS` | `specs/F009-technical-portfolio-evaluation/spec.md` Gate Record @ `15803bdc1837` |
 | F009 | `UI READY` | `PASS` | `specs/F009-technical-portfolio-evaluation/ux-ui.md` UI READY Record @ `ux-ui-f009-r1` / `d3860c7a8c05` |
 | F009 | `TEST DESIGN READY` | `PASS` | `specs/F009-technical-portfolio-evaluation/test-design.md` Record @ `test-design-f009-r1` / `5a7fc2df6b13` |
+| F009 | `DONE` | `PASS` | PR #19 merge `6eed93f`; DONE evidence manifest in `specs/F009-technical-portfolio-evaluation/spec.md` Gate Record |
 
 ## Blockers and Conflicts
 
@@ -90,6 +90,7 @@
 
 | Activity ID | Work Item | Member | Outcome | Final Work Status | Final Status Authority | Delivery Evidence | Completed At |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| `A-009` | `F009 Technical Portfolio Evaluation` | `ZCode feature-dev session` | Technical portfolio evaluation end to end (governed synthetic dataset, deterministic blocking/diagnostic criteria engine, idempotent scripted harness with eval-gated fault injection, owner API + report, evidence-panel region; F006 L-1 narration token capture; truncated-response reclassification fix; six live DeepSeek passes with one honest per-pass failure + real-worker recovery demonstration) | `DONE` | Issue #18 (auto-closed by merge) | PR #19 merge `6eed93f` | `2026-09-01` |
 | `A-008` | `F008 Alignment Review and Delivery` | `ZCode feature-dev session` | Alignment review and delivery end to end (deterministic coverage/findings, reasoned overrides with audit, draft/validated labelled ZIP export, printable report; SF-1 retry defect fixed with regression test) | `DONE` | Issue #16 (auto-closed by merge) | PR #17 merge `1982ac9` | `2026-09-01` |
 | `A-007` | `F007 Versioned Targeted Regeneration` | `ZCode feature-dev session` | Versioned targeted regeneration delivered end to end (impact matrix, scoped runs with scope-once idempotency, retained provenance with zero re-billing, coverage gates, 版本对比 view; three delivery-found defects fixed with tests) | `DONE` | Issue #14 (closed) | PR #15 merge `2b36d73` | `2026-09-01` |
 | `A-006` | `F006 Layered Run Evidence` | `ZCode feature-dev session` | Layered run evidence delivered end to end (five-kind inventory/summary/events, estimated-cost telemetry, explanation narration, SSE keepalive fix for the F003 residual, B-001 closed) | `DONE` | Issue #12 (closed) | PR #13 merge `21bef27` | `2026-08-31` |

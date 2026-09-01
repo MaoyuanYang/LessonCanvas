@@ -1,7 +1,7 @@
 # F009: Technical Portfolio Evaluation
 
-- Spec Status: `SPEC READY`
-- Roadmap Status: `NEXT`
+- Spec Status: `SPEC READY` (DONE 2026-09-01)
+- Roadmap Status: `DONE`
 - Priority: `P0`
 - Owner: Implementation assignee unassigned until Coding starts
 - Work item: [GitHub Issue #18](https://github.com/MaoyuanYang/LessonCanvas/issues/18) — bound 2026-09-01 (authorized)
@@ -217,3 +217,24 @@ All five DRAFT open questions and the blocking refinement questions are resolved
 - Table/column definitions, indexes, and migration steps (Implementation Plan)
 - Dataset file layout, harness CLI commands, and fault-profile key names (Implementation Plan)
 - Pixel-level UI and complete Test Design (`ux-ui.md`, `test-design.md`)
+
+## Gate Record: DONE
+
+- Status: `PASS`
+- Validation time: 2026-09-01
+- Decision Authority: `YMY / Project Owner` — full delivery flow authorized interactively on 2026-09-01 ("全部授权": commit/push/PR Issue update, then merge); merge performed as merge commit `6eed93f`
+- Conditions met:
+  - All 15 ACs satisfied with automated, E2E-spec, or recorded live evidence (backend 221 passed incl. 24 F009 tests + ruff clean; web 63/63 + eslint/tsc/build clean; TS-016 browser journey environment-gated with green substitute coverage and a recorded resume condition)
+  - Live protocol (TS-017) executed under owner authorization with the real DeepSeek provider: six live passes (5 pass + 1 honest C-ART-1 fail kept explicit) + the real-worker stop/restart recovery demonstration (same-run resume, byte-identical preserved checksum, no duplicate billing); evidence files in this directory
+  - Review: no Critical findings; SF-1/SF-2/SF-3 fixed with regression coverage during delivery; SF-4/SF-5 resolved; residuals M-1/M-2/M-3/L-1..L-4 owner-visible in the Test Design execution snapshot
+  - Documentation sync: API/DATABASE/TESTING/ARCHITECTURE updated with F009 resolutions; ROADMAP/STAGE/Issue #18 synchronized (auto-closed by merge)
+  - Delivery: PR [#19](https://github.com/MaoyuanYang/LessonCanvas/pull/19) merged `6eed93f`; main re-verified (backend 221 passed + ruff clean + web 63/63 + tsc clean)
+- DONE evidence manifest (working-tree SHA-256 prefixes at gate time):
+  - `spec.md` @ `15803bdc1837` (pre-DONE content; this record appended after)
+  - `ux-ui.md` @ `d3860c7a8c05`
+  - `test-design.md` @ `fdd221349f09`
+  - `plan.md` @ `d12d93ad3b76`
+  - `review.md` @ `8ff5fc848326`
+  - `live-evidence.json` @ `6c31557dae86`
+  - `worker-recovery-evidence.json` @ `0554806273e0`
+  - `specs/ROADMAP.md` @ `d18a0afa48be` (pre-DONE)
