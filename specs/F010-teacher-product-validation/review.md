@@ -129,36 +129,71 @@ M-1 E2E resume under fault stack; M-2 TS-014 teacher protocol execution before d
 ## Delivery Authorization and Status
 
 - Project Definition of Done (DoD): PR opened, feedback resolved, approved and merged by/with the responsible maintainer (adopted delivery mode)
-- Explicitly authorized actions so far: Issue create + gate-progress update (2026-09-01); local writes per the authorized boundary. Commit/push/PR/merge: NOT YET authorized.
-- Tool/auth available: `gh` authenticated; git available.
-- Actions actually performed: Issue #20 created and updated (authorized); local implementation on the feature branch (uncommitted).
-- Actions not performed: commit, push, PR, merge, Issue close; TS-014 protocol execution.
-- Links/revisions: this review; Test Design execution snapshot.
-- Delivery state: `READY FOR PR` (2026-09-01 — implementation, verification, Review, and Docs complete; commit/push/PR/merge await explicit authorization, and TS-014 disposition precedes DONE per Spec D9)
+- Explicitly authorized actions: full delivery flow authorized by `YMY / Project Owner` on 2026-09-01 ("交付全部授权，真实老师评审延后"): commit, push, PR, Issue update, merge; TS-014 real-teacher reviews deferred per Spec D9 honest fallback
+- Tool/auth available: `gh` authenticated; git available
+- Actions actually performed: commit `cbfe6cb`; push; PR [#21](https://github.com/MaoyuanYang/LessonCanvas/pull/21) created (Closes #20); Issue #20 updated; merged as `683172b` (merge commit); Issue auto-closed; main re-verified; DONE records written
+- Actions not performed: TS-014 real-review execution (deferred by owner decision — follow-up import pending)
+- Links/revisions: PR #21 `683172b`; DONE evidence manifest in the Spec Gate Record
+- Delivery state: `DELIVERED`
 
 ## `DONE` Input Manifest
 
 | Input | Revision/hash | Gate/status | Evidence/notes |
 | --- | --- | --- | --- |
-| Current Spec | recorded at DONE decision | PASS | Final working-tree hash recorded with the DONE record |
-| Affected Dependency Specs | F009 `38bff6656785`, F008 `0e1e911d1158` at SPEC READY | PASS | Unchanged since (verified at spec gate) |
+| Current Spec | `76c12f9bea6c` pre-DONE (DONE record appended after) | PASS | Gate Record: DONE |
+| Affected Dependency Specs | F009 `38bff6656785`, F008 `0e1e911d1158` at SPEC READY | PASS | Unchanged since the spec gate |
 | UX/UI artifact | `ux-ui-f010-r1` / `35fe2b9b1417` | PASS | |
-| Test Design | `test-design-f010-r1` / `eaa31cd897d6` (+ execution snapshot appended) | PASS | |
-| Implementation Plan / Tasks | `76fced0843e7` | CURRENT | T0–T5 complete; T6 delivery-time |
-| Related ADR / API / Architecture / Database | API/DATABASE updated 2026-09-01; ARCHITECTURE unchanged | CURRENT | |
+| Test Design | `test-design-f010-r1` / `8f26e15c338d` (incl. execution snapshot + TS-014 deferral disposition) | PASS | |
+| Implementation Plan / Tasks | `76fced0843e7` | CURRENT | T0–T5 delivered; T6 disposition recorded (deferred per D9) |
+| Related ADR / API / Architecture / Database | API/DATABASE updated in PR #21; ARCHITECTURE unchanged | CURRENT | |
 | Related Testing / Frontend / UX / UI / Design System / AGENTS | TESTING updated; others N/A no shared change; AGENTS unchanged | CURRENT | |
-| Reviewed diff / implementation revision | working tree @ review time; commit hash at delivery | PASS | Findings SF-1/SF-2 fixed with regression coverage |
-| Review findings / waivers | this document | PASS (no Critical; M-1/M-2 owner-visible with resume conditions) | |
-| PR/MR or adopted no-PR delivery record | pending authorization | NOT_READY | |
+| Reviewed diff / implementation revision | `cbfe6cb` (PR #21) | PASS | SF-1/SF-2 fixed with regression coverage |
+| Review findings / waivers | this document | PASS | No Critical; M-2 resolved by owner decision (D9 fallback); M-1 resume condition recorded |
+| PR/MR or adopted no-PR delivery record | PR #21 merged `683172b` | PASS | |
 
 ## `DONE` Checklist
 
-To be completed at the delivery decision (after TS-014 disposition, PR, and merge). Current status: `DONE Status: NOT_READY`.
+| ID | Checklist item | Result | Evidence |
+| --- | --- | --- | --- |
+| DR-01 | Spec reflects current behavior | YES | API enumeration completed truthfully; D1–D9 unchanged |
+| DR-02 | All Acceptance Criteria satisfied | YES | AC-001..AC-009 automated; AC-010 via its designed fallback branch (owner-deferred real reviews per D9) |
+| DR-03 | Core ACs have test/alternative evidence | YES | Traceability table; substitute coverage for TS-013 |
+| DR-04 | Necessary focused/regression/broader tests PASS | YES | Backend 269 + ruff; web 74/74 + eslint/tsc/build |
+| DR-05 | Required concurrency/performance/UI/E2E checks | YES | Concurrency TS-004; E2E TS-013 environment-gated with green substitute coverage and resume condition (risk-based N/A of the same class F009 recorded) |
+| DR-06 | No Critical/flaky test; no Critical finding; High waivers recorded | YES | SF-1/SF-2 fixed; no waivers needed |
+| DR-07 | Review complete and Docs synced | YES | review.md; API/DATABASE/TESTING + Spec |
+| DR-08 | Design Changes synchronized; L3 ADR requirement | YES | N/A - L1 only; no architectural decision |
+| DR-09 | Issue/work item updated | YES | Issue #20 updated (authorized) and auto-closed by merge |
+| DR-10 | Confirmed PR standard met | YES | PR #21 opened, no external findings, merged by authorized flow with responsible maintainer authorization |
+| DR-11 | DONE input manifest complete | YES | Above |
+| DR-12 | No semantic manifest change after prior PASS | YES | First DONE validation |
+| DR-13 | Concurrent-work integration / PR feedback rules | YES | N/A - no concurrent work items; no external PR review feedback received before merge |
+
+### UI Completion
+
+| ID | Checklist item | Result | Evidence |
+| --- | --- | --- | --- |
+| DUC-01 | Complete User Flow and navigation match the approved artifact | YES | Region below 技术评估; create -> import -> outcome -> status surfaces per `ux-ui-f010-r1` |
+| DUC-02 | Loading behavior implemented and verified | YES | Skeleton states in region and detail expansion (component tests) |
+| DUC-03 | Empty behavior implemented and verified | YES | 「尚未进行产品验证」 empty state test |
+| DUC-04 | Error and recovery behavior implemented and verified | YES | All-violation display (client+server), named gaps, stale guidance, requirement error mapping tests |
+| DUC-05 | Success behavior and exit | YES | Outcome announcements, status chips, document download journey |
+| DUC-06 | Permission/disabled/offline states | YES | Non-owner safe not-found (API tests); desktop-only actions per small-screen rule |
+| DUC-07 | Responsive behavior verified | YES | 1024px boundary: read-only chips/outcomes preserved; actions deferred (component tests + useDesktop) |
+| DUC-08 | Accessibility requirements verified | YES | Labelled section, aria-expanded disclosures, focus management on validation errors, text+marker statuses, polite status announcements; keyboard operability per component tests |
+| DUC-09 | Design System reuse/extension compliant | YES | Reuse table; no new tokens or visual language |
+| DUC-10 | Required interaction/UI/E2E tests pass or approved N/A | YES | Component suites green; E2E environment-gated with green substitute coverage and resume condition |
 
 ## Final State
 
-- `DONE` Status: `NOT_READY`
-- Roadmap Status: `REVIEW`
-- If not DONE, exact blocker/unperformed action: TS-014 real-teacher protocol execution (owner-coordinated) and the delivery authorization chain (commit/push/PR/merge).
-- Resume from: owner confirms TS-014 execution plan; then authorized delivery flow.
-- Final Stage activity state / snapshot revision: `REVIEW` / STAGE-64.
+- `DONE` Status: `PASS`
+- `DONE` input manifest revision/hash: above (spec `76c12f9bea6c` pre-DONE + Gate Record appended)
+- Validated delivery revision: PR #21 merge `683172b`
+- Validated at: 2026-09-01
+- Decision Authority (named human + role): `YMY / Project Owner`
+- Approval source: interactive session 2026-09-01 ("交付全部授权，真实老师评审延后")
+- Approval scope: F010 full delivery flow (commit/push/PR/Issue update/merge) with the TS-014 deferral disposition
+- Roadmap Status: `DONE`
+- If not DONE, exact blocker/unperformed action: none blocking; follow-up residual: import the teacher's real three-unit reviews when available and append evidence (D9)
+- Resume from: N/A - terminal; follow-up via the recorded residual
+- Final Stage activity state / snapshot revision: `COMPLETE` / STAGE-65

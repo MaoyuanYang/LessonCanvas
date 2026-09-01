@@ -1,10 +1,10 @@
 # F010: Teacher Product Validation
 
-- Spec Status: `SPEC READY`
-- Roadmap Status: `NEXT`
+- Spec Status: `SPEC READY` (DONE 2026-09-01)
+- Roadmap Status: `DONE`
 - Priority: `P1`
 - Owner: Implementation assignee unassigned until Coding starts
-- Work item: [GitHub Issue #20](https://github.com/MaoyuanYang/LessonCanvas/issues/20) — bound 2026-09-01 (authorized)
+- Work item: [GitHub Issue #20](https://github.com/MaoyuanYang/LessonCanvas/issues/20) — bound 2026-09-01 (authorized); auto-closed on delivery
 - Decision Authority: `YMY / Project Owner`
 - Dependencies: `F009` (DONE) for representative synthetic units, the evaluation harness that produces complete packages, and separate technical-result reporting; `F008` (DONE) for the technical package-validation status surface this Feature extends
 - Last Updated: 2026-09-01
@@ -202,3 +202,23 @@ All five DRAFT open questions and the blocking refinement questions are resolved
 - Table/column definitions, indexes, and migration steps (Implementation Plan)
 - Rubric document layout and print formatting for the evaluator (Implementation Plan; labels zh-Hans)
 - Pixel-level UI and complete Test Design (`ux-ui.md`, `test-design.md`)
+
+## Gate Record: DONE
+
+- Status: `PASS`
+- Validation time: 2026-09-01
+- Decision Authority: `YMY / Project Owner` — full delivery flow authorized interactively on 2026-09-01 ("交付全部授权，真实老师评审延后": commit/push/PR/Issue update/merge; real-teacher reviews postponed per the D9 honest-fallback branch with the follow-up import as an owner-visible residual); merge performed as merge commit `683172b` (PR #21)
+- Conditions met:
+  - All 10 ACs satisfied with automated or recorded evidence (backend 269 passed incl. 48 F010 tests + ruff clean; web 74/74 + eslint 0 errors + tsc + build clean); AC-010 satisfied through its designed fallback branch — the owner deferred the teacher's real reviews on 2026-09-01, the honest-status capability is verified, runtime truthfully shows 未评估 until assignments exist, and the pass-path evidence waits for the follow-up import (D9, owner-visible residual in the Test Design snapshot)
+  - E2E TS-013 environment-gated with green substitute coverage and a recorded resume condition (same class as F009 TS-016); TS-014 deferred by owner decision with recorded disposition
+  - Review: no Critical findings; SF-1 (client pre-validation per approved UX/UI) and SF-2 (evidence-document orphan-privacy defect) fixed with regression coverage during review; residuals M-1/M-2/L-1..L-3 owner-visible in review.md and the Test Design execution snapshot
+  - Documentation sync: API/DATABASE/TESTING updated with F010 resolutions; Spec API enumeration completed truthfully (review L-3); ROADMAP/STAGE/Issue #20 synchronized (auto-closed by merge)
+  - Delivery: PR [#21](https://github.com/MaoyuanYang/LessonCanvas/pull/21) merged `683172b`; main re-verified (backend 269 passed + ruff clean + web 74/74 + tsc clean)
+- DONE evidence manifest (working-tree SHA-256 prefixes at gate time):
+  - `spec.md` @ `76c12f9bea6c` (pre-DONE content; this record appended after)
+  - `ux-ui.md` @ `35fe2b9b1417`
+  - `test-design.md` @ `8f26e15c338d` (incl. execution snapshot with TS-014 deferral disposition)
+  - `plan.md` @ `76fced0843e7`
+  - `review.md` @ `4a33eef2d1a3`
+  - `specs/ROADMAP.md` @ `bd730687db5d` (pre-DONE)
+- Follow-up (owner-visible residual, non-blocking): import the teacher's real three-unit rubric evidence with retained originals when reviews complete and append per-unit outcomes to the Test Design execution snapshot; F012 must display the honest product-validation status.

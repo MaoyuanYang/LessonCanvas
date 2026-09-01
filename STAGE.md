@@ -4,16 +4,16 @@
 
 | Field | Value |
 | --- | --- |
-| Snapshot Revision | `STAGE-64` |
-| Parent Snapshot | `STAGE-63` @ `ad3275e6a696` (pre-write read, no external change) |
-| Last Reconciled At | `2026-09-01T20:13:04+08:00` |
+| Snapshot Revision | `STAGE-65` |
+| Parent Snapshot | `STAGE-64` @ `c0618ca56a6e` (pre-write read, no external change) |
+| Last Reconciled At | `2026-09-01T20:25:15+08:00` |
 | Reconciled By | `ZCode feature-dev session (YMY / Project Owner driving)` |
-| Repository Ref | `main @ 352db99` |
+| Repository Ref | `main @ 683172b` (PR #21 merge) |
 | Write Coordination | `SINGLE_WRITER:ZCode feature-dev session` |
 | Lifecycle Path | `GREENFIELD` |
 | Project Phase | `COMPLETE` |
 | Overall State | `ACTIVE` |
-| Current Milestone | F010 Teacher Product Validation `REVIEW` (A-010, Issue #20) — implementation T0–T5 complete on `feature/F010-teacher-product-validation` (backend/web suites green), self review recorded (SF-1/SF-2 fixed); delivery pending TS-014 teacher protocol + authorization; F011/F012/F013 remain `DRAFT` |
+| Current Milestone | F010 Teacher Product Validation DONE (PR #21 merge `683172b`; real-teacher reviews deferred by owner per D9, follow-up import pending); next actionable F011 (P0) / F012 / F013 — F010 completes their dependency surface where applicable |
 | Tracking Mode | `REMOTE` |
 
 ## Lifecycle Progress
@@ -30,7 +30,7 @@
 
 | Activity ID | Work Item | Member | Type | Skill | Skill Stage | Activity State | Work Status | Branch / Worktree | Status Authority | Next Checkpoint | Updated At |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `A-010` | `F010 Teacher Product Validation` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `REVIEW` | `ACTIVE` | `REVIEW` | `feature/F010-teacher-product-validation` | `https://github.com/MaoyuanYang/LessonCanvas/issues/20` | TS-014 teacher protocol + delivery authorization | `2026-09-01T20:13:04+08:00` |
+| `A-010` | `F010 Teacher Product Validation` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/20` | N/A - terminal (PR #21 merge `683172b`) | `2026-09-01T20:25:15+08:00` |
 | `A-003` | `F003 Recoverable Unit Lesson Plans` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/6` | N/A - terminal (PR #7 merge `ad81c82`) | `2026-08-29T00:24:37+08:00` |
 | `A-002` | `F002 Confirmed Unit Blueprint (DONE reconciliation)` | `opencode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `ACTIVE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/3` | N/A - terminal | `2026-08-28T19:10:00+08:00` |
 
@@ -76,6 +76,7 @@
 | F010 | `SPEC READY` | `PASS` | `specs/F010-teacher-product-validation/spec.md` Gate Record @ `66a3c94329a9` (decision log D1–D9; ROADMAP projection @ `6c7128eccd4b`) |
 | F010 | `UI READY` | `PASS` | `specs/F010-teacher-product-validation/ux-ui.md` UI READY Record @ `ux-ui-f010-r1` / `35fe2b9b1417` |
 | F010 | `TEST DESIGN READY` | `PASS` | `specs/F010-teacher-product-validation/test-design.md` Record @ `test-design-f010-r1` / `eaa31cd897d6` |
+| F010 | `DONE` | `PASS` | PR #21 merge `683172b`; DONE evidence manifest in `specs/F010-teacher-product-validation/spec.md` Gate Record |
 
 ## Blockers and Conflicts
 
@@ -94,6 +95,7 @@
 
 | Activity ID | Work Item | Member | Outcome | Final Work Status | Final Status Authority | Delivery Evidence | Completed At |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| `A-010` | `F010 Teacher Product Validation` | `ZCode feature-dev session` | Teacher product validation delivered end to end (fixed rubric-r1, version-bound assignments with staleness, deterministic zero-model outcomes, owner-mediated evidence import with private original documents, honest not-complete, live separate status on all shared surfaces; SF-1/SF-2 review fixes; real-teacher reviews deferred by owner per D9 with follow-up import pending) | `DONE` | Issue #20 (auto-closed by merge) | PR #21 merge `683172b` | `2026-09-01` |
 | `A-009` | `F009 Technical Portfolio Evaluation` | `ZCode feature-dev session` | Technical portfolio evaluation end to end (governed synthetic dataset, deterministic blocking/diagnostic criteria engine, idempotent scripted harness with eval-gated fault injection, owner API + report, evidence-panel region; F006 L-1 narration token capture; truncated-response reclassification fix; six live DeepSeek passes with one honest per-pass failure + real-worker recovery demonstration) | `DONE` | Issue #18 (auto-closed by merge) | PR #19 merge `6eed93f` | `2026-09-01` |
 | `A-008` | `F008 Alignment Review and Delivery` | `ZCode feature-dev session` | Alignment review and delivery end to end (deterministic coverage/findings, reasoned overrides with audit, draft/validated labelled ZIP export, printable report; SF-1 retry defect fixed with regression test) | `DONE` | Issue #16 (auto-closed by merge) | PR #17 merge `1982ac9` | `2026-09-01` |
 | `A-007` | `F007 Versioned Targeted Regeneration` | `ZCode feature-dev session` | Versioned targeted regeneration delivered end to end (impact matrix, scoped runs with scope-once idempotency, retained provenance with zero re-billing, coverage gates, 版本对比 view; three delivery-found defects fixed with tests) | `DONE` | Issue #14 (closed) | PR #15 merge `2b36d73` | `2026-09-01` |
