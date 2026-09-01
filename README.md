@@ -31,7 +31,7 @@ LessonCanvas is a portfolio-first Agent application for individual mainland Chin
 ## Current Stage
 
 - Macro design: `MACRO DESIGN READY`
-- Delivered features: `F001` grounded confirmed brief, `F002` confirmed unit blueprint, `F003` recoverable unit lesson plans, `F004` editable lesson slide decks, `F005` lesson exercises and answers, `F006` layered run evidence, `F007` versioned targeted regeneration (all `DONE`; see `specs/ROADMAP.md`)
+- Delivered features: `F001` grounded confirmed brief, `F002` confirmed unit blueprint, `F003` recoverable unit lesson plans, `F004` editable lesson slide decks, `F005` lesson exercises and answers, `F006` layered run evidence, `F007` versioned targeted regeneration, `F008` alignment review and delivery (all `DONE`; see `specs/ROADMAP.md`)
 - Next actionable: `F008 Alignment Review and Delivery` refinement (see `specs/ROADMAP.md`)
 - Application scaffold: monorepo with `apps/web` (Next.js) and `apps/backend` (FastAPI + Celery) established; infrastructure via `infra/docker-compose.yml`
 

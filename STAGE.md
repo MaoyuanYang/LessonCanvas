@@ -4,16 +4,16 @@
 
 | Field | Value |
 | --- | --- |
-| Snapshot Revision | `STAGE-49` |
-| Parent Snapshot | `STAGE-48` @ (pre-write read, no external change) |
-| Last Reconciled At | `2026-09-01T07:10:00+08:00` |
+| Snapshot Revision | `STAGE-50` |
+| Parent Snapshot | `STAGE-49` @ (pre-write read, no external change) |
+| Last Reconciled At | `2026-09-01T10:35:00+08:00` |
 | Reconciled By | `ZCode feature-dev session (YMY / Project Owner driving)` |
-| Repository Ref | `main @ 2b36d73` |
+| Repository Ref | `main @ 1982ac9` |
 | Write Coordination | `SINGLE_WRITER:ZCode feature-dev session` |
 | Lifecycle Path | `GREENFIELD` |
 | Project Phase | `COMPLETE` |
 | Overall State | `ACTIVE` |
-| Current Milestone | F008 IN PR REVIEW (PR #17 opened 2026-09-01); merge awaiting authorization |
+| Current Milestone | F008 DONE (PR #17 merge `1982ac9`); next actionable is F009 refinement |
 | Tracking Mode | `REMOTE` |
 
 ## Lifecycle Progress
@@ -30,7 +30,6 @@
 
 | Activity ID | Work Item | Member | Type | Skill | Skill Stage | Activity State | Work Status | Branch / Worktree | Status Authority | Next Checkpoint | Updated At |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `A-008` | `F008 Alignment Review and Delivery` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `PR_REVIEW` | `REVIEW` | `feature/F008-alignment-review-and-delivery` | `https://github.com/MaoyuanYang/LessonCanvas/issues/16` | PR [#17](https://github.com/MaoyuanYang/LessonCanvas/pull/17) review/merge; then DONE record | `2026-09-01T07:10:00+08:00` |
 | `A-003` | `F003 Recoverable Unit Lesson Plans` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/6` | N/A - terminal (PR #7 merge `ad81c82`) | `2026-08-29T00:24:37+08:00` |
 | `A-002` | `F002 Confirmed Unit Blueprint (DONE reconciliation)` | `opencode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `ACTIVE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/3` | N/A - terminal | `2026-08-28T19:10:00+08:00` |
 
@@ -68,6 +67,10 @@
 | F008 | `SPEC READY` | `PASS` | `specs/F008-alignment-review-and-delivery/spec.md` Gate Record @ `dc301bba1a83` |
 | F008 | `UI READY` | `PASS` | `specs/F008-alignment-review-and-delivery/ux-ui.md` UI READY Record @ `ux-ui-f008-r1` / `6bca800ac896` |
 | F008 | `TEST DESIGN READY` | `PASS` | `specs/F008-alignment-review-and-delivery/test-design.md` Record @ `test-design-f008-r1` / `6d7979391f92` |
+| F008 | `DONE` | `PASS` | PR #17 merge `1982ac9`; DONE evidence manifest in `specs/F008-alignment-review-and-delivery/spec.md` Gate Record |
+| F008 | `SPEC READY` | `PASS` | `specs/F008-alignment-review-and-delivery/spec.md` Gate Record @ `dc301bba1a83` |
+| F008 | `UI READY` | `PASS` | `specs/F008-alignment-review-and-delivery/ux-ui.md` UI READY Record @ `ux-ui-f008-r1` / `6bca800ac896` |
+| F008 | `TEST DESIGN READY` | `PASS` | `specs/F008-alignment-review-and-delivery/test-design.md` Record @ `test-design-f008-r1` / `6d7979391f92` |
 
 ## Blockers and Conflicts
 
@@ -86,6 +89,7 @@
 
 | Activity ID | Work Item | Member | Outcome | Final Work Status | Final Status Authority | Delivery Evidence | Completed At |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| `A-008` | `F008 Alignment Review and Delivery` | `ZCode feature-dev session` | Alignment review and delivery end to end (deterministic coverage/findings, reasoned overrides with audit, draft/validated labelled ZIP export, printable report; SF-1 retry defect fixed with regression test) | `DONE` | Issue #16 (auto-closed by merge) | PR #17 merge `1982ac9` | `2026-09-01` |
 | `A-007` | `F007 Versioned Targeted Regeneration` | `ZCode feature-dev session` | Versioned targeted regeneration delivered end to end (impact matrix, scoped runs with scope-once idempotency, retained provenance with zero re-billing, coverage gates, 版本对比 view; three delivery-found defects fixed with tests) | `DONE` | Issue #14 (closed) | PR #15 merge `2b36d73` | `2026-09-01` |
 | `A-006` | `F006 Layered Run Evidence` | `ZCode feature-dev session` | Layered run evidence delivered end to end (five-kind inventory/summary/events, estimated-cost telemetry, explanation narration, SSE keepalive fix for the F003 residual, B-001 closed) | `DONE` | Issue #12 (closed) | PR #13 merge `21bef27` | `2026-08-31` |
 | `A-005` | `F005 Lesson Exercises and Answers` | `ZCode feature-dev session` | Third artifact vertical slice delivered end to end (paired DOCX exercises/answers, difficulty-bound runs, deterministic pairing validation) | `DONE` | Issue #10 (closed) | PR #11 merge `5804e86` | `2026-08-31` |

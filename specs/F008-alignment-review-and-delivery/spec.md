@@ -1,7 +1,7 @@
 # F008: Alignment Review and Delivery
 
-- Spec Status: `SPEC READY`
-- Roadmap Status: `NEXT`
+- Spec Status: `SPEC READY` (DONE 2026-09-01)
+- Roadmap Status: `DONE`
 - Priority: `P0`
 - Owner: Implementation assignee unassigned until Coding starts
 - Work item: [GitHub Issue #16](https://github.com/MaoyuanYang/LessonCanvas/issues/16) — bound 2026-09-01 (authorized)
@@ -201,3 +201,22 @@ All DRAFT open questions and the four blocking refinement questions are resolved
 - Table/column definitions, indexes, and migration steps (Implementation Plan)
 - Components, packages, and internal functions (Implementation Plan)
 - Pixel-level UI and complete Test Design (`ux-ui.md`, `test-design.md`)
+
+## Gate Record: DONE
+
+- Status: `PASS`
+- Validation time: 2026-09-01
+- Decision Authority: `YMY / Project Owner` — full delivery flow (commit/push/PR/Issue update 2026-09-01, then merge) explicitly authorized in the interactive session ("全部授权"); merge performed as merge commit `1982ac9`
+- Conditions met:
+  - All 13 ACs satisfied with automated or E2E evidence (backend 197 passed incl. 17 alignment tests; web 57/57; see test-design Execution Evidence Snapshot)
+  - E2E green on the fault stack: TS-016 validated-path journey (alignment view → status pair → validated export → keyboard ZIP download → print report) and TS-017 family-banner link; M-1/M-2/L-1 residuals owner-visible in the snapshot
+  - Review: no Critical findings; SF-1 (failed-export retry) fixed with a regression test before delivery; SF-2..SF-4 recorded
+  - Documentation sync: API/DATABASE/TESTING/UX/UI/DESIGN_SYSTEM updated; ROADMAP/STAGE/Issue synchronized (Issue #16 auto-closed by merge)
+  - Delivery: PR [#17](https://github.com/MaoyuanYang/LessonCanvas/pull/17) merged `1982ac9`; main re-verified (backend exit-0 + ruff clean + web 57/57)
+- DONE evidence manifest (working-tree SHA-256 prefixes at gate time):
+  - `spec.md` @ `865244341a9e` (pre-DONE content; this record appended after)
+  - `ux-ui.md` @ `817e9fcfa4a3`
+  - `test-design.md` @ `d9feba15621d`
+  - `plan.md` @ `cd47f7a23a05`
+  - `review.md` @ `f1212fbc6698`
+  - `specs/ROADMAP.md` @ `ad8c1ea0f128` (pre-DONE)
