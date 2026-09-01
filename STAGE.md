@@ -4,16 +4,16 @@
 
 | Field | Value |
 | --- | --- |
-| Snapshot Revision | `STAGE-48` |
-| Parent Snapshot | `STAGE-47` @ (pre-write read, no external change) |
-| Last Reconciled At | `2026-09-01T06:30:00+08:00` |
+| Snapshot Revision | `STAGE-49` |
+| Parent Snapshot | `STAGE-48` @ (pre-write read, no external change) |
+| Last Reconciled At | `2026-09-01T07:10:00+08:00` |
 | Reconciled By | `ZCode feature-dev session (YMY / Project Owner driving)` |
 | Repository Ref | `main @ 2b36d73` |
 | Write Coordination | `SINGLE_WRITER:ZCode feature-dev session` |
 | Lifecycle Path | `GREENFIELD` |
 | Project Phase | `COMPLETE` |
 | Overall State | `ACTIVE` |
-| Current Milestone | F008 NEXT (selection confirmed 2026-09-01); work-item binding in progress |
+| Current Milestone | F008 IN PR REVIEW (PR #17 opened 2026-09-01); merge awaiting authorization |
 | Tracking Mode | `REMOTE` |
 
 ## Lifecycle Progress
@@ -30,7 +30,7 @@
 
 | Activity ID | Work Item | Member | Type | Skill | Skill Stage | Activity State | Work Status | Branch / Worktree | Status Authority | Next Checkpoint | Updated At |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `A-008` | `F008 Alignment Review and Delivery` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `REVIEW` | `REVIEW` | `feature/F008-alignment-review-and-delivery` | `https://github.com/MaoyuanYang/LessonCanvas/issues/16` | `DELIVERY` pending commit/push/PR authorization | `2026-09-01T06:30:00+08:00` |
+| `A-008` | `F008 Alignment Review and Delivery` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `PR_REVIEW` | `REVIEW` | `feature/F008-alignment-review-and-delivery` | `https://github.com/MaoyuanYang/LessonCanvas/issues/16` | PR [#17](https://github.com/MaoyuanYang/LessonCanvas/pull/17) review/merge; then DONE record | `2026-09-01T07:10:00+08:00` |
 | `A-003` | `F003 Recoverable Unit Lesson Plans` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/6` | N/A - terminal (PR #7 merge `ad81c82`) | `2026-08-29T00:24:37+08:00` |
 | `A-002` | `F002 Confirmed Unit Blueprint (DONE reconciliation)` | `opencode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `ACTIVE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/3` | N/A - terminal | `2026-08-28T19:10:00+08:00` |
 
