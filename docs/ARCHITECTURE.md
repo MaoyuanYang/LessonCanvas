@@ -124,6 +124,8 @@ FastAPI modular monolith ---------------- Managed identity
 
 Local and CI environments must be reproducible once scaffolding exists. The public demo will deploy the Next.js Web application, FastAPI application, Worker, PostgreSQL, Redis, and object storage through managed or container-capable services. Exact providers and topology remain open until deployment refinement; no Kubernetes or multi-region design is justified.
 
+[PARTIALLY RESOLVED, 2026-09-02] F012 selects local full-stack containerization as the deployed portfolio environment (`YMY / Project Owner`, F012 Spec D1): `infra/docker-compose.yml` runs the complete stack behind the `app` profile (single-process Web/API, Celery Worker, PostgreSQL/pgvector, Redis, MinIO) reached over the LAN with application-issued anonymous workspace tokens and no login (ADR-0006); cloud/region deployment stays a follow-up Feature. Deployment-topology constraints: the API runs exactly one process because the per-workspace SSE stream cap uses an in-process registry (F011 M-2) — any scale-out must re-verify that assumption first; the LangGraph Postgres checkpointer is verified restart-safe and cross-process persistent (F012 TS-011). Public cloud provider selection, region, domain, and TLS remain open for the follow-up deployment Feature.
+
 ## Architectural Risks and Revisit Triggers
 
 - Multi-Agent is retained for portfolio coverage even without measured superiority. Revisit before production positioning or when cost and maintenance become primary.
@@ -132,7 +134,7 @@ Local and CI environments must be reproducible once scaffolding exists. The publ
 - Celery and LangGraph can overlap if responsibilities drift. Revisit if task transport begins to own semantic state or the graph begins to replace reliable task delivery.
 - MCP framework coupling. Revisit if the ecosystem or LangGraph integration destabilizes the tool boundary, or if reviewer evidence justifies exposing a read-only evidence server.
 - Applied memory biasing generation. Revisit if evaluation shows confirmed memory harms comparability or teacher outcomes. [RESOLVED, 2026-09-01] F009 records a memory-state snapshot on every evaluation pass (Phase 1: `empty (F013 not implemented)`; binds recorded memory-set revisions once F013 lands), so compared passes are memory-comparable by construction (ADR-0005).
-- [PARTIALLY RESOLVED, 2026-08-24] F001 providers selected: Clerk (identity), DeepSeek (model), local MinIO (object storage) (`YMY / Project Owner`, F001 refinement D1–D3). Cloud/deployment topology and hosted storage remain open until deployment refinement.
+- [PARTIALLY RESOLVED, 2026-08-24; REVISED 2026-09-02] F001 providers selected: Clerk (identity), DeepSeek (model), local MinIO (object storage). ADR-0006 supersedes the identity item: Phase 1 has no managed identity — the application issues anonymous workspace tokens (`POST /auth/guest-token`) with no login/logout. DeepSeek and MinIO remain. Cloud/region topology stays a follow-up deployment Feature.
 
 ## Related ADRs
 

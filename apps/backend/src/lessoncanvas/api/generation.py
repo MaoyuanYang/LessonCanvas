@@ -51,15 +51,15 @@ class ResumeOut(BaseModel):
     status: str
 
 
-def _owned(session, workspace, project_id) -> None:
+def _owned(session, workspace, project_id, *, sample_read: bool = False) -> None:
     try:
-        get_owned_project(session, workspace, project_id)
+        get_owned_project(session, workspace, project_id, allow_sample_read=sample_read)
     except ServiceNotFound as err:
         raise NotFoundError("project not found") from err
 
 
-def _run_or_404(session, workspace, project_id) -> GenerationRun:
-    _owned(session, workspace, project_id)
+def _run_or_404(session, workspace, project_id, *, sample_read: bool = False) -> GenerationRun:
+    _owned(session, workspace, project_id, sample_read=sample_read)
     run = run_service.current_run(session, project_id)
     if run is None:
         raise NotFoundError("generation run not found")
@@ -127,7 +127,7 @@ def start(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep):
 
 @router.get("", response_model=GenerationSnapshot)
 def status(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep):
-    run = _run_or_404(session, workspace, project_id)
+    run = _run_or_404(session, workspace, project_id, sample_read=True)
     return _snapshot(session, run)
 
 
@@ -243,7 +243,7 @@ def download(
         raise NotFoundError("lesson plan not found") from err
 
     iw_service.audit_download(
-        session, workspace.id, workspace.clerk_user_id, "lesson_plan", artifact.id
+        session, workspace.id, workspace.subject, "lesson_plan", artifact.id
     )
     session.commit()
     filename = f"lesson-{artifact.lesson_index:02d}.docx"

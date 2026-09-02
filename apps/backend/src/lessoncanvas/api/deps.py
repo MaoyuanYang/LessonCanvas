@@ -33,10 +33,10 @@ def require_workspace(request: Request, session: SessionDep) -> Workspace:
     scheme, _, token = header.partition(" ")
     if scheme.lower() != "bearer" or not token:
         raise AuthRequiredError("authentication required")
-    subject = get_token_verifier().verify(token.strip())
-    if subject is None:
+    authenticated = get_token_verifier().verify(token.strip())
+    if authenticated is None:
         raise AuthRequiredError("authentication required")
-    workspace = resolve_workspace(session, subject.clerk_user_id)
+    workspace = resolve_workspace(session, authenticated.subject)
     session.commit()
     return workspace
 

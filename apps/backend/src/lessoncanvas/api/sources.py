@@ -90,7 +90,7 @@ def upload_source(
             session,
             storage,
             workspace.id,
-            workspace.clerk_user_id,
+            workspace.subject,
             project_id,
             file.filename or "unnamed",
             content,
@@ -113,7 +113,9 @@ def list_sources(
     project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep
 ) -> list[SourceOut]:
     try:
-        sources = service.list_sources(session, workspace.id, project_id)
+        sources = service.list_sources(
+            session, workspace.id, project_id, allow_sample_read=True
+        )
     except ServiceNotFound as err:
         raise NotFoundError("project not found") from err
     return [to_out(s) for s in sources]
@@ -124,7 +126,9 @@ def get_source(
     project_id: uuid.UUID, source_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep
 ) -> SourceOut:
     try:
-        source = service.get_source(session, workspace.id, project_id, source_id)
+        source = service.get_source(
+            session, workspace.id, project_id, source_id, allow_sample_read=True
+        )
     except ServiceNotFound as err:
         raise NotFoundError("source not found") from err
     return to_out(source)
@@ -136,7 +140,7 @@ def delete_source(
 ):
     try:
         deleted = service.delete_source(
-            session, storage, workspace.id, workspace.clerk_user_id, project_id, source_id
+            session, storage, workspace.id, workspace.subject, project_id, source_id
         )
         session.commit()
     except ServiceNotFound as err:

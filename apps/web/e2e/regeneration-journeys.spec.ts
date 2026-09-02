@@ -4,7 +4,6 @@ import {
   createProject,
   deleteProject,
   openWorkspace,
-  PROFILE_DIR,
 } from "./journey-helpers";
 
 // F007 regeneration journeys (test-design-f007-r1 TS-014/015/016).
@@ -69,15 +68,7 @@ test.describe("regeneration journeys - fault stack", () => {
   test.skip(!faultGate, "set E2E_REGEN_FAULT=1 with the fake-adapter backend running");
   test.setTimeout(480000);
 
-  test.beforeAll(async () => {
-    const { clerkSetup } = await import("@clerk/testing/playwright");
-    await clerkSetup();
-  });
-
-  test("TS-014: revise, preview impact, confirm, regenerate scoped, compare", async () => {
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
+  test("TS-014: revise, preview impact, confirm, regenerate scoped, compare", async ({ page }) => {
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -105,14 +96,10 @@ test.describe("regeneration journeys - fault stack", () => {
       await expect(page.getByText("沿用").first()).toBeVisible({ timeout: 30000 });
     } finally {
       if (projectName) await deleteProject(page, projectName);
-      await context.close();
     }
   });
 
-  test("TS-016: keyboard pass over the revision path", async () => {
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
+  test("TS-016: keyboard pass over the revision path", async ({ page }) => {
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -140,7 +127,6 @@ test.describe("regeneration journeys - fault stack", () => {
       await expect(page.getByText(/沿用课程（\d+）/)).toBeVisible({ timeout: 60000 });
     } finally {
       if (projectName) await deleteProject(page, projectName);
-      await context.close();
     }
   });
 });
@@ -149,15 +135,7 @@ test.describe("regeneration journeys - live stack", () => {
   test.skip(!liveGate, "set E2E_REGEN_LIVE=1 with the live backend + worker running");
   test.setTimeout(600000);
 
-  test.beforeAll(async () => {
-    const { clerkSetup } = await import("@clerk/testing/playwright");
-    await clerkSetup();
-  });
-
-  test("TS-015: live revision regenerates only the affected lesson", async () => {
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
+  test("TS-015: live revision regenerates only the affected lesson", async ({ page }) => {
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -175,7 +153,6 @@ test.describe("regeneration journeys - live stack", () => {
       await expect(page.getByText(/全部 1 课教案已生成/)).toBeVisible({ timeout: 360000 });
     } finally {
       if (projectName) await deleteProject(page, projectName);
-      await context.close();
     }
   });
 });

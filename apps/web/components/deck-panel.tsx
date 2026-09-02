@@ -1,6 +1,5 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -12,6 +11,7 @@ import {
   RUN_STATUS_LABELS,
   TERMINAL_RUN_STATUSES,
 } from "@/components/artifact-run";
+import { getApiToken } from "@/lib/auth";
 import { DesktopRequiredNotice, useDesktop } from "@/components/desktop-gate";
 import { Alert, Button, ConfirmModal, EmptyState, SkeletonRows, StatusBadge } from "@/components/ui";
 import {
@@ -62,11 +62,12 @@ function deckNarrationText(event: GenerationStreamEvent): string | null {
 export function DeckPanel({
   projectId,
   onNavigate,
+  readOnly = false,
 }: {
   projectId: string;
   onNavigate?: (tab: "sources" | "discovery" | "brief" | "blueprint" | "generation" | "decks" | "alignment") => void;
+  readOnly?: boolean;
 }) {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const isDesktop = useDesktop();
   const [error, setError] = useState<string | null>(null);
@@ -81,13 +82,13 @@ export function DeckPanel({
   // the current confirmed versions (Spec D3 / D-DECKGEN).
   const planQuery = useQuery({
     queryKey: ["generation", projectId],
-    queryFn: async () => generationStatus(await getToken(), projectId),
+    queryFn: async () => generationStatus(await getApiToken(), projectId),
     retry: false,
   });
 
   const snapshotQuery = useQuery({
     queryKey: ["deckGeneration", projectId],
-    queryFn: async () => deckGenerationStatus(await getToken(), projectId),
+    queryFn: async () => deckGenerationStatus(await getApiToken(), projectId),
     retry: false,
     refetchInterval: (query) => {
       const status = query.state.data?.status;
@@ -100,7 +101,7 @@ export function DeckPanel({
   }, [projectId, queryClient]);
 
   const startMutation = useMutation({
-    mutationFn: async () => deckGenerationStart(await getToken(), projectId),
+    mutationFn: async () => deckGenerationStart(await getApiToken(), projectId),
     onSuccess: () => {
       setGateBlocked(null);
       setNarrationLines([]);
@@ -121,7 +122,7 @@ export function DeckPanel({
   });
 
   const resumeMutation = useMutation({
-    mutationFn: async () => deckGenerationResume(await getToken(), projectId),
+    mutationFn: async () => deckGenerationResume(await getApiToken(), projectId),
     onSuccess: () => {
       setResumeOpen(false);
       invalidate();
@@ -205,7 +206,7 @@ export function DeckPanel({
     }
     let cancelled = false;
     const connectLoop = async () => {
-      const token = await getToken();
+      const token = await getApiToken();
       while (!cancelled) {
         try {
           await consumeStream(token);
@@ -221,7 +222,7 @@ export function DeckPanel({
       cancelled = true;
       abortRef.current?.abort();
     };
-  }, [consumeStream, getToken, snapshot?.run_id, snapshot?.status]);
+  }, [consumeStream, snapshot?.run_id, snapshot?.status]);
 
   useEffect(() => () => abortRef.current?.abort(), []);
 
@@ -308,8 +309,8 @@ export function DeckPanel({
             </Alert>
           ) : null}
           {error ? <Alert tone="error">{error}</Alert> : null}
-          {!isDesktop ? <DesktopRequiredNotice task="开始生成课件" /> : null}
-          {isDesktop ? (
+          {!isDesktop && !readOnly ? <DesktopRequiredNotice task="开始生成课件" /> : null}
+          {isDesktop && !readOnly ? (
             <Button onClick={() => startMutation.mutate()} disabled={startMutation.isPending}>
               {startMutation.isPending ? "正在启动……" : "开始生成课件"}
             </Button>
@@ -389,8 +390,8 @@ export function DeckPanel({
         )}
       />
 
-      {!isDesktop ? <DesktopRequiredNotice task="恢复失败课件" /> : null}
-      {resumable && isDesktop ? (
+      {!isDesktop && !readOnly ? <DesktopRequiredNotice task="恢复失败课件" /> : null}
+      {resumable && isDesktop && !readOnly ? (
         <Button variant="secondary" onClick={() => setResumeOpen(true)}>
           恢复未完成课件
         </Button>
@@ -410,7 +411,6 @@ export function DeckPanel({
 }
 
 function DownloadDeckButton({ projectId, artifactId }: { projectId: string; artifactId: string }) {
-  const { getToken } = useAuth();
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
   return (
@@ -423,7 +423,7 @@ function DownloadDeckButton({ projectId, artifactId }: { projectId: string; arti
           setBusy(true);
           setFailed(false);
           try {
-            const blob = await downloadSlideDeck(await getToken(), projectId, artifactId);
+            const blob = await downloadSlideDeck(await getApiToken(), projectId, artifactId);
             const url = URL.createObjectURL(blob);
             const anchor = document.createElement("a");
             anchor.href = url;

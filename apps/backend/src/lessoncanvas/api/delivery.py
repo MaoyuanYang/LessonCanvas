@@ -47,9 +47,9 @@ class ExportOut(BaseModel):
     download_available: bool
 
 
-def _owned(session, workspace, project_id) -> None:
+def _owned(session, workspace, project_id, *, sample_read: bool = False) -> None:
     try:
-        get_owned_project(session, workspace, project_id)
+        get_owned_project(session, workspace, project_id, allow_sample_read=sample_read)
     except ServiceNotFound as err:
         raise NotFoundError("project not found") from err
 
@@ -98,7 +98,7 @@ def create_export(
     storage = StorageAdapter(bucket=get_settings().s3_bucket_artifacts)
     try:
         export = delivery.create_export(
-            session, storage, workspace.id, project_id, payload.label, workspace.clerk_user_id
+            session, storage, workspace.id, project_id, payload.label, workspace.subject
         )
     except MissingPairError as err:
         raise RequirementError(
@@ -119,7 +119,7 @@ def create_export(
 
 @router.get("/exports", response_model=list[ExportOut])
 def list_exports(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep):
-    _owned(session, workspace, project_id)
+    _owned(session, workspace, project_id, sample_read=True)
     exports = list(
         session.scalars(
             select(DeliveryExport)
@@ -147,7 +147,7 @@ def download(
     except Exception as err:  # noqa: BLE001 - storage miss must not fake success
         raise NotFoundError("export package not found") from err
     iw_service.audit_download(
-        session, workspace.id, workspace.clerk_user_id, "delivery_export", export.id
+        session, workspace.id, workspace.subject, "delivery_export", export.id
     )
     session.commit()
     filename = f"lessoncanvas-{export.label}-export-{str(export.id)[:8]}.zip"

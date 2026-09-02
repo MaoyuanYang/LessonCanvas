@@ -1,0 +1,12 @@
+# Keep the web image build context clean (F012 D1): host dependencies and
+# build output must not overlay the workspace installed inside the image.
+node_modules
+**/node_modules
+apps/web/.next
+apps/web/test-results
+apps/web/playwright-report
+.git
+**/__pycache__
+**/.venv
+apps/web/e2e/.auth
+*.log

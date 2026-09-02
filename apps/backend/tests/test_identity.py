@@ -11,7 +11,7 @@ def test_workspace_created_once_for_verified_session(client, db_session):
         response = client.get("/projects", headers=headers)
         assert response.status_code == 200
     count = db_session.scalar(
-        select(func.count(Workspace.id)).where(Workspace.clerk_user_id == "teacher_once")
+        select(func.count(Workspace.id)).where(Workspace.subject == "teacher_once")
     )
     assert count == 1
 
@@ -40,9 +40,9 @@ def test_expired_token_rejected(client):
     settings = get_settings()
     payload = {
         "sub": "teacher_expired",
-        "aud": settings.auth_dev_audience,
+        "aud": settings.auth_token_audience,
         "exp": datetime.datetime.now(datetime.UTC) - datetime.timedelta(hours=1),
     }
-    token = pyjwt.encode(payload, settings.auth_dev_secret, algorithm="HS256")
+    token = pyjwt.encode(payload, settings.auth_token_secret, algorithm="HS256")
     response = client.get("/projects", headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 401

@@ -69,12 +69,17 @@ Backend unit/integration:  cd apps/backend && uv run pytest
 Backend lint:              uv run ruff check src tests migrations
 Frontend component tests:  corepack pnpm web:test          (Vitest + Testing Library)
 Frontend lint/typecheck:   corepack pnpm web:lint / web:typecheck
-E2E:                       corepack pnpm --filter web test:e2e   (Playwright; authenticated spec gated by CLERK_E2E=1)
+E2E:                       corepack pnpm --filter web test:e2e   (Playwright; journeys bootstrap a guest workspace token via /auth/guest-token — fully deterministic, ADR-0006)
 Services:                  docker compose -f infra/docker-compose.yml up -d
 Dev DB migration:          cd apps/backend && uv run alembic upgrade head   (run after pulling new migrations; the test DB upgrades automatically)
+Deployed stack:            infra/scripts/deploy.sh            (F012 full-stack container deployment: build -> migrate -> start -> smoke)
+Deployed smoke:            infra/scripts/smoke.sh             (API /health + web entry; API_BASE/WEB_BASE overridable)
+Deployed teardown:         infra/scripts/teardown.sh          (destructive: removes containers AND volumes)
+Sample seeding:            LESSONCANVAS_MODEL_ADAPTER=fake LESSONCANVAS_TASKS_EAGER=true \
+                             uv run python scripts/seed_sample.py   (in apps/backend; idempotent, zero model spend)
 ```
 
-Deterministic suites replace DeepSeek and Clerk with scripted fakes; live-provider evidence runs separately (F001 Test Design TQ-001). Integration tests that require local services skip automatically when a service is unreachable.
+Deterministic suites replace DeepSeek with the scripted fake adapter and use application-issued workspace tokens (ADR-0006; no third-party identity in any suite); live-provider evidence runs separately (F001 Test Design TQ-001). Integration tests that require local services skip automatically when a service is unreachable.
 
 When commands change, update this file, `README.md`, and `AGENTS.md` in the same change.
 

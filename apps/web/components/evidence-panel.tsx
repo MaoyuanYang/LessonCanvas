@@ -1,8 +1,8 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
 import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
+import { getApiToken } from "@/lib/auth";
 import { DesktopRequiredNotice, useDesktop } from "@/components/desktop-gate";
 import { ARTIFACT_STATUS_LABELS, RUN_STATUS_LABELS } from "@/components/artifact-run";
 import { Alert, Button, EmptyState, SkeletonRows } from "@/components/ui";
@@ -58,11 +58,12 @@ function formatTime(iso: string): string {
 export function EvidencePanel({
   projectId,
   onNavigate,
+  readOnly = false,
 }: {
   projectId: string;
   onNavigate: (tab: WorkspaceTab) => void;
+  readOnly?: boolean;
 }) {
-  const { getToken } = useAuth();
   const isDesktop = useDesktop();
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
   const [kindFilter, setKindFilter] = useState<string>("");
@@ -75,7 +76,7 @@ export function EvidencePanel({
 
   const inventoryQuery = useQuery({
     queryKey: ["evidence-inventory", projectId],
-    queryFn: async () => evidenceInventory(await getToken(), projectId),
+    queryFn: async () => evidenceInventory(await getApiToken(), projectId),
     retry: false,
   });
 
@@ -84,7 +85,7 @@ export function EvidencePanel({
 
   const summaryQuery = useQuery({
     queryKey: ["evidence-run", projectId, selectedId],
-    queryFn: async () => evidenceRunSummary(await getToken(), projectId, selectedId as string),
+    queryFn: async () => evidenceRunSummary(await getApiToken(), projectId, selectedId as string),
     enabled: selectedId !== null,
     retry: false,
   });
@@ -92,7 +93,7 @@ export function EvidencePanel({
   const eventsQuery = useInfiniteQuery({
     queryKey: ["evidence-events", projectId, selectedId, kindFilter],
     queryFn: async ({ pageParam }) =>
-      evidenceRunEvents(await getToken(), projectId, selectedId as string, {
+      evidenceRunEvents(await getApiToken(), projectId, selectedId as string, {
         after: pageParam as string | undefined,
         limit: PAGE_SIZE,
         kind: kindFilter || undefined,
@@ -106,7 +107,7 @@ export function EvidencePanel({
   const stopNarrationMutation = useMutation({
     mutationFn: async () => {
       narrationAbortRef.current?.abort();
-      return evidenceNarrateStop(await getToken(), projectId, selectedId as string);
+      return evidenceNarrateStop(await getApiToken(), projectId, selectedId as string);
     },
     onSettled: () => setNarrationStreaming(false),
   });
@@ -119,7 +120,7 @@ export function EvidencePanel({
       setNarrationStreaming(true);
       setNarrationError(null);
       try {
-        const token = await getToken();
+        const token = await getApiToken();
         const response = await fetch(evidenceNarrateStreamUrl(projectId, runId), {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
           signal: controller.signal,
@@ -160,13 +161,13 @@ export function EvidencePanel({
         setNarrationStreaming(false);
       }
     },
-    [getToken, projectId],
+    [projectId],
   );
 
   const narrateMutation = useMutation({
     mutationFn: async () => {
       const runId = selectedId as string;
-      await evidenceNarrate(await getToken(), projectId, runId);
+      await evidenceNarrate(await getApiToken(), projectId, runId);
       return runId;
     },
     onSuccess: (runId) => void consumeNarration(runId),
@@ -377,7 +378,7 @@ export function EvidencePanel({
             </div>
           ) : null}
 
-          {isDesktop ? (
+          {isDesktop && !readOnly ? (
             <div className="mt-4">
               <Button
                 onClick={() => narrateMutation.mutate()}

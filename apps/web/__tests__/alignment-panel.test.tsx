@@ -5,8 +5,9 @@ import { AlignmentPanel } from "../components/alignment-panel";
 import PrintReportView from "../app/(authed)/projects/[projectId]/report/print-report-view";
 import * as api from "../lib/api";
 
-vi.mock("@clerk/nextjs", () => ({
-  useAuth: () => ({ getToken: async () => "test-token" }),
+vi.mock("@/lib/auth", () => ({
+  getApiToken: async () => "test-token",
+  clearApiToken: () => {},
 }));
 
 let matchMediaMatches = true;

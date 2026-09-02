@@ -1,8 +1,8 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
+import { getApiToken } from "@/lib/auth";
 import { ConversationRegion } from "@/components/conversation-region";
 import { DesktopRequiredNotice, useDesktop } from "@/components/desktop-gate";
 import { ImpactRegion } from "@/components/version-compare-panel";
@@ -38,10 +38,16 @@ function citationLabel(citation: {
   return citation.filename ? `来源：${citation.filename}` : "项目来源";
 }
 
-export function BlueprintPanel({ projectId }: { projectId: string }) {
-  const { getToken } = useAuth();
+export function BlueprintPanel({
+  projectId,
+  readOnly = false,
+}: {
+  projectId: string;
+  readOnly?: boolean;
+}) {
   const queryClient = useQueryClient();
   const isDesktop = useDesktop();
+  const canWrite = isDesktop && !readOnly;
   const [error, setError] = useState<string | null>(null);
   const [staleConflict, setStaleConflict] = useState(false);
   const [lessonEdits, setLessonEdits] = useState<Record<number, Partial<BlueprintLesson>>>({});
@@ -52,19 +58,19 @@ export function BlueprintPanel({ projectId }: { projectId: string }) {
 
   const impactQuery = useQuery({
     queryKey: ["impact", projectId],
-    queryFn: async () => getImpact(await getToken(), projectId),
+    queryFn: async () => getImpact(await getApiToken(), projectId),
     enabled: false,
     retry: false,
   });
 
   const blueprintQuery = useQuery({
     queryKey: ["blueprint", projectId],
-    queryFn: async () => getBlueprint(await getToken(), projectId),
+    queryFn: async () => getBlueprint(await getApiToken(), projectId),
   });
 
   const planningQuery = useQuery({
     queryKey: ["planning", projectId],
-    queryFn: async () => planningStatus(await getToken(), projectId),
+    queryFn: async () => planningStatus(await getApiToken(), projectId),
     retry: false,
   });
 
@@ -74,20 +80,20 @@ export function BlueprintPanel({ projectId }: { projectId: string }) {
   };
 
   const startMutation = useMutation({
-    mutationFn: async () => planningStart(await getToken(), projectId),
+    mutationFn: async () => planningStart(await getApiToken(), projectId),
     onSuccess: invalidate,
     onError: (err) => setError(err instanceof ApiClientError ? err.message : "启动规划失败"),
   });
 
   const retryMutation = useMutation({
-    mutationFn: async () => planningRetry(await getToken(), projectId),
+    mutationFn: async () => planningRetry(await getApiToken(), projectId),
     onSuccess: invalidate,
     onError: (err) => setError(err instanceof ApiClientError ? err.message : "重试失败"),
   });
 
   const [planningAnswers_, setPlanningAnswers] = useState<Record<string, string>>({});
   const answersMutation = useMutation({
-    mutationFn: async () => planningAnswers(await getToken(), projectId, planningAnswers_),
+    mutationFn: async () => planningAnswers(await getApiToken(), projectId, planningAnswers_),
     onSuccess: () => {
       setPlanningAnswers({});
       invalidate();
@@ -103,7 +109,7 @@ export function BlueprintPanel({ projectId }: { projectId: string }) {
       if (state?.confirmed_payload == null) throw new Error("confirmed payload missing");
       const base = state.draft_revision;
       if (base == null) throw new Error("draft revision missing");
-      return patchBlueprintDraft(await getToken(), projectId, state.confirmed_payload, base);
+      return patchBlueprintDraft(await getApiToken(), projectId, state.confirmed_payload, base);
     },
     onSuccess: () => {
       setStaleConflict(false);
@@ -125,7 +131,7 @@ export function BlueprintPanel({ projectId }: { projectId: string }) {
           ...(lessonEdits[lesson.index] ?? {}),
         })),
       };
-      return patchBlueprintDraft(await getToken(), projectId, payload, base);
+      return patchBlueprintDraft(await getApiToken(), projectId, payload, base);
     },
     onSuccess: () => {
       setLessonEdits({});
@@ -147,7 +153,7 @@ export function BlueprintPanel({ projectId }: { projectId: string }) {
       const base = blueprintQuery.data?.draft_revision;
       if (decisionFinding == null || base == null) throw new Error("finding missing");
       return recordBlueprintDecision(
-        await getToken(),
+        await getApiToken(),
         projectId,
         decisionFinding.id,
         decisionReason,
@@ -166,7 +172,7 @@ export function BlueprintPanel({ projectId }: { projectId: string }) {
     mutationFn: async () => {
       const base = blueprintQuery.data?.draft_revision;
       if (base == null) throw new Error("draft missing");
-      return confirmBlueprint(await getToken(), projectId, base);
+      return confirmBlueprint(await getApiToken(), projectId, base);
     },
     onSuccess: () => {
       setConfirmOpen(false);
@@ -241,20 +247,20 @@ export function BlueprintPanel({ projectId }: { projectId: string }) {
             </ul>
           ) : null}
           {state.impact_summary ? <Alert tone="info">{state.impact_summary.summary}</Alert> : null}
-          {isDesktop ? (
+          {canWrite ? (
             <Button onClick={() => startMutation.mutate()} disabled={startMutation.isPending}>
               基于新简报重新规划
             </Button>
-          ) : (
+          ) : !readOnly ? (
             <DesktopRequiredNotice task="重新规划" />
-          )}
+          ) : null}
         </div>
       ) : null}
 
       {state && !state.stale && (planningNotFound || planning?.status === "superseded") && !draft ? (
         <div className="space-y-3">
-          {!isDesktop ? <DesktopRequiredNotice task="启动单元规划" /> : null}
-          {isDesktop ? (
+          {!canWrite && !readOnly ? <DesktopRequiredNotice task="启动单元规划" /> : null}
+          {canWrite ? (
             <Button onClick={() => startMutation.mutate()} disabled={startMutation.isPending}>
               {startMutation.isPending ? "规划中…" : "开始单元规划"}
             </Button>
@@ -265,7 +271,8 @@ export function BlueprintPanel({ projectId }: { projectId: string }) {
       {planning?.status === "provider_failed" ? (
         <Alert tone="warning">
           模型服务暂时不可用，规划状态已保留。
-          <Button
+          {!readOnly ? (
+            <Button
             variant="quiet"
             className="ml-2"
             onClick={() => retryMutation.mutate()}
@@ -273,6 +280,7 @@ export function BlueprintPanel({ projectId }: { projectId: string }) {
           >
             重试规划
           </Button>
+          ) : null}
         </Alert>
       ) : null}
 
@@ -283,33 +291,41 @@ export function BlueprintPanel({ projectId }: { projectId: string }) {
           </p>
           {planning.questions.map((question) => (
             <div key={question.field}>
-              <label
-                className="text-sm text-ink-secondary"
-                htmlFor={`planning-answer-${question.field}`}
-              >
-                {question.question}
-              </label>
-              <textarea
-                id={`planning-answer-${question.field}`}
-                rows={2}
-                className="mt-1 w-full rounded border border-line bg-paper px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-focus"
-                value={planningAnswers_[question.field] ?? ""}
-                onChange={(event) =>
-                  setPlanningAnswers((current) => ({
-                    ...current,
-                    [question.field]: event.target.value,
-                  }))
-                }
-              />
+              {readOnly ? (
+                <p className="text-sm text-ink-secondary">{question.question}</p>
+              ) : (
+                <>
+                  <label
+                    className="text-sm text-ink-secondary"
+                    htmlFor={`planning-answer-${question.field}`}
+                  >
+                    {question.question}
+                  </label>
+                  <textarea
+                    id={`planning-answer-${question.field}`}
+                    rows={2}
+                    className="mt-1 w-full rounded border border-line bg-paper px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-focus"
+                    value={planningAnswers_[question.field] ?? ""}
+                    onChange={(event) =>
+                      setPlanningAnswers((current) => ({
+                        ...current,
+                        [question.field]: event.target.value,
+                      }))
+                    }
+                  />
+                </>
+              )}
             </div>
           ))}
-          <Button onClick={() => answersMutation.mutate()} disabled={answersMutation.isPending}>
-            {answersMutation.isPending ? "提交中…" : "提交回答"}
-          </Button>
+          {!readOnly ? (
+            <Button onClick={() => answersMutation.mutate()} disabled={answersMutation.isPending}>
+              {answersMutation.isPending ? "提交中…" : "提交回答"}
+            </Button>
+          ) : null}
         </div>
       ) : null}
 
-      {!planningNotFound && planning ? (
+      {!planningNotFound && planning && !readOnly ? (
         <ConversationRegion
           projectId={projectId}
           kind="planning"
@@ -402,7 +418,7 @@ export function BlueprintPanel({ projectId }: { projectId: string }) {
                   {finding.reason ? (
                     <p className="mt-1 text-xs text-ink-secondary">决策理由：{finding.reason}</p>
                   ) : null}
-                  {isDesktop &&
+                  {canWrite &&
                   finding.tier === "waivable" &&
                   finding.status === "open" &&
                   !state?.stale ? (
@@ -419,7 +435,7 @@ export function BlueprintPanel({ projectId }: { projectId: string }) {
             </section>
           ) : null}
 
-          {!isDesktop ? <DesktopRequiredNotice task="编辑或确认蓝图" /> : null}
+          {!canWrite && !readOnly ? <DesktopRequiredNotice task="编辑或确认蓝图" /> : null}
 
           <section aria-label="课程列表" className="space-y-3">
             <h3 className="text-base font-semibold text-ink">课程安排（{draft.lessons.length} 课）</h3>
@@ -431,7 +447,7 @@ export function BlueprintPanel({ projectId }: { projectId: string }) {
                     <span className="text-xs text-ink-secondary">{lesson.period_count} 课时</span>
                   ) : null}
                 </div>
-                {isDesktop ? (
+                {canWrite ? (
                   <div className="mt-2 space-y-2">
                     <input
                       aria-label={`第${lesson.index}课标题`}
@@ -497,7 +513,7 @@ export function BlueprintPanel({ projectId }: { projectId: string }) {
             ))}
           </section>
 
-          {isDesktop ? (
+          {canWrite ? (
             <div className="flex flex-col gap-3">
             <div className="flex items-center gap-3">
               <Button
@@ -570,7 +586,7 @@ export function BlueprintPanel({ projectId }: { projectId: string }) {
       {state?.confirmed_version && !draft ? (
         <div className="flex flex-wrap items-center gap-3">
           <Alert tone="info">已确认蓝图版本 {state.confirmed_version}（不可变）。</Alert>
-          {isDesktop ? (
+          {canWrite ? (
             <Button
               variant="secondary"
               disabled={seedMutation.isPending}

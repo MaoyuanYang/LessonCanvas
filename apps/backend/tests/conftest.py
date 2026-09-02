@@ -7,7 +7,6 @@ os.environ.setdefault(
     "LESSONCANVAS_DATABASE_URL",
     "postgresql+psycopg://lessoncanvas:lessoncanvas_dev_only@localhost:5432/lessoncanvas_test",
 )
-os.environ["LESSONCANVAS_CLERK_JWKS_URL"] = ""
 os.environ["LESSONCANVAS_TASKS_EAGER"] = "true"
 os.environ["LESSONCANVAS_S3_BUCKET_SOURCES"] = "lessoncanvas-sources-test"
 os.environ["LESSONCANVAS_MODEL_ADAPTER"] = "fake"
@@ -89,10 +88,10 @@ def make_token(subject: str) -> str:
     settings = get_settings()
     payload = {
         "sub": subject,
-        "aud": settings.auth_dev_audience,
+        "aud": settings.auth_token_audience,
         "exp": datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=1),
     }
-    return pyjwt.encode(payload, settings.auth_dev_secret, algorithm="HS256")
+    return pyjwt.encode(payload, settings.auth_token_secret, algorithm="HS256")
 
 
 @pytest.fixture()

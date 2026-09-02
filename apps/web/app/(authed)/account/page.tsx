@@ -1,6 +1,5 @@
 "use client";
 
-import { useAuth, useUser } from "@clerk/nextjs";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { DesktopRequiredNotice, useDesktop } from "@/components/desktop-gate";
@@ -12,6 +11,7 @@ import {
   type AccountAuditPage,
   type AccountUsage,
 } from "@/lib/api";
+import { getApiToken } from "@/lib/auth";
 
 interface DeletionEvent {
   status: string;
@@ -31,34 +31,32 @@ function formatRate(usage: AccountUsage): string {
 }
 
 export default function AccountPage() {
-  const { getToken } = useAuth();
-  const { user } = useUser();
   const isDesktop = useDesktop();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [auditOpen, setAuditOpen] = useState(false);
-  const [result, setResult] = useState<{ purged: boolean; clerk_deleted: boolean } | null>(null);
+  const [result, setResult] = useState<{ purged: boolean } | null>(null);
 
   const statusQuery = useQuery({
     queryKey: ["account-deletion-status"],
-    queryFn: async () => apiFetch<DeletionEvent[]>("/account/deletion-status", { token: await getToken() }),
+    queryFn: async () => apiFetch<DeletionEvent[]>("/account/deletion-status", { token: await getApiToken() }),
   });
 
   const usageQuery = useQuery({
     queryKey: ["account-usage"],
-    queryFn: async () => getAccountUsage(await getToken()),
+    queryFn: async () => getAccountUsage(await getApiToken()),
   });
 
   const auditQuery = useQuery({
     queryKey: ["account-audit"],
-    queryFn: async () => getAccountAudit(await getToken(), 50),
+    queryFn: async () => getAccountAudit(await getApiToken(), 50),
     enabled: auditOpen,
   });
 
   const deleteMutation = useMutation({
     mutationFn: async () =>
-      apiFetch<{ purged: boolean; clerk_deleted: boolean }>("/account", {
+      apiFetch<{ purged: boolean }>("/account", {
         method: "DELETE",
-        token: await getToken(),
+        token: await getApiToken(),
       }),
     onSuccess: (body) => {
       setResult(body);
@@ -67,7 +65,7 @@ export default function AccountPage() {
   });
 
   const events = statusQuery.data ?? [];
-  const clerkFailed = events.some((event) => event.status === "clerk_failed");
+  const purgeFailed = events.some((event) => event.status === "purge_failed");
   const usage: AccountUsage | null = usageQuery.data ?? null;
   const audit: AccountAuditPage | null = auditQuery.data ?? null;
 
@@ -76,7 +74,7 @@ export default function AccountPage() {
       <div>
         <h1 className="text-2xl font-semibold text-ink">账号与数据</h1>
         <p className="mt-2 text-sm text-ink-secondary">
-          登录身份：{user?.emailAddresses[0]?.emailAddress ?? "未知"}。你的上传、生成内容与完整运行记录仅属于你的工作区。
+          登录身份：本浏览器工作区（由浏览器本地令牌标识；清除浏览器数据将获得新的空白工作区）。你的上传、生成内容与完整运行记录仅属于你的工作区。
         </p>
       </div>
 
@@ -151,8 +149,7 @@ export default function AccountPage() {
           <li>你的来源、意图版本、运行轨迹、评估与文件只有你本人能通过本应用访问。</li>
           <li>本应用没有运营人员账号，也不提供任何读取教师内容的运营入口。</li>
           <li>
-            故障排查时，项目运营者仅能通过托管服务商的管理控制台接触底层基础设施（数据库 / 对象存储 /
-            身份 / 模型账号），属于纵深防御层，内容不会被复制出工作区边界。
+            故障排查时，项目运营者仅能通过模型服务（DeepSeek）、对象存储（MinIO）、数据库/缓存（PostgreSQL/Redis）的管理控制台接触底层基础设施，属于纵深防御层，内容不会被复制出工作区边界。
           </li>
           <li>
             删除账号后，系统仅保留一份不含任何内容的极简安全台账（操作类型、时间、工作区标识），用于安全审计；
@@ -190,15 +187,19 @@ export default function AccountPage() {
       </section>
 
       <section aria-labelledby="deletion-heading">
-        {!result && !clerkFailed ? null : (
+        {result ? (
+          result.purged ? (
+            <Alert tone="info">工作区数据已清除。清除浏览器数据后将获得新的空白工作区。</Alert>
+          ) : (
+            <Alert tone="warning">
+              工作区清除未完成（个别存储暂不可用），可再次点击「删除账号」重试修复。
+            </Alert>
+          )
+        ) : purgeFailed ? (
           <Alert tone="warning">
-            {result && !result.clerk_deleted
-              ? "工作区数据已清除，但 Clerk 账号删除失败，请稍后重试或联系运营。"
-              : clerkFailed && !result
-                ? "上次账号删除中 Clerk 侧失败，数据已清除；如需彻底删除请重试。"
-                : null}
+            上次删除尝试未完全清除工作区数据；可再次点击「删除账号」重试修复。
           </Alert>
-        )}
+        ) : null}
 
         {isDesktop ? (
           <div className="mt-6 rounded border border-severe/40 bg-severe/5 p-4">
@@ -206,7 +207,7 @@ export default function AccountPage() {
               删除账号
             </h2>
             <p className="mt-1 text-sm text-ink-secondary">
-              将先清除工作区全部数据（来源、简报、运行与轨迹，含检查点与对象存储），再删除 Clerk 账号。若个别存储暂不可用，删除会显示未完成并可重试修复。该操作无法撤销。
+              将清除本浏览器工作区全部数据（来源、简报、运行与轨迹，含检查点与对象存储）。若个别存储暂不可用，删除会显示未完成并可重试修复。该操作无法撤销。
             </p>
             <Button variant="destructive" className="mt-3" onClick={() => setConfirmOpen(true)}>
               删除账号
@@ -221,7 +222,7 @@ export default function AccountPage() {
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
         title="删除账号"
-        description="将清除工作区全部数据并删除账号，无法撤销。"
+        description="将清除本浏览器工作区全部数据，无法撤销。"
         confirmLabel="确认删除"
         destructive
         busy={deleteMutation.isPending}

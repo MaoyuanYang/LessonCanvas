@@ -282,7 +282,7 @@ def create_assignment(
         package_json=json.dumps(snapshot, ensure_ascii=False),
         package_digest=digest,
         rubric_revision=rubric.RUBRIC_REVISION,
-        created_by=workspace.clerk_user_id,
+        created_by=workspace.subject,
     )
     session.add(assignment)
     try:
@@ -302,7 +302,7 @@ def create_assignment(
     session.add(
         AuditEvent(
             workspace_id=workspace.id,
-            actor=workspace.clerk_user_id,
+            actor=workspace.subject,
             action="product_validation.assignment_created",
             target_type="product_validation_assignment",
             target_id=str(assignment.id),
@@ -495,7 +495,7 @@ def import_evidence(
     session.add(
         AuditEvent(
             workspace_id=workspace.id,
-            actor=workspace.clerk_user_id,
+            actor=workspace.subject,
             action="product_validation.evidence_imported",
             target_type="product_validation_evidence",
             target_id=str(row.id),
@@ -530,7 +530,7 @@ def conclude_not_complete(
     session.add(
         AuditEvent(
             workspace_id=workspace.id,
-            actor=workspace.clerk_user_id,
+            actor=workspace.subject,
             action="product_validation.concluded_not_complete",
             target_type="product_validation_assignment",
             target_id=str(assignment.id),

@@ -501,6 +501,6 @@ def delete_workspace_cascade(session, storage, workspace: Workspace) -> None:
     session.flush()
 
 
-def record_account_deletion(session, clerk_user_id: str, status: str, detail: str | None) -> None:
-    session.add(AccountDeletionEvent(clerk_user_id=clerk_user_id, status=status, detail=detail))
+def record_account_deletion(session, subject: str, status: str, detail: str | None) -> None:
+    session.add(AccountDeletionEvent(subject=subject, status=status, detail=detail))
     session.flush()

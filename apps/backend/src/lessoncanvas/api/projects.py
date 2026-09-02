@@ -64,7 +64,7 @@ def list_projects(workspace: WorkspaceDep, session: SessionDep) -> list[ProjectO
 @router.get("/{project_id}", response_model=ProjectOut)
 def get_project(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep) -> ProjectOut:
     try:
-        project = service.get_owned_project(session, workspace, project_id)
+        project = service.get_owned_project(session, workspace, project_id, allow_sample_read=True)
     except service.NotFoundError as err:
         raise NotFoundError("project not found") from err
     return to_out(project)

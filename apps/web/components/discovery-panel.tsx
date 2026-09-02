@@ -1,21 +1,26 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { getApiToken } from "@/lib/auth";
 import { ConversationRegion } from "@/components/conversation-region";
 import { Alert, Button } from "@/components/ui";
 import { ApiClientError, discoveryAnswers, discoveryStart, discoveryStatus } from "@/lib/api";
 
-export function DiscoveryPanel({ projectId }: { projectId: string }) {
-  const { getToken } = useAuth();
+export function DiscoveryPanel({
+  projectId,
+  readOnly = false,
+}: {
+  projectId: string;
+  readOnly?: boolean;
+}) {
   const queryClient = useQueryClient();
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
 
   const statusQuery = useQuery({
     queryKey: ["discovery", projectId],
-    queryFn: async () => discoveryStatus(await getToken(), projectId),
+    queryFn: async () => discoveryStatus(await getApiToken(), projectId),
     retry: false,
   });
 
@@ -23,13 +28,13 @@ export function DiscoveryPanel({ projectId }: { projectId: string }) {
     void queryClient.invalidateQueries({ queryKey: ["discovery", projectId] });
 
   const startMutation = useMutation({
-    mutationFn: async () => discoveryStart(await getToken(), projectId),
+    mutationFn: async () => discoveryStart(await getApiToken(), projectId),
     onSuccess: invalidate,
     onError: (err) => setError(err instanceof ApiClientError ? err.message : "启动失败"),
   });
 
   const answersMutation = useMutation({
-    mutationFn: async () => discoveryAnswers(await getToken(), projectId, answers),
+    mutationFn: async () => discoveryAnswers(await getApiToken(), projectId, answers),
     onSuccess: () => {
       setAnswers({});
       invalidate();
@@ -52,7 +57,7 @@ export function DiscoveryPanel({ projectId }: { projectId: string }) {
       {error ? <Alert tone="error">{error}</Alert> : null}
 
       {statusQuery.isLoading ? <p className="text-sm text-ink-secondary">加载中…</p> : null}
-      {notFound ? (
+      {notFound && !readOnly ? (
         <Button onClick={() => startMutation.mutate()} disabled={startMutation.isPending}>
           开始访谈
         </Button>
@@ -69,23 +74,34 @@ export function DiscoveryPanel({ projectId }: { projectId: string }) {
           </p>
           {status.questions.map((question) => (
             <div key={question.field}>
-              <label className="text-sm text-ink-secondary" htmlFor={`answer-${question.field}`}>
-                {question.question}
-              </label>
-              <textarea
-                id={`answer-${question.field}`}
-                rows={2}
-                className="mt-1 w-full rounded border border-line bg-paper px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-focus"
-                value={answers[question.field] ?? ""}
-                onChange={(event) =>
-                  setAnswers((current) => ({ ...current, [question.field]: event.target.value }))
-                }
-              />
+              {readOnly ? (
+                <p className="text-sm text-ink-secondary">{question.question}</p>
+              ) : (
+                <>
+                  <label
+                    className="text-sm text-ink-secondary"
+                    htmlFor={`answer-${question.field}`}
+                  >
+                    {question.question}
+                  </label>
+                  <textarea
+                    id={`answer-${question.field}`}
+                    rows={2}
+                    className="mt-1 w-full rounded border border-line bg-paper px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-focus"
+                    value={answers[question.field] ?? ""}
+                    onChange={(event) =>
+                      setAnswers((current) => ({ ...current, [question.field]: event.target.value }))
+                    }
+                  />
+                </>
+              )}
             </div>
           ))}
-          <Button onClick={() => answersMutation.mutate()} disabled={answersMutation.isPending}>
-            {answersMutation.isPending ? "提交中…" : "提交回答"}
-          </Button>
+          {!readOnly ? (
+            <Button onClick={() => answersMutation.mutate()} disabled={answersMutation.isPending}>
+              {answersMutation.isPending ? "提交中…" : "提交回答"}
+            </Button>
+          ) : null}
         </div>
       ) : null}
 
@@ -93,7 +109,7 @@ export function DiscoveryPanel({ projectId }: { projectId: string }) {
         <Alert tone="info">访谈已完成，请在“教学简报”页签查看并确认草稿。</Alert>
       ) : null}
 
-      {!notFound ? (
+      {!notFound && !readOnly ? (
         <ConversationRegion
           projectId={projectId}
           kind="discovery"

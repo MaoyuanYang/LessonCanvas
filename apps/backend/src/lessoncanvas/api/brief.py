@@ -37,16 +37,16 @@ class ConfirmOut(BaseModel):
     fields: dict
 
 
-def _owned(session, workspace, project_id):
+def _owned(session, workspace, project_id, *, sample_read: bool = False):
     try:
-        get_owned_project(session, workspace, project_id)
+        get_owned_project(session, workspace, project_id, allow_sample_read=sample_read)
     except ServiceNotFound as err:
         raise NotFoundError("project not found") from err
 
 
 @router.get("", response_model=BriefOut)
 def get_brief(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep) -> BriefOut:
-    _owned(session, workspace, project_id)
+    _owned(session, workspace, project_id, sample_read=True)
     brief_service.ensure_draft(session, workspace.id, project_id)
     session.commit()
     return BriefOut(**brief_service.get_brief(session, project_id))

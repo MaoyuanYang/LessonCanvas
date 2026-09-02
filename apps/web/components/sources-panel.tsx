@@ -1,28 +1,34 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
+import { getApiToken } from "@/lib/auth";
 import { DesktopRequiredNotice, useDesktop } from "@/components/desktop-gate";
 import { Alert, Button, StatusBadge } from "@/components/ui";
 import { ApiClientError, deleteSource, listSources, uploadSource } from "@/lib/api";
 
-export function SourcesPanel({ projectId }: { projectId: string }) {
-  const { getToken } = useAuth();
+export function SourcesPanel({
+  projectId,
+  readOnly = false,
+}: {
+  projectId: string;
+  readOnly?: boolean;
+}) {
   const queryClient = useQueryClient();
   const isDesktop = useDesktop();
+  const canWrite = isDesktop && !readOnly;
   const fileInput = useRef<HTMLInputElement>(null);
   const [rights, setRights] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const sourcesQuery = useQuery({
     queryKey: ["sources", projectId],
-    queryFn: async () => listSources(await getToken(), projectId),
+    queryFn: async () => listSources(await getApiToken(), projectId),
   });
 
   const uploadMutation = useMutation({
     mutationFn: async ({ file, acknowledged }: { file: File; acknowledged: boolean }) =>
-      uploadSource(await getToken(), projectId, file, acknowledged),
+      uploadSource(await getApiToken(), projectId, file, acknowledged),
     onSuccess: () => {
       setError(null);
       void queryClient.invalidateQueries({ queryKey: ["sources", projectId] });
@@ -33,7 +39,7 @@ export function SourcesPanel({ projectId }: { projectId: string }) {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (sourceId: string) => deleteSource(await getToken(), projectId, sourceId),
+    mutationFn: async (sourceId: string) => deleteSource(await getApiToken(), projectId, sourceId),
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["sources", projectId] }),
   });
 
@@ -48,9 +54,9 @@ export function SourcesPanel({ projectId }: { projectId: string }) {
         </p>
       </div>
 
-      {!isDesktop ? <DesktopRequiredNotice task="上传或删除来源" /> : null}
+      {!canWrite && !readOnly ? <DesktopRequiredNotice task="上传或删除来源" /> : null}
 
-      {isDesktop ? (
+      {canWrite ? (
         <form
           className="flex flex-wrap items-center gap-3 rounded border border-line bg-surface-alt p-4"
           onSubmit={(event) => {
@@ -117,7 +123,7 @@ export function SourcesPanel({ projectId }: { projectId: string }) {
                   </p>
                 ) : null}
               </div>
-              {isDesktop ? (
+              {canWrite ? (
                 <Button
                   variant="secondary"
                   onClick={() => deleteMutation.mutate(source.id)}

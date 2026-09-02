@@ -16,13 +16,10 @@ class Settings(BaseSettings):
     s3_bucket_sources: str = "lessoncanvas-sources"
     s3_bucket_artifacts: str = "lessoncanvas-artifacts"
 
-    clerk_jwks_url: str = ""
-    clerk_issuer: str = ""
-    clerk_audience: str = ""
-    clerk_secret_key: str = ""
-    clerk_api_base: str = "https://api.clerk.com"
-    auth_dev_secret: str = "lessoncanvas-dev-auth-secret-000"
-    auth_dev_audience: str = "lessoncanvas-dev"
+    auth_token_secret: str = "lessoncanvas-dev-auth-secret-000"
+    auth_token_audience: str = "lessoncanvas-dev"
+    # ADR-0006 D11: guest tokens are long-lived per-browser workspace keys.
+    guest_token_ttl_seconds: int = 30 * 24 * 3600
 
     max_projects_per_workspace: int = 5
     max_planning_runs_per_workspace: int = 50
@@ -44,6 +41,11 @@ class Settings(BaseSettings):
     exercise_max_categories_per_lesson: int = 4
     checkpoint_backend: str = "postgres"
     eval_fault_profile: str = ""
+    # F012 D3/D10: the synthetic sample is owned by this designated demo
+    # workspace subject. Safe GET endpoints opened with allow_sample_read serve
+    # its single active project read-only to any authenticated workspace;
+    # writes and streams stay owner-only. The seeding script creates it.
+    demo_owner_subject: str = "lessoncanvas-demo-sample-owner"
 
     model_price_prompt_per_mtok: float = 0.27
     model_price_completion_per_mtok: float = 1.10

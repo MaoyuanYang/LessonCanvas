@@ -26,7 +26,11 @@ WORKSPACE_SELF_GETS = {
     "/account/audit",
     "/account/deletion-status",
 }
-EXCLUDED = {("DELETE", "/account")}
+# ADR-0006 D11: the guest-token endpoint is unauthenticated by design (it
+# mints the first credential); its disclosure behavior is covered directly by
+# test_guest_token.py (TS-016). Everything else must deny cross-account and
+# unauthenticated callers.
+EXCLUDED = {("DELETE", "/account"), ("POST", "/auth/guest-token")}
 
 
 def _inventory() -> list[tuple[str, str]]:
@@ -92,6 +96,8 @@ def test_cross_account_request_discloses_nothing(method, path, client, auth):
 
 @pytest.mark.parametrize("method,path", INVENTORY)
 def test_unauthenticated_request_discloses_nothing(method, path, client):
+    if (method, path) in EXCLUDED:
+        pytest.skip("sanctioned unauthenticated route (see EXCLUDED note)")
     foreign_project = _foreign_project_id(client)
     url = _substitute(method, path, foreign_project)
     if method == "GET":

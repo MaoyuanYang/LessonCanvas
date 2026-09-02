@@ -24,7 +24,7 @@ LessonCanvas is a portfolio-first Agent application for individual mainland Chin
 | Background execution | Celery and Redis | `CONFIRMED` | Queueing and retries only; business state remains in PostgreSQL |
 | Data | PostgreSQL and pgvector | `CONFIRMED` | System of record for business state, versions, retrieval, and runs |
 | Files | S3-compatible object storage | `CONFIRMED` | Private uploads and generated DOCX/PPTX artifacts |
-| Identity | Managed identity service | `CONFIRMED` | The application owns authorization, not password security |
+| Identity | Application-issued anonymous workspace tokens (ADR-0006; no login in Phase 1) | `CONFIRMED` | The application owns authorization and issues per-browser workspace tokens; no password storage |
 | Model | One hosted model behind a thin adapter | `CONFIRMED` | Provider selection remains open until the Agent runtime Feature |
 | Tool protocol | MCP | `CONFIRMED` | External source consumption and internal tool definitions; no public server |
 
@@ -42,6 +42,19 @@ docker compose -f infra/docker-compose.yml up -d
 ```
 
 Starts PostgreSQL+pgvector, Redis, and MinIO with healthchecks.
+
+## Deployed Portfolio Stack (F012)
+
+```text
+cp infra/deploy.env.example infra/deploy.env     # fill real values (git-ignored)
+infra/scripts/deploy.sh                          # build -> migrate -> start -> smoke
+LESSONCANVAS_MODEL_ADAPTER=fake LESSONCANVAS_TASKS_EAGER=true \
+  docker compose -f infra/docker-compose.yml --profile app exec api \
+  python scripts/seed_sample.py                  # idempotent synthetic sample
+infra/scripts/teardown.sh                        # full teardown to clean state
+```
+
+Runs the complete stack (Web, API, Celery Worker, PostgreSQL/pgvector, Redis, MinIO) in containers, reachable on the LAN with no login — each browser gets an anonymous workspace token automatically (ADR-0006; see `specs/F012-deployed-portfolio-proof/`). The API runs a single process by design (SSE registry constraint).
 
 ## Build
 

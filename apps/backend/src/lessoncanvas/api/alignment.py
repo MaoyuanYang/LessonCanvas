@@ -38,9 +38,9 @@ class OverrideOut(BaseModel):
     withdrawn_at: str | None = None
 
 
-def _owned(session, workspace, project_id) -> None:
+def _owned(session, workspace, project_id, *, sample_read: bool = False) -> None:
     try:
-        get_owned_project(session, workspace, project_id)
+        get_owned_project(session, workspace, project_id, allow_sample_read=sample_read)
     except ServiceNotFound as err:
         raise NotFoundError("project not found") from err
 
@@ -57,13 +57,13 @@ def _alignment_or_422(session, project_id: uuid.UUID) -> dict:
 
 @router.get("")
 def get_alignment(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep):
-    _owned(session, workspace, project_id)
+    _owned(session, workspace, project_id, sample_read=True)
     return _alignment_or_422(session, project_id)
 
 
 @router.get("/report")
 def get_report(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep):
-    _owned(session, workspace, project_id)
+    _owned(session, workspace, project_id, sample_read=True)
     alignment = _alignment_or_422(session, project_id)
     alignment["generated_at"] = utcnow().isoformat()
     return alignment
@@ -135,13 +135,13 @@ def record_override(
         blueprint_version_id=uuid.UUID(alignment["blueprint_version_id"]),
         finding_key=payload.finding_key,
         reason=payload.reason,
-        created_by=workspace.clerk_user_id,
+        created_by=workspace.subject,
     )
     session.add(override)
     session.add(
         AuditEvent(
             workspace_id=workspace.id,
-            actor=workspace.clerk_user_id,
+            actor=workspace.subject,
             action="alignment.override.recorded",
             target_type="alignment_finding",
             target_id=payload.finding_key,
@@ -181,7 +181,7 @@ def withdraw_override(
         session.add(
             AuditEvent(
                 workspace_id=workspace.id,
-                actor=workspace.clerk_user_id,
+                actor=workspace.subject,
                 action="alignment.override.withdrawn",
                 target_type="alignment_finding",
                 target_id=override.finding_key,

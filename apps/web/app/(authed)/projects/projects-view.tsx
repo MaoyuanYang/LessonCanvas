@@ -1,9 +1,9 @@
 "use client";
 
-import { useAuth, useUser } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useState } from "react";
+import { getApiToken } from "@/lib/auth";
 import { DesktopRequiredNotice, useDesktop } from "@/components/desktop-gate";
 import {
   Alert,
@@ -76,8 +76,6 @@ function ProjectCard({
 }
 
 export default function ProjectsView() {
-  const { getToken } = useAuth();
-  const { isSignedIn } = useUser();
   const queryClient = useQueryClient();
   const isDesktop = useDesktop();
 
@@ -86,14 +84,13 @@ export default function ProjectsView() {
 
   const projectsQuery = useQuery({
     queryKey: PROJECTS_KEY,
-    queryFn: async () => listProjects(await getToken()),
-    enabled: isSignedIn === true,
+    queryFn: async () => listProjects(await getApiToken()),
     retry: false,
   });
 
   const createMutation = useMutation({
     mutationFn: async (input: { name: string; unit_hints?: string | null }) =>
-      createProject(await getToken(), input),
+      createProject(await getApiToken(), input),
     onSuccess: () => {
       setCreateOpen(false);
       void queryClient.invalidateQueries({ queryKey: PROJECTS_KEY });
@@ -101,7 +98,7 @@ export default function ProjectsView() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (projectId: string) => deleteProject(await getToken(), projectId),
+    mutationFn: async (projectId: string) => deleteProject(await getApiToken(), projectId),
     onSuccess: () => {
       setDeleteTarget(null);
       void queryClient.invalidateQueries({ queryKey: PROJECTS_KEY });

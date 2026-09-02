@@ -201,7 +201,7 @@ def test_audit_list_records_sensitive_actions_and_downloads(client, auth, db_ses
 
     session = SessionLocal()
     workspace = session.scalars(
-        select(Workspace).where(Workspace.clerk_user_id == "teacher_a")
+        select(Workspace).where(Workspace.subject == "teacher_a")
     ).one()
     iw_service.audit_download(
         session, workspace.id, "teacher_a", "lesson_plan", session.scalar(select(Workspace)).id

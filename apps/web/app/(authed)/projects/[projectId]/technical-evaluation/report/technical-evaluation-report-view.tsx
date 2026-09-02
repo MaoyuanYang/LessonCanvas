@@ -1,8 +1,8 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
 import { useQuery } from "@tanstack/react-query";
 
+import { getApiToken } from "@/lib/auth";
 import {
   EVALUATION_CRITERION_LABELS,
   EVALUATION_MODE_LABELS,
@@ -93,10 +93,9 @@ export default function TechnicalEvaluationReportView({
 }: {
   projectId: string;
 }) {
-  const { getToken } = useAuth();
   const reportQuery = useQuery({
     queryKey: ["technical-evaluation-report", projectId],
-    queryFn: async () => technicalEvaluationReport(await getToken(), projectId),
+    queryFn: async () => technicalEvaluationReport(await getApiToken(), projectId),
     retry: false,
   });
 

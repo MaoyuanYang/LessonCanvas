@@ -40,9 +40,9 @@ class AnswersIn(BaseModel):
     answers: dict
 
 
-def _run_or_404(session, workspace, project_id):
+def _run_or_404(session, workspace, project_id, *, sample_read: bool = False):
     try:
-        get_owned_project(session, workspace, project_id)
+        get_owned_project(session, workspace, project_id, allow_sample_read=sample_read)
     except ServiceNotFound as err:
         raise NotFoundError("project not found") from err
 
@@ -62,7 +62,7 @@ def start(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep) -
 
 @router.get("", response_model=DiscoveryOut)
 def status(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep) -> DiscoveryOut:
-    _run_or_404(session, workspace, project_id)
+    _run_or_404(session, workspace, project_id, sample_read=True)
     try:
         return DiscoveryOut(**service.discovery_status(session, project_id))
     except ServiceNotFound as err:
@@ -99,11 +99,11 @@ class NarrateIn(BaseModel):
     text: str = "请叙述下一步访谈。"
 
 
-def _get_run_or_404(session, workspace, project_id):
+def _get_run_or_404(session, workspace, project_id, *, sample_read: bool = False):
     from lessoncanvas.modules.discovery_planning.service import get_run_or_raise
 
     try:
-        get_owned_project(session, workspace, project_id)
+        get_owned_project(session, workspace, project_id, allow_sample_read=sample_read)
         run = get_run_or_raise(session, project_id)
     except ServiceNotFound as err:
         raise NotFoundError("discovery run not found") from err

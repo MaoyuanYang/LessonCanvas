@@ -1,9 +1,9 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
+import { getApiToken } from "@/lib/auth";
 import { Alert, Button, EmptyState, Modal, SkeletonRows } from "@/components/ui";
 import {
   ApiClientError,
@@ -110,7 +110,6 @@ function PassRow({ pass }: { pass: TechnicalEvaluationPass }) {
 }
 
 export function TechnicalEvaluationRegion({ projectId }: { projectId: string }) {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const [modalOpen, setModalOpen] = useState(false);
   const [unitKey, setUnitKey] = useState<string>(UNIT_KEYS[0]);
@@ -121,7 +120,7 @@ export function TechnicalEvaluationRegion({ projectId }: { projectId: string }) 
 
   const overviewQuery = useQuery({
     queryKey: ["technical-evaluation", projectId],
-    queryFn: async () => technicalEvaluationOverview(await getToken(), projectId),
+    queryFn: async () => technicalEvaluationOverview(await getApiToken(), projectId),
     retry: false,
     refetchInterval: (query) =>
       (query.state.data?.passes ?? []).some((pass) => !TERMINAL_STATES.has(pass.status))
@@ -131,7 +130,7 @@ export function TechnicalEvaluationRegion({ projectId }: { projectId: string }) 
 
   const createMutation = useMutation({
     mutationFn: async () =>
-      technicalEvaluationCreate(await getToken(), projectId, {
+      technicalEvaluationCreate(await getApiToken(), projectId, {
         unit_key: unitKey,
         pass_index: passIndex,
         mode,

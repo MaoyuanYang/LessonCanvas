@@ -1,26 +1,14 @@
-import { expect, type Locator, type Page } from "@playwright/test";
-import * as fs from "node:fs";
-import * as path from "node:path";
+import { expect, request, type Locator, type Page } from "@playwright/test";
 
 // Shared teacher-journey helpers for Playwright E2E specs (extracted unchanged
 // from generation-journeys.spec.ts so deck journeys (F004) and lesson-plan
 // journeys (F003) drive the identical UI path).
 
-for (const file of [".env", ".env.local"]) {
-  try {
-    const content = fs.readFileSync(path.join(__dirname, "..", file), "utf-8");
-    for (const line of content.split("\n")) {
-      const match = line.match(/^\s*(CLERK_[A-Z0-9_]+)\s*=\s*(.*?)\s*$/);
-      if (match && !process.env[match[1]]) {
-        process.env[match[1]] = match[2];
-      }
-    }
-  } catch {
-    // file not present; skip
-  }
-}
-
-export const PROFILE_DIR = `${__dirname}/.auth/profile`;
+// ADR-0006: no managed identity, no sign-in step. Each journey mints a guest
+// workspace token from the API (default http://localhost:8000; override with
+// E2E_API_BASE_URL) and seeds it into localStorage before the app loads, so
+// the workspace under test is explicit and isolated per run.
+const API_ORIGIN = process.env.E2E_API_BASE_URL ?? "http://localhost:8000";
 
 // React-controlled programmatic fill: bypasses actionability races with
 // continuously re-rendered question boxes (native setter + input event).
@@ -38,9 +26,6 @@ export async function domFill(locator: Locator, value: string): Promise<void> {
   );
 }
 
-export const EMAIL = process.env.E2E_TEACHER_EMAIL ?? "";
-export const PASSWORD = process.env.E2E_TEACHER_PASSWORD ?? "";
-
 export const HINTS = [
   "单元主题：环境保护与可持续发展",
   "课时数：6",
@@ -53,21 +38,27 @@ export const HINTS = [
 ].join("\n");
 
 export async function openWorkspace(page: Page): Promise<void> {
-  // Dev-instance rate limits can starve token issuance across repeated runs;
-  // the Clerk testing token bypasses those limits for E2E (stashed B-001 pattern).
-  const { setupClerkTestingToken } = await import("@clerk/testing/playwright");
-  await setupClerkTestingToken({ page });
-  await page.goto("/sign-in");
-  const signedIn = await page
-    .waitForURL(/\/projects/, { timeout: 8000 })
-    .then(() => true)
-    .catch(() => false);
-  if (!signedIn) {
-    await page.locator("#identifier-field").fill(EMAIL);
-    await page.locator("#password-field").fill(PASSWORD);
-    await page.locator(".cl-formButtonPrimary").click();
-    await page.waitForURL(/\/projects/, { timeout: 90000 });
+  // The API runs on its own origin; page.request would hit the web origin.
+  const api = await request.newContext();
+  let token: string;
+  try {
+    const response = await api.post(`${API_ORIGIN}/auth/guest-token`);
+    if (!response.ok()) {
+      throw new Error(`guest token issuance failed: ${response.status()}`);
+    }
+    const body = (await response.json()) as { token: string; subject: string };
+    token = body.token;
+  } finally {
+    await api.dispose();
   }
+  // Seed the token before any app document loads so the first query already
+  // carries the workspace identity (the key literal must stay self-contained:
+  // init scripts are serialized without module scope).
+  await page.addInitScript(
+    (t: string) => localStorage.setItem("lessoncanvas_workspace_token", t),
+    token,
+  );
+  await page.goto("/projects");
 }
 
 export async function createProject(page: Page): Promise<string> {
@@ -181,4 +172,3 @@ export async function deleteProject(page: Page, name: string): Promise<void> {
     await page.getByText(name, { exact: true }).waitFor({ state: "hidden", timeout: 20000 }).catch(() => {});
   }
 }
-

@@ -1,8 +1,8 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { getApiToken } from "@/lib/auth";
 import { DesktopRequiredNotice, useDesktop } from "@/components/desktop-gate";
 import {
   ArtifactProgressList,
@@ -58,11 +58,12 @@ function narrationText(event: GenerationStreamEvent): string | null {
 export function GenerationPanel({
   projectId,
   onNavigate,
+  readOnly = false,
 }: {
   projectId: string;
   onNavigate?: (tab: "alignment") => void;
+  readOnly?: boolean;
 }) {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const isDesktop = useDesktop();
   const [error, setError] = useState<string | null>(null);
@@ -75,7 +76,7 @@ export function GenerationPanel({
 
   const snapshotQuery = useQuery({
     queryKey: ["generation", projectId],
-    queryFn: async () => generationStatus(await getToken(), projectId),
+    queryFn: async () => generationStatus(await getApiToken(), projectId),
     retry: false,
     // Polling fallback: the SSE stream is the fast path, but the authoritative
     // snapshot must converge even if the stream drops (D-RECN).
@@ -90,7 +91,7 @@ export function GenerationPanel({
   }, [projectId, queryClient]);
 
   const startMutation = useMutation({
-    mutationFn: async () => generationStart(await getToken(), projectId),
+    mutationFn: async () => generationStart(await getApiToken(), projectId),
     onSuccess: () => {
       setGateBlocked(false);
       setNarrationLines([]);
@@ -107,7 +108,7 @@ export function GenerationPanel({
   });
 
   const resumeMutation = useMutation({
-    mutationFn: async () => generationResume(await getToken(), projectId),
+    mutationFn: async () => generationResume(await getApiToken(), projectId),
     onSuccess: () => {
       setResumeOpen(false);
       invalidate();
@@ -190,7 +191,7 @@ export function GenerationPanel({
     }
     let cancelled = false;
     const connectLoop = async () => {
-      const token = await getToken();
+      const token = await getApiToken();
       while (!cancelled) {
         try {
           await consumeStream(token);
@@ -206,7 +207,7 @@ export function GenerationPanel({
       cancelled = true;
       abortRef.current?.abort();
     };
-  }, [consumeStream, getToken, snapshot?.run_id, snapshot?.status]);
+  }, [consumeStream, snapshot?.run_id, snapshot?.status]);
 
   useEffect(() => () => abortRef.current?.abort(), []);
 
@@ -235,8 +236,8 @@ export function GenerationPanel({
             </Alert>
           ) : null}
           {error ? <Alert tone="error">{error}</Alert> : null}
-          {!isDesktop ? <DesktopRequiredNotice task="开始生成教案" /> : null}
-          {isDesktop ? (
+          {!isDesktop && !readOnly ? <DesktopRequiredNotice task="开始生成教案" /> : null}
+          {isDesktop && !readOnly ? (
             <Button onClick={() => startMutation.mutate()} disabled={startMutation.isPending}>
               {startMutation.isPending ? "正在启动……" : "开始生成"}
             </Button>
@@ -309,8 +310,8 @@ export function GenerationPanel({
         }
       />
 
-      {!isDesktop ? <DesktopRequiredNotice task="恢复失败课程" /> : null}
-      {resumable && isDesktop ? (
+      {!isDesktop && !readOnly ? <DesktopRequiredNotice task="恢复失败课程" /> : null}
+      {resumable && isDesktop && !readOnly ? (
         <Button variant="secondary" onClick={() => setResumeOpen(true)}>
           恢复未完成课程
         </Button>
@@ -330,7 +331,6 @@ export function GenerationPanel({
 }
 
 function DownloadButton({ projectId, artifactId }: { projectId: string; artifactId: string }) {
-  const { getToken } = useAuth();
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
   return (
@@ -343,7 +343,7 @@ function DownloadButton({ projectId, artifactId }: { projectId: string; artifact
           setBusy(true);
           setFailed(false);
           try {
-            const blob = await downloadLessonPlan(await getToken(), projectId, artifactId);
+            const blob = await downloadLessonPlan(await getApiToken(), projectId, artifactId);
             const url = URL.createObjectURL(blob);
             const anchor = document.createElement("a");
             anchor.href = url;

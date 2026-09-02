@@ -1,7 +1,7 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
 import { useQuery } from "@tanstack/react-query";
+import { getApiToken } from "@/lib/auth";
 import {
   getAlignmentReport,
   getExportReport,
@@ -31,15 +31,14 @@ export default function PrintReportView({
   source: string;
   exportId?: string;
 }) {
-  const { getToken } = useAuth();
   const isSnapshot = source === "export" && exportId;
 
   const reportQuery = useQuery({
     queryKey: ["alignment-report", projectId, source, exportId],
     queryFn: async () =>
       isSnapshot
-        ? getExportReport(await getToken(), projectId, exportId as string)
-        : getAlignmentReport(await getToken(), projectId),
+        ? getExportReport(await getApiToken(), projectId, exportId as string)
+        : getAlignmentReport(await getApiToken(), projectId),
     retry: false,
   });
 

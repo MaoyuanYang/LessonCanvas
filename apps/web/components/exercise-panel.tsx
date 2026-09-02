@@ -1,6 +1,5 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -12,6 +11,7 @@ import {
   RUN_STATUS_LABELS,
   TERMINAL_RUN_STATUSES,
 } from "@/components/artifact-run";
+import { getApiToken } from "@/lib/auth";
 import { DesktopRequiredNotice, useDesktop } from "@/components/desktop-gate";
 import { Alert, Button, ConfirmModal, EmptyState, SkeletonRows, StatusBadge } from "@/components/ui";
 import {
@@ -71,6 +71,7 @@ function exerciseNarrationText(event: GenerationStreamEvent): string | null {
 export function ExercisePanel({
   projectId,
   onNavigate,
+  readOnly = false,
 }: {
   projectId: string;
   onNavigate?:
@@ -86,8 +87,8 @@ export function ExercisePanel({
           | "alignment",
       ) => void)
     | undefined;
+  readOnly?: boolean;
 }) {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const isDesktop = useDesktop();
   const [error, setError] = useState<string | null>(null);
@@ -105,13 +106,13 @@ export function ExercisePanel({
   // a prerequisite.
   const planQuery = useQuery({
     queryKey: ["generation", projectId],
-    queryFn: async () => generationStatus(await getToken(), projectId),
+    queryFn: async () => generationStatus(await getApiToken(), projectId),
     retry: false,
   });
 
   const snapshotQuery = useQuery({
     queryKey: ["exerciseGeneration", projectId],
-    queryFn: async () => exerciseGenerationStatus(await getToken(), projectId),
+    queryFn: async () => exerciseGenerationStatus(await getApiToken(), projectId),
     retry: false,
     refetchInterval: (query) => {
       const status = query.state.data?.status;
@@ -125,7 +126,7 @@ export function ExercisePanel({
 
   const startMutation = useMutation({
     mutationFn: async () =>
-      exerciseGenerationStart(await getToken(), projectId, difficulty as ExerciseDifficulty),
+      exerciseGenerationStart(await getApiToken(), projectId, difficulty as ExerciseDifficulty),
     onSuccess: () => {
       setGateBlocked(null);
       setTierError(null);
@@ -161,7 +162,7 @@ export function ExercisePanel({
   };
 
   const resumeMutation = useMutation({
-    mutationFn: async () => exerciseGenerationResume(await getToken(), projectId),
+    mutationFn: async () => exerciseGenerationResume(await getApiToken(), projectId),
     onSuccess: () => {
       setResumeOpen(false);
       invalidate();
@@ -245,7 +246,7 @@ export function ExercisePanel({
     }
     let cancelled = false;
     const connectLoop = async () => {
-      const token = await getToken();
+      const token = await getApiToken();
       while (!cancelled) {
         try {
           await consumeStream(token);
@@ -261,7 +262,7 @@ export function ExercisePanel({
       cancelled = true;
       abortRef.current?.abort();
     };
-  }, [consumeStream, getToken, snapshot?.run_id, snapshot?.status]);
+  }, [consumeStream, snapshot?.run_id, snapshot?.status]);
 
   useEffect(() => () => abortRef.current?.abort(), []);
 
@@ -341,6 +342,7 @@ export function ExercisePanel({
           {planSnapshot ? (
             <p className="mb-4 text-sm text-ink-secondary">{`绑定版本：教学简报 v${planSnapshot.brief_version} · 单元蓝图 v${planSnapshot.blueprint_version} · 输出语言：${planSnapshot.language_mode} · 共 ${planSnapshot.total_count} 课`}</p>
           ) : null}
+          {!readOnly ? (
           <fieldset className="mb-4 max-w-xl">
             <legend className="mb-2 text-sm font-medium">难度档位（必选）</legend>
             <div className="space-y-2">
@@ -367,6 +369,7 @@ export function ExercisePanel({
               ))}
             </div>
           </fieldset>
+          ) : null}
           {tierError ? <Alert tone="warning">{tierError}</Alert> : null}
           {gateBlocked ? (
             <Alert tone="warning">
@@ -376,8 +379,8 @@ export function ExercisePanel({
             </Alert>
           ) : null}
           {error ? <Alert tone="error">{error}</Alert> : null}
-          {!isDesktop ? <DesktopRequiredNotice task="开始生成练习" /> : null}
-          {isDesktop ? (
+          {!isDesktop && !readOnly ? <DesktopRequiredNotice task="开始生成练习" /> : null}
+          {isDesktop && !readOnly ? (
             <Button onClick={handleStart} disabled={startMutation.isPending}>
               {startMutation.isPending ? "正在启动……" : "开始生成练习与答案"}
             </Button>
@@ -471,8 +474,8 @@ export function ExercisePanel({
         }}
       />
 
-      {!isDesktop ? <DesktopRequiredNotice task="恢复失败练习" /> : null}
-      {resumable && isDesktop ? (
+      {!isDesktop && !readOnly ? <DesktopRequiredNotice task="恢复失败练习" /> : null}
+      {resumable && isDesktop && !readOnly ? (
         <Button variant="secondary" onClick={() => setResumeOpen(true)}>
           恢复未完成练习
         </Button>
@@ -500,7 +503,6 @@ function DownloadPairButton({
   artifactId: string;
   file: "exercise" | "answer";
 }) {
-  const { getToken } = useAuth();
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
   return (
@@ -513,7 +515,7 @@ function DownloadPairButton({
           setBusy(true);
           setFailed(false);
           try {
-            const blob = await downloadExerciseFile(await getToken(), projectId, artifactId, file);
+            const blob = await downloadExerciseFile(await getApiToken(), projectId, artifactId, file);
             const url = URL.createObjectURL(blob);
             const anchor = document.createElement("a");
             anchor.href = url;

@@ -23,15 +23,17 @@ from lessoncanvas.settings import get_settings
 router = APIRouter(prefix="/projects/{project_id}/evidence", tags=["evidence"])
 
 
-def _owned(session, workspace, project_id) -> None:
+def _owned(session, workspace, project_id, *, sample_read: bool = False) -> None:
     try:
-        get_owned_project(session, workspace, project_id)
+        get_owned_project(session, workspace, project_id, allow_sample_read=sample_read)
     except ServiceNotFound as err:
         raise NotFoundError("project not found") from err
 
 
-def _resolve_or_404(session, workspace, project_id, run_id: uuid.UUID):
-    _owned(session, workspace, project_id)
+def _resolve_or_404(
+    session, workspace, project_id, run_id: uuid.UUID, *, sample_read: bool = False
+):
+    _owned(session, workspace, project_id, sample_read=sample_read)
     try:
         return evidence.resolve_run(session, project_id, run_id)
     except evidence.RunNotFoundError as err:
@@ -46,7 +48,7 @@ def inventory(
     after: str | None = Query(default=None),
     limit: int | None = Query(default=None, ge=1),
 ):
-    _owned(session, workspace, project_id)
+    _owned(session, workspace, project_id, sample_read=True)
     try:
         return evidence.run_inventory(session, project_id, after_cursor=after, limit=limit)
     except evidence.InvalidEvidenceQueryError as err:
@@ -60,7 +62,7 @@ def summary(
     workspace: WorkspaceDep,
     session: SessionDep,
 ):
-    _resolve_or_404(session, workspace, project_id, run_id)
+    _resolve_or_404(session, workspace, project_id, run_id, sample_read=True)
     return evidence.run_summary(session, project_id, run_id)
 
 

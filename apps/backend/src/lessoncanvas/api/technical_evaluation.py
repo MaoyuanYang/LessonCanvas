@@ -23,9 +23,11 @@ router = APIRouter(
 )
 
 
-def _owned(session, workspace, project_id: uuid.UUID):
+def _owned(session, workspace, project_id: uuid.UUID, *, sample_read: bool = False):
     try:
-        return get_owned_project(session, workspace, project_id)
+        return get_owned_project(
+            session, workspace, project_id, allow_sample_read=sample_read
+        )
     except ServiceNotFound as error:
         raise NotFoundError("project not found") from error
 
@@ -102,7 +104,7 @@ def _pass_payload(entry: dict) -> EvaluationPassOut:
 
 @router.get("", response_model=OverviewOut)
 def overview(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep) -> OverviewOut:
-    _owned(session, workspace, project_id)
+    _owned(session, workspace, project_id, sample_read=True)
     data = service.evaluation_overview(session, project_id)
     return OverviewOut(
         dataset_revision=data["dataset_revision"],
@@ -141,7 +143,7 @@ def create_run(
 def run_detail(
     project_id: uuid.UUID, evaluation_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep
 ) -> EvaluationPassOut:
-    _owned(session, workspace, project_id)
+    _owned(session, workspace, project_id, sample_read=True)
     data = service.evaluation_detail(session, project_id, evaluation_id)
     if data is None:
         raise NotFoundError("evaluation not found")
@@ -150,7 +152,7 @@ def run_detail(
 
 @router.get("/report", response_model=ReportOut)
 def report(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep) -> ReportOut:
-    _owned(session, workspace, project_id)
+    _owned(session, workspace, project_id, sample_read=True)
     data = service.evaluation_report(session, project_id)
     return ReportOut(
         dataset_revision=data["dataset_revision"],

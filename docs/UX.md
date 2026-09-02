@@ -102,7 +102,8 @@ Confirm a brief or complete a run
 
 | Screen | User task | Key information / action | Related flow |
 | --- | --- | --- | --- |
-| Public entry / sign-in | Understand the demo and authenticate | Product boundary, privacy warning, sign-in | All flows |
+| Public entry | Understand the demo and enter directly (no login, ADR-0006) | Product boundary, portfolio-review section (synthetic sample entry, repository-verification link, availability honesty), privacy warning, direct-entry CTA | All flows |
+| Synthetic sample view (`/sample`) | Inspect a complete read-only synthetic unit (portfolio reviewers) | All unit-workspace information with write actions suppressed, read-only notice, sample-missing/unavailable states, independent technical/product status regions; access needs only the browser's guest workspace token | Inspect evidence |
 | Project list | Resume or start work | Project identity, current phase, validation status, last activity, create action | Prepare a unit |
 | New preparation | Supply unit context and allowed evidence | Source readiness, rights acknowledgement, output language, missing-input guidance | Prepare a unit |
 | Unit workspace | Move through discovery, planning, generation, review, and revision | Current immutable version, confirmation state, phase progress, artifacts, findings, actions | Prepare and revise |

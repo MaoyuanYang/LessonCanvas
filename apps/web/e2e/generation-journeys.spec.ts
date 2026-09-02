@@ -4,7 +4,6 @@ import {
   createProject,
   deleteProject,
   openWorkspace,
-  PROFILE_DIR,
 } from "./journey-helpers";
 
 // F003 generation journeys (test-design-f003-r2 TS-024..TS-029).
@@ -19,18 +18,10 @@ test.describe("generation journeys - live stack", () => {
   test.skip(!liveGate, "set E2E_GEN_LIVE=1 with the live backend + worker running");
   test.setTimeout(480000);
 
-  test.beforeAll(async () => {
-    const { clerkSetup } = await import("@clerk/testing/playwright");
-    await clerkSetup();
-  });
-
   test("TS-029: leaving, reconnecting, and reloading restore authoritative progress", async ({
-    page: _,
+    page,
   }) => {
     test.skip(!liveGate, "live gate");
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -59,16 +50,11 @@ test.describe("generation journeys - live stack", () => {
     } finally {
       if (projectName && process.env.E2E_KEEP_PROJECTS !== "1")
         await deleteProject(page, projectName).catch(() => {});
-      await context.close();
     }
-    void _;
   });
 
-  test("TS-027: newer confirmed version supersedes the active run", async ({ page: _ }) => {
+  test("TS-027: newer confirmed version supersedes the active run", async ({ page }) => {
     test.skip(!liveGate, "live gate");
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -92,9 +78,7 @@ test.describe("generation journeys - live stack", () => {
     } finally {
       if (projectName && process.env.E2E_KEEP_PROJECTS !== "1")
         await deleteProject(page, projectName).catch(() => {});
-      await context.close();
     }
-    void _;
   });
 });
 
@@ -102,15 +86,7 @@ test.describe("generation journeys - fault stack", () => {
   test.skip(!faultGate, "set E2E_GEN_FAULT=1 with the fake-adapter backend + worker running");
   test.setTimeout(300000);
 
-  test.beforeAll(async () => {
-    const { clerkSetup } = await import("@clerk/testing/playwright");
-    await clerkSetup();
-  });
-
-  test("TS-025: start without a confirmed blueprint routes to the gate", async () => {
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
+  test("TS-025: start without a confirmed blueprint routes to the gate", async ({ page }) => {
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -121,14 +97,10 @@ test.describe("generation journeys - fault stack", () => {
     } finally {
       if (projectName && process.env.E2E_KEEP_PROJECTS !== "1")
         await deleteProject(page, projectName).catch(() => {});
-      await context.close();
     }
   });
 
-  test("TS-026: partial failure, scoped resume, completed work preserved", async () => {
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
+  test("TS-026: partial failure, scoped resume, completed work preserved", async ({ page }) => {
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -150,14 +122,10 @@ test.describe("generation journeys - fault stack", () => {
     } finally {
       if (projectName && process.env.E2E_KEEP_PROJECTS !== "1")
         await deleteProject(page, projectName).catch(() => {});
-      await context.close();
     }
   });
 
-  test("TS-024: scripted keyboard pass on the generation flow", async () => {
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
+  test("TS-024: scripted keyboard pass on the generation flow", async ({ page }) => {
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -189,7 +157,6 @@ test.describe("generation journeys - fault stack", () => {
     } finally {
       if (projectName && process.env.E2E_KEEP_PROJECTS !== "1")
         await deleteProject(page, projectName).catch(() => {});
-      await context.close();
     }
   });
 });
@@ -198,15 +165,7 @@ test.describe("generation journeys - fault stack (small cap)", () => {
   test.skip(!faultGate, "set E2E_GEN_FAULT=1 with the small-cap fake backend");
   test.setTimeout(300000);
 
-  test.beforeAll(async () => {
-    const { clerkSetup } = await import("@clerk/testing/playwright");
-    await clerkSetup();
-  });
-
-  test("TS-028: cap exhaustion keeps completed lessons downloadable", async () => {
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
+  test("TS-028: cap exhaustion keeps completed lessons downloadable", async ({ page }) => {
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -223,7 +182,6 @@ test.describe("generation journeys - fault stack (small cap)", () => {
     } finally {
       if (projectName && process.env.E2E_KEEP_PROJECTS !== "1")
         await deleteProject(page, projectName).catch(() => {});
-      await context.close();
     }
   });
 });

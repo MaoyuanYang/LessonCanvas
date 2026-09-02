@@ -19,9 +19,9 @@ from lessoncanvas.modules.run_orchestration.impact import compute_impact
 router = APIRouter(prefix="/projects/{project_id}", tags=["versions"])
 
 
-def _owned(session, workspace, project_id) -> None:
+def _owned(session, workspace, project_id, *, sample_read: bool = False) -> None:
     try:
-        get_owned_project(session, workspace, project_id)
+        get_owned_project(session, workspace, project_id, allow_sample_read=sample_read)
     except ServiceNotFound as err:
         raise NotFoundError("project not found") from err
 
@@ -30,7 +30,7 @@ def _owned(session, workspace, project_id) -> None:
 def impact(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep) -> dict:
     """D1-matrix impact preview for the current drafts vs the confirmed pair."""
 
-    _owned(session, workspace, project_id)
+    _owned(session, workspace, project_id, sample_read=True)
     brief = session.scalar(
         select(BriefVersion)
         .where(BriefVersion.project_id == project_id)
@@ -70,5 +70,5 @@ def impact(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep) 
 
 @router.get("/versions/current-transition")
 def current_transition(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep) -> dict:
-    _owned(session, workspace, project_id)
+    _owned(session, workspace, project_id, sample_read=True)
     return transition.current_transition(session, project_id)
