@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { openWorkspace, PROFILE_DIR } from "./journey-helpers";
+import { openWorkspace } from "./journey-helpers";
 
 // F010 product-validation journey (test-design-f010-r1 TS-013).
 //   E2E_EVAL_FAULT=1 -> fake-adapter backend (deterministic; zero model calls
@@ -7,7 +7,7 @@ import { openWorkspace, PROFILE_DIR } from "./journey-helpers";
 //   deterministic technical pass first, which produces the complete package)
 //   -> 创建评审分派 -> rubric sheet -> 导入量表证据 with a severe finding ->
 //   honest 失败 outcome -> separate technical/product status on the alignment
-//   panel. If the browser environment is unavailable (Clerk credentials or
+//   panel. If the browser environment is unavailable (backend services or
 //   backend), substitute coverage is green (backend TS-001..TS-009; component
 //   TS-011/TS-012) and the block is recorded in the execution snapshot.
 
@@ -17,15 +17,7 @@ test.describe("product validation journey - fault stack", () => {
   test.skip(!evalGate, "set E2E_EVAL_FAULT=1 with the fake-adapter backend running");
   test.setTimeout(600000);
 
-  test.beforeAll(async () => {
-    const { clerkSetup } = await import("@clerk/testing/playwright");
-    await clerkSetup();
-  });
-
-  test("TS-013: assign a package, import failing rubric evidence, see honest statuses", async () => {
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
+  test("TS-013: assign a package, import failing rubric evidence, see honest statuses", async ({ page }) => {
     try {
       await openWorkspace(page);
       const projectName = `产品验证旅程 ${Date.now()}`;
@@ -110,7 +102,6 @@ test.describe("product validation journey - fault stack", () => {
       ).toBeVisible({ timeout: 30000 });
       await expect(page.getByText(/产品验证状态：失败/)).toBeVisible({ timeout: 30000 });
     } finally {
-      await context.close();
     }
   });
 });

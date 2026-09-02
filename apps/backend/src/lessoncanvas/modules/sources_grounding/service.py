@@ -4,9 +4,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from lessoncanvas.adapters.storage import StorageAdapter
-from lessoncanvas.models import AuditEvent, Project, Source, SourceChunk
+from lessoncanvas.models import AuditEvent, Project, Source, SourceChunk, Workspace
 from lessoncanvas.modules.identity_workspace.service import NotFoundError
 from lessoncanvas.modules.sources_grounding import parsing, policy, screening
+from lessoncanvas.settings import get_settings
 
 
 class SourceServiceError(Exception):
@@ -14,12 +15,24 @@ class SourceServiceError(Exception):
 
 
 def get_owned_project_or_raise(
-    session: Session, workspace_id: uuid.UUID, project_id: uuid.UUID
+    session: Session,
+    workspace_id: uuid.UUID,
+    project_id: uuid.UUID,
+    *,
+    allow_sample_read: bool = False,
 ) -> Project:
+    """F012: allow_sample_read mirrors identity_workspace.get_owned_project —
+    safe read paths may serve the designated synthetic sample project."""
     project = session.get(Project, project_id)
-    if project is None or project.workspace_id != workspace_id or project.status == "deleted":
+    if project is None or project.status == "deleted":
         raise NotFoundError("project not found")
-    return project
+    if project.workspace_id == workspace_id:
+        return project
+    if allow_sample_read:
+        owner = session.get(Workspace, project.workspace_id)
+        if owner is not None and owner.subject == get_settings().demo_owner_subject:
+            return project
+    raise NotFoundError("project not found")
 
 
 def create_source(
@@ -108,8 +121,16 @@ def process_source(session: Session, storage: StorageAdapter, source_id: uuid.UU
     return source
 
 
-def list_sources(session: Session, workspace_id: uuid.UUID, project_id: uuid.UUID) -> list[Source]:
-    get_owned_project_or_raise(session, workspace_id, project_id)
+def list_sources(
+    session: Session,
+    workspace_id: uuid.UUID,
+    project_id: uuid.UUID,
+    *,
+    allow_sample_read: bool = False,
+) -> list[Source]:
+    get_owned_project_or_raise(
+        session, workspace_id, project_id, allow_sample_read=allow_sample_read
+    )
     return list(
         session.scalars(
             select(Source)
@@ -120,13 +141,26 @@ def list_sources(session: Session, workspace_id: uuid.UUID, project_id: uuid.UUI
 
 
 def get_source(
-    session: Session, workspace_id: uuid.UUID, project_id: uuid.UUID, source_id: uuid.UUID
+    session: Session,
+    workspace_id: uuid.UUID,
+    project_id: uuid.UUID,
+    source_id: uuid.UUID,
+    *,
+    allow_sample_read: bool = False,
 ) -> Source:
-    get_owned_project_or_raise(session, workspace_id, project_id)
+    get_owned_project_or_raise(
+        session, workspace_id, project_id, allow_sample_read=allow_sample_read
+    )
     source = session.get(Source, source_id)
-    if source is None or source.workspace_id != workspace_id or source.status == "deleted":
+    if source is None or source.status == "deleted":
         raise NotFoundError("source not found")
-    return source
+    if source.workspace_id == workspace_id:
+        return source
+    if allow_sample_read:
+        owner = session.get(Workspace, source.workspace_id)
+        if owner is not None and owner.subject == get_settings().demo_owner_subject:
+            return source
+    raise NotFoundError("source not found")
 
 
 def delete_source(

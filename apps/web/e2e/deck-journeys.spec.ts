@@ -4,7 +4,6 @@ import {
   createProject,
   deleteProject,
   openWorkspace,
-  PROFILE_DIR,
 } from "./journey-helpers";
 
 // F004 deck-generation journeys (test-design-f004-r1 TS-025..TS-030).
@@ -20,11 +19,6 @@ test.describe("deck journeys - live stack", () => {
   test.skip(!liveGate, "set E2E_DECK_LIVE=1 with the live backend + worker running");
   test.setTimeout(600000);
 
-  test.beforeAll(async () => {
-    const { clerkSetup } = await import("@clerk/testing/playwright");
-    await clerkSetup();
-  });
-
   async function completedPlans(page: import("@playwright/test").Page): Promise<string> {
     const projectName = await createProject(page);
     await confirmedBlueprint(page);
@@ -34,10 +28,7 @@ test.describe("deck journeys - live stack", () => {
     return projectName;
   }
 
-  test("TS-030: completed lesson plans to downloadable decks (live stack)", async ({ page: _ }) => {
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
+  test("TS-030: completed lesson plans to downloadable decks (live stack)", async ({ page }) => {
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -59,15 +50,10 @@ test.describe("deck journeys - live stack", () => {
     } finally {
       if (projectName && process.env.E2E_KEEP_PROJECTS !== "1")
         await deleteProject(page, projectName).catch(() => {});
-      await context.close();
     }
-    void _;
   });
 
-  test("TS-027(deck): newer confirmed version supersedes the active deck run", async ({ page: _ }) => {
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
+  test("TS-027(deck): newer confirmed version supersedes the active deck run", async ({ page }) => {
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -90,15 +76,10 @@ test.describe("deck journeys - live stack", () => {
     } finally {
       if (projectName && process.env.E2E_KEEP_PROJECTS !== "1")
         await deleteProject(page, projectName).catch(() => {});
-      await context.close();
     }
-    void _;
   });
 
-  test("TS-029(deck): reload and reconnect restore authoritative deck progress", async ({ page: _ }) => {
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
+  test("TS-029(deck): reload and reconnect restore authoritative deck progress", async ({ page }) => {
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -123,9 +104,7 @@ test.describe("deck journeys - live stack", () => {
     } finally {
       if (projectName && process.env.E2E_KEEP_PROJECTS !== "1")
         await deleteProject(page, projectName).catch(() => {});
-      await context.close();
     }
-    void _;
   });
 });
 
@@ -133,15 +112,7 @@ test.describe("deck journeys - fault stack", () => {
   test.skip(!faultGate, "set E2E_DECK_FAULT=1 with the fake-adapter backend + worker running");
   test.setTimeout(420000);
 
-  test.beforeAll(async () => {
-    const { clerkSetup } = await import("@clerk/testing/playwright");
-    await clerkSetup();
-  });
-
-  test("TS-025(deck): incomplete lesson plans route to the prerequisite", async ({ page: _ }) => {
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
+  test("TS-025(deck): incomplete lesson plans route to the prerequisite", async ({ page }) => {
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -167,17 +138,12 @@ test.describe("deck journeys - fault stack", () => {
     } finally {
       if (projectName && process.env.E2E_KEEP_PROJECTS !== "1")
         await deleteProject(page, projectName).catch(() => {});
-      await context.close();
     }
-    void _;
   });
 
   test("TS-026(deck): partial deck failure, scoped resume, completed work preserved", async ({
-    page: _,
+    page,
   }) => {
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -208,15 +174,10 @@ test.describe("deck journeys - fault stack", () => {
     } finally {
       if (projectName && process.env.E2E_KEEP_PROJECTS !== "1")
         await deleteProject(page, projectName).catch(() => {});
-      await context.close();
     }
-    void _;
   });
 
-  test("TS-024(deck): scripted keyboard pass on the deck flow", async ({ page: _ }) => {
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
+  test("TS-024(deck): scripted keyboard pass on the deck flow", async ({ page }) => {
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -249,9 +210,7 @@ test.describe("deck journeys - fault stack", () => {
     } finally {
       if (projectName && process.env.E2E_KEEP_PROJECTS !== "1")
         await deleteProject(page, projectName).catch(() => {});
-      await context.close();
     }
-    void _;
   });
 });
 
@@ -259,15 +218,7 @@ test.describe("deck journeys - fault stack (small deck cap)", () => {
   test.skip(!faultGate, "set E2E_DECK_FAULT=1 with the small deck-cap fake backend");
   test.setTimeout(420000);
 
-  test.beforeAll(async () => {
-    const { clerkSetup } = await import("@clerk/testing/playwright");
-    await clerkSetup();
-  });
-
-  test("TS-028(deck): deck cap exhaustion keeps completed decks downloadable", async ({ page: _ }) => {
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
+  test("TS-028(deck): deck cap exhaustion keeps completed decks downloadable", async ({ page }) => {
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -288,8 +239,6 @@ test.describe("deck journeys - fault stack (small deck cap)", () => {
     } finally {
       if (projectName && process.env.E2E_KEEP_PROJECTS !== "1")
         await deleteProject(page, projectName).catch(() => {});
-      await context.close();
     }
-    void _;
   });
 });

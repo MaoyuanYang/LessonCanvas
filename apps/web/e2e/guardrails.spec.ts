@@ -1,14 +1,10 @@
 import { expect, test } from "@playwright/test";
 
 // F011 TS-018: authenticated guardrails E2E journey (account usage/disclosure/
-// audit + in-flow limit feedback + deletion complete path). Environment-gated
-// like every authenticated spec in this repo (CLERK_E2E=1 plus a signed-in
-// persistent profile prepared by the journey helpers); component-level
-// substitute coverage lives in __tests__/account-guardrails.test.tsx.
-
-const enabled = process.env.CLERK_E2E === "1";
-
-test.skip(!enabled, "authenticated E2E requires CLERK_E2E=1 (repo precedent)");
+// audit + in-flow limit feedback + deletion complete path). ADR-0006 removed
+// managed identity: the page is reachable directly and mints its browser
+// workspace token on first API use; component-level coverage lives in
+// __tests__/account-guardrails.test.tsx.
 
 test("account page shows usage limits, disclosure, and audit", async ({ page }) => {
   await page.goto("/account");

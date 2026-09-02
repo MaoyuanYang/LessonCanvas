@@ -31,10 +31,11 @@ This document governs the project-level HTTP and progress-stream conventions bet
 
 ## Authentication and Authorization
 
-- Authentication: [CONFIRMED] validate managed-provider sessions or tokens at the application boundary; do not accept identity claims from client-provided business data.
+- Authentication: [REVISED 2026-09-02, ADR-0006] no login exists; the application issues anonymous workspace tokens: `POST /auth/guest-token` → `201 {token, subject}` (unauthenticated by design, creates no rows, discloses nothing). Clients attach the HS256 token as `Authorization: Bearer`; identity claims never come from client-provided business data.
 - Authorization: [CONFIRMED] every project, source, run, trace, evaluation, artifact, and download is authorized by recorded workspace ownership.
 - Service-to-service access: [CONFIRMED] internal Worker calls use deployment-controlled identity and still operate on explicit project/run scope; internal status does not bypass data ownership.
 - Quotas and rate limits: [CONFIRMED] the application enforces user and operation policy before expensive work; gateway/provider controls are defense in depth and never the quota Source of Truth.
+- Synthetic sample read access (F012): [CONFIRMED] safe `GET` project-surface endpoints may serve the single active project of the designated demo workspace (`lessoncanvas-demo-sample-owner`) to any authenticated workspace read-only; every write, stream, and non-demo project keeps strict recorded-ownership authorization. `GET /sample` returns the pointer `{project_id, name}` or `NOT_FOUND` when unseeded.
 
 ## Response and Error Model
 

@@ -30,9 +30,11 @@ MIN_NOT_COMPLETE_REASON_LENGTH = 5
 DAY_SECONDS = 24 * 3600
 
 
-def _owned(session, workspace, project_id: uuid.UUID):
+def _owned(session, workspace, project_id: uuid.UUID, *, sample_read: bool = False):
     try:
-        return get_owned_project(session, workspace, project_id)
+        return get_owned_project(
+            session, workspace, project_id, allow_sample_read=sample_read
+        )
     except ServiceNotFound as error:
         raise NotFoundError("project not found") from error
 
@@ -85,7 +87,7 @@ def _overview_row(session, assignment) -> dict:
 
 @router.get("")
 def get_overview(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep):
-    _owned(session, workspace, project_id)
+    _owned(session, workspace, project_id, sample_read=True)
     return service.overview(session, project_id)
 
 
@@ -112,7 +114,7 @@ def create_assignment(
 def get_assignment_detail(
     project_id: uuid.UUID, assignment_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep
 ):
-    _owned(session, workspace, project_id)
+    _owned(session, workspace, project_id, sample_read=True)
     try:
         return service.detail(session, project_id, assignment_id)
     except service.AssignmentNotFoundError as error:
@@ -228,7 +230,7 @@ def download_evidence_document(
     """Owner-authorized download of the evaluator's original document (Spec
     D4: private evidence; never surfaced on public or report reads)."""
 
-    _owned(session, workspace, project_id)
+    _owned(session, workspace, project_id, sample_read=True)
     try:
         service.detail(session, project_id, assignment_id)
     except service.AssignmentNotFoundError as error:
@@ -247,7 +249,7 @@ def download_evidence_document(
     except Exception as error:
         raise NotFoundError("evidence document not found") from error
     iw_service.audit_download(
-        session, workspace.id, workspace.clerk_user_id, "evidence_document", evidence_id
+        session, workspace.id, workspace.subject, "evidence_document", evidence_id
     )
     session.commit()
     return Response(

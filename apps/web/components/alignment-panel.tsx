@@ -1,8 +1,8 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { getApiToken } from "@/lib/auth";
 import { DesktopRequiredNotice, useDesktop } from "@/components/desktop-gate";
 import { Alert, Button, EmptyState, Modal, SkeletonRows } from "@/components/ui";
 import type { WorkspaceTab } from "@/app/(authed)/projects/[projectId]/workspace-view";
@@ -49,10 +49,12 @@ function RecoveryAction({
   finding,
   onOverride,
   onNavigate,
+  readOnly = false,
 }: {
   finding: AlignmentFinding;
   onOverride: (finding: AlignmentFinding) => void;
   onNavigate: (tab: WorkspaceTab) => void;
+  readOnly?: boolean;
 }) {
   if (finding.resolved) {
     return <span className="text-xs text-ink-secondary">已按教师覆盖记录处理</span>;
@@ -72,7 +74,7 @@ function RecoveryAction({
           {finding.family ? FAMILY_LABELS[finding.family] : ""}生成
         </Button>
       ) : null}
-      {finding.overridable ? (
+      {finding.overridable && !readOnly ? (
         <Button variant="secondary" onClick={() => onOverride(finding)}>
           记录理由并覆盖
         </Button>
@@ -84,11 +86,12 @@ function RecoveryAction({
 export function AlignmentPanel({
   projectId,
   onNavigate,
+  readOnly = false,
 }: {
   projectId: string;
   onNavigate: (tab: WorkspaceTab) => void;
+  readOnly?: boolean;
 }) {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const isDesktop = useDesktop();
   const [overrideTarget, setOverrideTarget] = useState<AlignmentFinding | null>(null);
@@ -98,12 +101,12 @@ export function AlignmentPanel({
 
   const alignmentQuery = useQuery({
     queryKey: ["alignment", projectId],
-    queryFn: async () => getAlignment(await getToken(), projectId),
+    queryFn: async () => getAlignment(await getApiToken(), projectId),
     retry: false,
   });
   const exportsQuery = useQuery({
     queryKey: ["delivery-exports", projectId],
-    queryFn: async () => listDeliveryExports(await getToken(), projectId),
+    queryFn: async () => listDeliveryExports(await getApiToken(), projectId),
     retry: false,
   });
 
@@ -115,7 +118,7 @@ export function AlignmentPanel({
   const overrideMutation = useMutation({
     mutationFn: async () => {
       if (!overrideTarget) throw new Error("no finding");
-      return recordAlignmentOverride(await getToken(), projectId, overrideTarget.key, overrideReason);
+      return recordAlignmentOverride(await getApiToken(), projectId, overrideTarget.key, overrideReason);
     },
     onSuccess: () => {
       setOverrideTarget(null);
@@ -133,7 +136,7 @@ export function AlignmentPanel({
   const withdrawMutation = useMutation({
     mutationFn: async () => {
       if (!withdrawId) throw new Error("no override");
-      return withdrawAlignmentOverride(await getToken(), projectId, withdrawId);
+      return withdrawAlignmentOverride(await getApiToken(), projectId, withdrawId);
     },
     onSuccess: () => {
       setWithdrawId(null);
@@ -149,7 +152,7 @@ export function AlignmentPanel({
 
   const exportMutation = useMutation({
     mutationFn: async (label: "draft" | "validated") =>
-      createDeliveryExport(await getToken(), projectId, label),
+      createDeliveryExport(await getApiToken(), projectId, label),
     onSuccess: () => {
       setActionError(null);
       invalidate();
@@ -179,7 +182,7 @@ export function AlignmentPanel({
 
   const downloadMutation = useMutation({
     mutationFn: async (exportId: string) => {
-      const blob = await downloadDeliveryExport(await getToken(), projectId, exportId);
+      const blob = await downloadDeliveryExport(await getApiToken(), projectId, exportId);
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
@@ -322,6 +325,7 @@ export function AlignmentPanel({
                           finding={finding}
                           onOverride={setOverrideTarget}
                           onNavigate={onNavigate}
+                          readOnly={readOnly}
                         />
                       </div>
                     </li>
@@ -358,7 +362,7 @@ export function AlignmentPanel({
                 <p className="mt-1 text-xs text-ink-secondary">
                   {override.status === "recorded" ? "已记录" : "已撤销"} · {override.created_at}
                 </p>
-                {override.status === "recorded" ? (
+                {override.status === "recorded" && !readOnly ? (
                   <Button
                     variant="quiet"
                     className="mt-1"
@@ -380,26 +384,30 @@ export function AlignmentPanel({
             ? "当前版本已通过技术校验，可交付校验包；草稿包也始终可导出。"
             : "存在未解决的严重问题：可导出明确标注的草稿包；交付校验包需先修正或覆盖全部严重问题。"}
         </p>
-        <div className="flex flex-wrap gap-3">
-          <Button
-            variant="secondary"
-            disabled={exportMutation.isPending}
-            onClick={() => exportMutation.mutate("draft")}
-          >
-            {exportMutation.isPending ? "处理中…" : "导出草稿包（标注草稿）"}
-          </Button>
-          <Button
-            disabled={!validated || exportMutation.isPending}
-            onClick={() => exportMutation.mutate("validated")}
-          >
-            {exportMutation.isPending ? "处理中…" : "交付校验包"}
-          </Button>
-          {isDesktop ? (
+        {!readOnly ? (
+          <div className="flex flex-wrap gap-3">
+            <Button
+              variant="secondary"
+              disabled={exportMutation.isPending}
+              onClick={() => exportMutation.mutate("draft")}
+            >
+              {exportMutation.isPending ? "处理中…" : "导出草稿包（标注草稿）"}
+            </Button>
+            <Button
+              disabled={!validated || exportMutation.isPending}
+              onClick={() => exportMutation.mutate("validated")}
+            >
+              {exportMutation.isPending ? "处理中…" : "交付校验包"}
+            </Button>
+          </div>
+        ) : null}
+        {isDesktop ? (
+          <div className="flex flex-wrap gap-3">
             <Button variant="quiet" onClick={() => window.open(`/projects/${projectId}/report?source=current`, "_blank")}>
               打印对齐报告
             </Button>
-          ) : null}
-        </div>
+          </div>
+        ) : null}
         {actionError ? (
           <div className="mt-3">
             <Alert tone="error">{actionError}</Alert>
@@ -445,7 +453,7 @@ export function AlignmentPanel({
                         </Button>
                       ) : null}
                     </>
-                  ) : row.status === "failed" ? (
+                  ) : row.status === "failed" && !readOnly ? (
                     <Button
                       variant="secondary"
                       disabled={exportMutation.isPending}

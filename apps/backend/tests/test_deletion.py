@@ -111,52 +111,27 @@ def test_project_deletion_failure_is_retryable(client, auth, monkeypatch):
     assert retried.json()["deleted"] is True
 
 
-def test_account_deletion_purges_then_calls_clerk(client, auth, monkeypatch):
-    from lessoncanvas.api import account as account_module
+def test_account_deletion_purges_without_external_identity_step(client, auth):
+    """ADR-0006: deletion ends after the application-side purge."""
     from lessoncanvas.db import SessionLocal
     from lessoncanvas.models import Workspace
-
-    calls = []
-
-    class FakeClerkAdmin:
-        def delete_user(self, clerk_user_id):
-            calls.append(("clerk", clerk_user_id))
-
-    monkeypatch.setattr(account_module, "get_clerk_admin", lambda: FakeClerkAdmin())
 
     client.post("/projects", json={"name": "账号删除"}, headers=auth)
 
     response = client.delete("/account", headers=auth)
     assert response.status_code == 200
     body = response.json()
-    assert body["purged"] is True
-    assert body["clerk_deleted"] is True
-    assert len(calls) == 1
+    assert body == {"purged": True}
 
+    # Count before any later authorized call: require_workspace find-or-creates
+    # a fresh workspace for the same subject once the old one is purged.
     session = SessionLocal()
     workspace_count = session.scalar(
-        select(func.count(Workspace.id)).where(Workspace.clerk_user_id == "teacher_a")
+        select(func.count(Workspace.id)).where(Workspace.subject == "teacher_a")
     )
     session.close()
     assert workspace_count == 0
 
-
-def test_account_deletion_clerk_failure_is_recorded(client, auth, monkeypatch, teacher_b_token):
-    from lessoncanvas.adapters.clerk_admin import ClerkAdminError
-    from lessoncanvas.api import account as account_module
-
-    class FailingClerkAdmin:
-        def delete_user(self, clerk_user_id):
-            raise ClerkAdminError("clerk down")
-
-    monkeypatch.setattr(account_module, "get_clerk_admin", lambda: FailingClerkAdmin())
-
-    headers = {"Authorization": f"Bearer {teacher_b_token}"}
-    response = client.delete("/account", headers=headers)
-    body = response.json()
-    assert body["purged"] is True
-    assert body["clerk_deleted"] is False
-
-    status = client.get("/account/deletion-status", headers=headers)
+    status = client.get("/account/deletion-status", headers=auth)
     statuses = [item["status"] for item in status.json()]
-    assert "clerk_failed" in statuses
+    assert "purged" in statuses

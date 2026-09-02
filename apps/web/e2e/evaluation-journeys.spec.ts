@@ -1,12 +1,12 @@
 import { expect, test } from "@playwright/test";
-import { deleteProject, openWorkspace, PROFILE_DIR } from "./journey-helpers";
+import { deleteProject, openWorkspace } from "./journey-helpers";
 
 // F009 technical-evaluation journey (test-design-f009-r1 TS-016).
 //   E2E_EVAL_FAULT=1 -> fake-adapter backend (deterministic; no live model).
 //   Drives: 证据 panel -> 技术评估 region -> 启动评估 modal (deterministic mode,
 //   cost sentence checked for live mode) -> queued/active states -> completed
 //   criterion outcomes with evidence expansion -> print-styled report route.
-//   If the browser environment is unavailable (Clerk credentials/backend),
+//   If the browser environment is unavailable (backend services),
 //   substitute coverage is green (backend TS-004/005/012; component TS-014/015)
 //   and the block is recorded in the Test Design execution snapshot.
 
@@ -16,15 +16,7 @@ test.describe("technical evaluation journey - fault stack", () => {
   test.skip(!evalGate, "set E2E_EVAL_FAULT=1 with the fake-adapter backend running");
   test.setTimeout(600000);
 
-  test.beforeAll(async () => {
-    const { clerkSetup } = await import("@clerk/testing/playwright");
-    await clerkSetup();
-  });
-
-  test("TS-016: start deterministic pass, inspect outcomes, open report", async () => {
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
+  test("TS-016: start deterministic pass, inspect outcomes, open report", async ({ page }) => {
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -60,7 +52,7 @@ test.describe("technical evaluation journey - fault stack", () => {
       await expect(page.getByText("诊断指标（非阻断）")).toBeVisible({ timeout: 30000 });
       await expect(page.getByText(/记忆状态：/).first()).toBeVisible({ timeout: 30000 });
 
-      const pagePromise = context.waitForEvent("page");
+      const pagePromise = page.context().waitForEvent("page");
       await page.getByRole("link", { name: "打印技术评估报告" }).click({ timeout: 30000 });
       const reportPage = await pagePromise;
       await expect(reportPage.getByRole("heading", { name: "技术评估报告" })).toBeVisible({
@@ -75,7 +67,6 @@ test.describe("technical evaluation journey - fault stack", () => {
       await reportPage.close();
     } finally {
       await deleteProject(page, projectName).catch(() => {});
-      await context.close();
     }
   });
 });

@@ -3,7 +3,7 @@ services:
     image: pgvector/pgvector:pg16
     environment:
       POSTGRES_USER: lessoncanvas
-      POSTGRES_PASSWORD: lessoncanvas_dev_only
+      POSTGRES_PASSWORD: ${LESSONCANVAS_DB_PASSWORD:-lessoncanvas_dev_only}
       POSTGRES_DB: lessoncanvas
     ports:
       - "5432:5432"
@@ -30,7 +30,7 @@ services:
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: lessoncanvas
-      MINIO_ROOT_PASSWORD: lessoncanvas_dev_only
+      MINIO_ROOT_PASSWORD: ${LESSONCANVAS_MINIO_PASSWORD:-lessoncanvas_dev_only}
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -41,6 +41,94 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+
+  # F012 D1: application services behind the "app" profile.
+  # Dev keeps `docker compose up -d` (infra only); the deployed full stack uses
+  # `--profile app` with a real env file (see infra/deploy.env.example).
+  api:
+    profiles: ["app"]
+    build:
+      context: ../apps/backend
+    image: lessoncanvas/api:local
+    env_file:
+      - path: ./deploy.env
+        required: false
+    environment:
+      LESSONCANVAS_DATABASE_URL: postgresql+psycopg://lessoncanvas:${LESSONCANVAS_DB_PASSWORD:-lessoncanvas_dev_only}@postgres:5432/lessoncanvas
+      LESSONCANVAS_REDIS_URL: redis://redis:6379/0
+      LESSONCANVAS_S3_ENDPOINT_URL: http://minio:9000
+      LESSONCANVAS_S3_ACCESS_KEY: lessoncanvas
+      LESSONCANVAS_S3_SECRET_KEY: ${LESSONCANVAS_MINIO_PASSWORD:-lessoncanvas_dev_only}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    restart: unless-stopped
+    # F012 D8: exactly one API process; the F011 SSE registry assumes single-process.
+    deploy:
+      replicas: 1
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  worker:
+    profiles: ["app"]
+    image: lessoncanvas/api:local
+    env_file:
+      - path: ./deploy.env
+        required: false
+    environment:
+      LESSONCANVAS_DATABASE_URL: postgresql+psycopg://lessoncanvas:${LESSONCANVAS_DB_PASSWORD:-lessoncanvas_dev_only}@postgres:5432/lessoncanvas
+      LESSONCANVAS_REDIS_URL: redis://redis:6379/0
+      LESSONCANVAS_S3_ENDPOINT_URL: http://minio:9000
+      LESSONCANVAS_S3_ACCESS_KEY: lessoncanvas
+      LESSONCANVAS_S3_SECRET_KEY: ${LESSONCANVAS_MINIO_PASSWORD:-lessoncanvas_dev_only}
+    # F012 TS-011: pre-create the checkpointer schema before the worker starts
+    # (same rationale as the api entrypoint).
+    command: ["sh", "-c", "python -m lessoncanvas.checkpointer_setup && celery -A lessoncanvas.worker.celery_app worker --loglevel=INFO --concurrency=2"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A lessoncanvas.worker.celery_app inspect ping -d celery@$$HOSTNAME || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  web:
+    profiles: ["app"]
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${LESSONCANVAS_WEB_API_BASE_URL:-http://localhost:8000}
+    image: lessoncanvas/web:local
+    ports:
+      - "${LESSONCANVAS_WEB_PORT:-3000}:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
 
 volumes:
   pgdata:

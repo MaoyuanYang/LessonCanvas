@@ -1,9 +1,9 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 
+import { getApiToken } from "@/lib/auth";
 import { useDesktop } from "@/components/desktop-gate";
 import { Alert, Button, EmptyState, Modal, SkeletonRows } from "@/components/ui";
 import {
@@ -75,7 +75,6 @@ function ImportForm({
   onDone: (message: string) => void;
   onCancel: () => void;
 }) {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
   const violationsRef = useRef<HTMLDivElement>(null);
@@ -104,7 +103,7 @@ function ImportForm({
         });
       }
       return productValidationImportEvidence(
-        await getToken(),
+        await getApiToken(),
         projectId,
         assignment.id,
         revision,
@@ -411,7 +410,6 @@ function EvidenceHistory({
   projectId: string;
   detail: ProductValidationDetail;
 }) {
-  const { getToken } = useAuth();
   if (detail.evidence_history.length === 0) {
     return <p className="text-ink-secondary">尚未导入量表证据。</p>;
   }
@@ -465,7 +463,7 @@ function EvidenceHistory({
                   variant="quiet"
                   onClick={async () => {
                     const blob = await downloadProductValidationDocument(
-                      await getToken(),
+                      await getApiToken(),
                       projectId,
                       detail.id,
                       row.id,
@@ -542,7 +540,6 @@ function AssignmentRow({
   isDesktop: boolean;
   onNotice: (message: string) => void;
 }) {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const [expanded, setExpanded] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
@@ -551,13 +548,13 @@ function AssignmentRow({
 
   const detailQuery = useQuery({
     queryKey: ["product-validation-detail", assignment.id],
-    queryFn: async () => productValidationDetail(await getToken(), projectId, assignment.id),
+    queryFn: async () => productValidationDetail(await getApiToken(), projectId, assignment.id),
     enabled: expanded,
   });
 
   const concludeMutation = useMutation({
     mutationFn: async () =>
-      productValidationConclude(await getToken(), projectId, assignment.id, concludeReason),
+      productValidationConclude(await getApiToken(), projectId, assignment.id, concludeReason),
     onSuccess: () => {
       setConcluding(false);
       void queryClient.invalidateQueries({ queryKey: ["product-validation", projectId] });
@@ -708,7 +705,6 @@ function AssignmentRow({
 }
 
 export function ProductValidationRegion({ projectId }: { projectId: string }) {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const isDesktop = useDesktop();
   const [modalOpen, setModalOpen] = useState(false);
@@ -718,13 +714,13 @@ export function ProductValidationRegion({ projectId }: { projectId: string }) {
 
   const overviewQuery = useQuery({
     queryKey: ["product-validation", projectId],
-    queryFn: async () => productValidationOverview(await getToken(), projectId),
+    queryFn: async () => productValidationOverview(await getApiToken(), projectId),
     retry: false,
   });
 
   const createMutation = useMutation({
     mutationFn: async () =>
-      productValidationCreateAssignment(await getToken(), projectId, unitKey),
+      productValidationCreateAssignment(await getApiToken(), projectId, unitKey),
     onSuccess: (row) => {
       setModalOpen(false);
       setCreateError(null);

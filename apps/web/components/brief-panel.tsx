@@ -1,8 +1,8 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { getApiToken } from "@/lib/auth";
 import { DesktopRequiredNotice, useDesktop } from "@/components/desktop-gate";
 import { Alert, Button, ConfirmModal } from "@/components/ui";
 import { ApiClientError, confirmBrief, getBrief, patchDraft } from "@/lib/api";
@@ -17,10 +17,16 @@ const FIELD_LABELS: Record<string, string> = {
   assessment_orientation: "评估倾向",
 };
 
-export function BriefPanel({ projectId }: { projectId: string }) {
-  const { getToken } = useAuth();
+export function BriefPanel({
+  projectId,
+  readOnly = false,
+}: {
+  projectId: string;
+  readOnly?: boolean;
+}) {
   const queryClient = useQueryClient();
   const isDesktop = useDesktop();
+  const canWrite = isDesktop && !readOnly;
   const [editing, setEditing] = useState<Record<string, string>>({});
   const [stale, setStale] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -28,7 +34,7 @@ export function BriefPanel({ projectId }: { projectId: string }) {
 
   const briefQuery = useQuery({
     queryKey: ["brief", projectId],
-    queryFn: async () => getBrief(await getToken(), projectId),
+    queryFn: async () => getBrief(await getApiToken(), projectId),
   });
 
   const invalidate = () => void queryClient.invalidateQueries({ queryKey: ["brief", projectId] });
@@ -37,7 +43,7 @@ export function BriefPanel({ projectId }: { projectId: string }) {
     mutationFn: async () => {
       const base = briefQuery.data?.draft_revision;
       if (base == null) throw new Error("draft missing");
-      return patchDraft(await getToken(), projectId, editing, base);
+      return patchDraft(await getApiToken(), projectId, editing, base);
     },
     onSuccess: () => {
       setEditing({});
@@ -55,7 +61,7 @@ export function BriefPanel({ projectId }: { projectId: string }) {
   });
 
   const confirmMutation = useMutation({
-    mutationFn: async () => confirmBrief(await getToken(), projectId),
+    mutationFn: async () => confirmBrief(await getApiToken(), projectId),
     onSuccess: () => {
       setConfirmOpen(false);
       invalidate();
@@ -81,14 +87,14 @@ export function BriefPanel({ projectId }: { projectId: string }) {
               : `草稿修订 ${brief?.draft_revision ?? "—"}`}
           </p>
         </div>
-        {isDesktop && fields ? (
+        {canWrite && fields ? (
           <Button onClick={() => setConfirmOpen(true)} disabled={!allPresent}>
             确认简报
           </Button>
         ) : null}
       </div>
 
-      {!isDesktop ? <DesktopRequiredNotice task="编辑或确认简报" /> : null}
+      {!canWrite && !readOnly ? <DesktopRequiredNotice task="编辑或确认简报" /> : null}
       {stale ? (
         <Alert tone="warning">存在更新的草稿修订，已为你加载最新内容，请重新编辑。</Alert>
       ) : null}
@@ -115,7 +121,7 @@ export function BriefPanel({ projectId }: { projectId: string }) {
                   </span>
                 )}
               </div>
-              {isDesktop ? (
+              {canWrite ? (
                 <input
                   aria-label={`编辑${FIELD_LABELS[field] ?? field}`}
                   className="mt-2 w-full rounded border border-line bg-paper px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-focus"
@@ -132,7 +138,7 @@ export function BriefPanel({ projectId }: { projectId: string }) {
         </ul>
       ) : null}
 
-      {isDesktop && fields ? (
+      {canWrite && fields ? (
         <Button variant="secondary" onClick={() => patchMutation.mutate()}>
           保存修订
         </Button>

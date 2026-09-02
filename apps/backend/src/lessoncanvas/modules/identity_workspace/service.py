@@ -16,19 +16,19 @@ class NotFoundError(Exception):
     pass
 
 
-def resolve_workspace(session: Session, clerk_user_id: str) -> Workspace:
-    workspace = session.scalar(select(Workspace).where(Workspace.clerk_user_id == clerk_user_id))
+def resolve_workspace(session: Session, subject: str) -> Workspace:
+    workspace = session.scalar(select(Workspace).where(Workspace.subject == subject))
     if workspace is None:
-        workspace = Workspace(clerk_user_id=clerk_user_id)
+        workspace = Workspace(subject=subject)
         session.add(workspace)
         try:
             session.flush()
         except IntegrityError:
             # F011 D9 race safety: a concurrent first request won the unique
-            # clerk_user_id insert; adopt its row instead of failing.
+            # subject insert; adopt its row instead of failing.
             session.rollback()
             workspace = session.scalar(
-                select(Workspace).where(Workspace.clerk_user_id == clerk_user_id)
+                select(Workspace).where(Workspace.subject == subject)
             )
     return workspace
 
@@ -59,7 +59,7 @@ def create_project(
     session.add(
         AuditEvent(
             workspace_id=workspace.id,
-            actor=workspace.clerk_user_id,
+            actor=workspace.subject,
             action="project.create",
             target_type="project",
             target_id=str(project.id),
@@ -78,11 +78,27 @@ def list_projects(session: Session, workspace: Workspace) -> list[Project]:
     )
 
 
-def get_owned_project(session: Session, workspace: Workspace, project_id: uuid.UUID) -> Project:
+def get_owned_project(
+    session: Session,
+    workspace: Workspace,
+    project_id: uuid.UUID,
+    *,
+    allow_sample_read: bool = False,
+) -> Project:
+    """Resolve a project the caller may access. F012: safe read endpoints pass
+    allow_sample_read=True so the designated synthetic sample project is
+    inspectable by any authenticated workspace; every write path keeps strict
+    ownership and calls this without the flag."""
     project = session.get(Project, project_id)
-    if project is None or project.workspace_id != workspace.id or project.status == "deleted":
+    if project is None or project.status == "deleted":
         raise NotFoundError("project not found")
-    return project
+    if project.workspace_id == workspace.id:
+        return project
+    if allow_sample_read:
+        owner = session.get(Workspace, project.workspace_id)
+        if owner is not None and owner.subject == get_settings().demo_owner_subject:
+            return project
+    raise NotFoundError("project not found")
 
 
 def audit_download(
@@ -114,7 +130,7 @@ def delete_project(session: Session, workspace: Workspace, project_id: uuid.UUID
     session.add(
         AuditEvent(
             workspace_id=workspace.id,
-            actor=workspace.clerk_user_id,
+            actor=workspace.subject,
             action="project.delete",
             target_type="project",
             target_id=str(project.id),

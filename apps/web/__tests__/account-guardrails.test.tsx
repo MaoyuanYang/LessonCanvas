@@ -5,11 +5,9 @@ import AccountPage from "../app/(authed)/account/page";
 import { SourcesPanel } from "../components/sources-panel";
 import { ApiClientError, guardrailFeedback } from "../lib/api";
 
-vi.mock("@clerk/nextjs", () => ({
-  useAuth: () => ({ getToken: async () => "test-token" }),
-  useUser: () => ({
-    user: { emailAddresses: [{ emailAddress: "teacher@example.com" }] },
-  }),
+vi.mock("@/lib/auth", () => ({
+  getApiToken: async () => "test-token",
+  clearApiToken: () => {},
 }));
 
 let matchMediaMatches = true;
@@ -74,6 +72,17 @@ describe("account guardrails surface", () => {
     expect(screen.getByText("4/50")).toBeVisible(); // planning runs
   });
 
+  it("identifies the browser-scoped workspace instead of a managed account", async () => {
+    mockFetch({ "/account/usage": USAGE_BODY, "/account/deletion-status": [] });
+    renderUi(<AccountPage />);
+
+    expect(
+      screen.getByText(/登录身份：本浏览器工作区（由浏览器本地令牌标识；清除浏览器数据将获得新的空白工作区）。/),
+    ).toBeVisible();
+    expect(screen.queryByText(/teacher@example\.com/)).toBeNull();
+    expect(screen.queryByText(/Clerk/)).toBeNull();
+  });
+
   it("shows the operator-access disclosure including the retained-ledger rule", async () => {
     mockFetch({ "/account/usage": USAGE_BODY, "/account/deletion-status": [] });
     renderUi(<AccountPage />);
@@ -81,7 +90,11 @@ describe("account guardrails surface", () => {
     expect(await screen.findByText("隐私与运营访问")).toBeVisible();
     expect(screen.getByText(/没有运营人员账号/)).toBeVisible();
     expect(screen.getByText(/极简安全台账/)).toBeVisible();
-    expect(screen.getByText(/托管服务商的管理控制台/)).toBeVisible();
+    expect(
+      screen.getByText(
+        /模型服务（DeepSeek）、对象存储（MinIO）、数据库\/缓存（PostgreSQL\/Redis）的管理控制台/,
+      ),
+    ).toBeVisible();
   });
 
   it("discloses the audit list progressively and lists events", async () => {

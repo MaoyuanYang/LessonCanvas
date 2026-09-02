@@ -37,12 +37,21 @@ const TAB_LABELS: Record<WorkspaceTab, string> = {
   alignment: "对齐与交付",
 };
 
-export default function WorkspaceView({ projectId }: { projectId: string }) {
+export default function WorkspaceView({
+  projectId,
+  readOnly = false,
+}: {
+  projectId: string;
+  readOnly?: boolean;
+}) {
   const [tab, setTab] = useState<WorkspaceTab>("sources");
 
   return (
     <section aria-label="单元备课工作区">
-      <nav aria-label="工作区导航" className="mb-6 flex gap-2 border-b border-line">
+      <nav
+        aria-label="工作区导航"
+        className="mb-6 flex flex-wrap gap-2 border-b border-line"
+      >
         {(Object.keys(TAB_LABELS) as WorkspaceTab[]).map((key) => (
           <button
             key={key}
@@ -59,19 +68,27 @@ export default function WorkspaceView({ projectId }: { projectId: string }) {
           </button>
         ))}
       </nav>
-      {tab === "sources" ? <SourcesPanel projectId={projectId} /> : null}
-      {tab === "discovery" ? <DiscoveryPanel projectId={projectId} /> : null}
-      {tab === "brief" ? <BriefPanel projectId={projectId} /> : null}
-      {tab === "blueprint" ? <BlueprintPanel projectId={projectId} /> : null}
+      {tab === "sources" ? <SourcesPanel projectId={projectId} readOnly={readOnly} /> : null}
+      {tab === "discovery" ? <DiscoveryPanel projectId={projectId} readOnly={readOnly} /> : null}
+      {tab === "brief" ? <BriefPanel projectId={projectId} readOnly={readOnly} /> : null}
+      {tab === "blueprint" ? <BlueprintPanel projectId={projectId} readOnly={readOnly} /> : null}
       {tab === "generation" ? (
-        <GenerationPanel projectId={projectId} onNavigate={setTab} />
+        <GenerationPanel projectId={projectId} onNavigate={setTab} readOnly={readOnly} />
       ) : null}
-      {tab === "decks" ? <DeckPanel projectId={projectId} onNavigate={setTab} /> : null}
-      {tab === "exercises" ? <ExercisePanel projectId={projectId} onNavigate={setTab} /> : null}
-      {tab === "evidence" ? <EvidencePanel projectId={projectId} onNavigate={setTab} /> : null}
-      {tab === "versions" ? <VersionComparePanel projectId={projectId} /> : null}
+      {tab === "decks" ? (
+        <DeckPanel projectId={projectId} onNavigate={setTab} readOnly={readOnly} />
+      ) : null}
+      {tab === "exercises" ? (
+        <ExercisePanel projectId={projectId} onNavigate={setTab} readOnly={readOnly} />
+      ) : null}
+      {tab === "evidence" ? (
+        <EvidencePanel projectId={projectId} onNavigate={setTab} readOnly={readOnly} />
+      ) : null}
+      {tab === "versions" ? (
+        <VersionComparePanel projectId={projectId} readOnly={readOnly} />
+      ) : null}
       {tab === "alignment" ? (
-        <AlignmentPanel projectId={projectId} onNavigate={setTab} />
+        <AlignmentPanel projectId={projectId} onNavigate={setTab} readOnly={readOnly} />
       ) : null}
     </section>
   );

@@ -4,7 +4,6 @@ import {
   createProject,
   deleteProject,
   openWorkspace,
-  PROFILE_DIR,
 } from "./journey-helpers";
 
 // F006 evidence journeys (test-design-f006-r1 TS-020/021/022).
@@ -19,17 +18,9 @@ test.describe("evidence journeys - fault stack", () => {
   test.skip(!faultGate, "set E2E_EVID_FAULT=1 with the fake-adapter backend running");
   test.setTimeout(300000);
 
-  test.beforeAll(async () => {
-    const { clerkSetup } = await import("@clerk/testing/playwright");
-    await clerkSetup();
-  });
-
   test("TS-020a: empty evidence view explains emptiness and names the first action", async ({
-    page: _,
+    page,
   }) => {
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -39,14 +30,10 @@ test.describe("evidence journeys - fault stack", () => {
       await expect(page.getByRole("button", { name: "前往「来源」开始" })).toBeVisible();
     } finally {
       if (projectName) await deleteProject(page, projectName);
-      await context.close();
     }
   });
 
-  test("TS-020: inventory, summary, technical expansion, and narration", async ({ page: _ }) => {
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
+  test("TS-020: inventory, summary, technical expansion, and narration", async ({ page }) => {
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -89,14 +76,10 @@ test.describe("evidence journeys - fault stack", () => {
       await expect(page.getByText("教案生成").first()).toBeVisible();
     } finally {
       if (projectName) await deleteProject(page, projectName);
-      await context.close();
     }
   });
 
-  test("TS-022: keyboard-only pass over the evidence view (B-001)", async ({ page: _ }) => {
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
+  test("TS-022: keyboard-only pass over the evidence view (B-001)", async ({ page }) => {
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -132,7 +115,6 @@ test.describe("evidence journeys - fault stack", () => {
       await expect(page.locator("[aria-label='任务讲解']")).toBeVisible({ timeout: 60000 });
     } finally {
       if (projectName) await deleteProject(page, projectName);
-      await context.close();
     }
   });
 });
@@ -141,17 +123,9 @@ test.describe("evidence journeys - live stack", () => {
   test.skip(!liveGate, "set E2E_EVID_LIVE=1 with the live backend + worker running");
   test.setTimeout(480000);
 
-  test.beforeAll(async () => {
-    const { clerkSetup } = await import("@clerk/testing/playwright");
-    await clerkSetup();
-  });
-
   test("TS-021: live run carries token/cost/model evidence and streams a real explanation", async ({
-    page: _,
+    page,
   }) => {
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -185,7 +159,6 @@ test.describe("evidence journeys - live stack", () => {
       });
     } finally {
       if (projectName) await deleteProject(page, projectName);
-      await context.close();
     }
   });
 });

@@ -57,9 +57,9 @@ class ConfirmOut(BaseModel):
     payload: dict
 
 
-def _owned(session, workspace, project_id):
+def _owned(session, workspace, project_id, *, sample_read: bool = False):
     try:
-        get_owned_project(session, workspace, project_id)
+        get_owned_project(session, workspace, project_id, allow_sample_read=sample_read)
     except ServiceNotFound as err:
         raise NotFoundError("project not found") from err
 
@@ -81,7 +81,7 @@ def _stale_guard(function):
 def get_blueprint(
     project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep
 ) -> BlueprintOut:
-    _owned(session, workspace, project_id)
+    _owned(session, workspace, project_id, sample_read=True)
     blueprint_service.sync_draft_from_run_guarded(session, workspace.id, project_id)
     session.commit()
     return BlueprintOut(**blueprint_service.get_blueprint(session, workspace.id, project_id))

@@ -4,7 +4,6 @@ import {
   createProject,
   deleteProject,
   openWorkspace,
-  PROFILE_DIR,
 } from "./journey-helpers";
 
 // F008 alignment journeys (test-design-f008-r1 TS-016/TS-017).
@@ -16,7 +15,7 @@ import {
 //   residual in the Test Design execution snapshot: substitute coverage is
 //   green (backend TS-005/006/007 override lifecycle; component TS-015
 //   override dialog with recalculation), same owner-accepted pattern as the
-//   F004 M-1 Clerk-environment residual.
+//   F004 M-1 browser-environment residual.
 
 const faultGate = process.env.E2E_ALIGN_FAULT === "1";
 
@@ -37,15 +36,7 @@ test.describe("alignment journeys - fault stack", () => {
   test.skip(!faultGate, "set E2E_ALIGN_FAULT=1 with the fake-adapter backend running");
   test.setTimeout(900000);
 
-  test.beforeAll(async () => {
-    const { clerkSetup } = await import("@clerk/testing/playwright");
-    await clerkSetup();
-  });
-
-  test("TS-016: alignment view, validated export, labelled ZIP, print report", async () => {
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
+  test("TS-016: alignment view, validated export, labelled ZIP, print report", async ({ page }) => {
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -75,7 +66,7 @@ test.describe("alignment journeys - fault stack", () => {
       expect((await download.suggestedFilename()).startsWith("lessoncanvas-")).toBeTruthy();
 
       // Printable report route carries versions, status pair, and coverage.
-      const reportPage = await context.newPage();
+      const reportPage = await page.context().newPage();
       await reportPage.goto(`${page.url().split("?")[0]}/report?source=current`);
       await expect(reportPage.getByRole("heading", { name: "单元对齐报告" })).toBeVisible({
         timeout: 60000,
@@ -88,14 +79,10 @@ test.describe("alignment journeys - fault stack", () => {
       await reportPage.close();
     } finally {
       if (projectName) await deleteProject(page, projectName);
-      await context.close();
     }
   });
 
-  test("TS-017: family completion banner links into the alignment view", async () => {
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
+  test("TS-017: family completion banner links into the alignment view", async ({ page }) => {
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -111,7 +98,6 @@ test.describe("alignment journeys - fault stack", () => {
       await expect(page.getByText(/技术校验状态：/)).toBeVisible({ timeout: 60000 });
     } finally {
       if (projectName) await deleteProject(page, projectName);
-      await context.close();
     }
   });
 });

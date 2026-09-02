@@ -4,16 +4,16 @@
 
 | Field | Value |
 | --- | --- |
-| Snapshot Revision | `STAGE-71` |
-| Parent Snapshot | `STAGE-70` @ `a5d444f57df2` (pre-write read, no external change) |
-| Last Reconciled At | `2026-09-02T00:20:00+08:00` |
+| Snapshot Revision | `STAGE-74` |
+| Parent Snapshot | `STAGE-72` @ `46cc0b96fce0` (pre-write read, no external change) |
+| Last Reconciled At | `2026-09-02T20:30:00+08:00` |
 | Reconciled By | `ZCode feature-dev session (YMY / Project Owner driving)` |
 | Repository Ref | `main @ 42fd778` (PR #23 merge) |
 | Write Coordination | `SINGLE_WRITER:ZCode feature-dev session` |
 | Lifecycle Path | `GREENFIELD` |
 | Project Phase | `COMPLETE` |
 | Overall State | `ACTIVE` |
-| Current Milestone | F011 Public Multi-Account Guardrails DONE (PR #23 merge `42fd778`; main re-verified backend 454 + web 83/83; env-gated E2E residual M-1 with resume condition). Next actionable F012 Deployed Portfolio Proof (P0; must verify F011 D10 provider constraints and the SSE single-process assumption against the deployed topology) / F013 Teacher Memory (P1) |
+| Current Milestone | F012 Deployed Portfolio Proof (P0) selected as NEXT by `YMY / Project Owner` on 2026-09-02 (start instruction; dependencies F009/F011 DONE; owner direction: local-first full-stack deployment, public-cloud exposure refined afterwards). F013 Teacher Memory (P1) unclaimed |
 | Tracking Mode | `REMOTE` |
 
 ## Lifecycle Progress
@@ -31,6 +31,7 @@
 | Activity ID | Work Item | Member | Type | Skill | Skill Stage | Activity State | Work Status | Branch / Worktree | Status Authority | Next Checkpoint | Updated At |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `A-010` | `F010 Teacher Product Validation` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/20` | N/A - terminal (PR #21 merge `683172b`) | `2026-09-01T20:25:15+08:00` |
+| `A-012` | `F012 Deployed Portfolio Proof` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `DELIVERY` | `ACTIVE` | `REVIEW` | `feature/F012-deployed-portfolio-proof` | `https://github.com/MaoyuanYang/LessonCanvas/issues/24` | T8/T9 COMPLETE (deploy chain + smoke + seed idempotent + live TS-029 recovery + deletion all-zero + SSE single-process + D10 recheck + teardown/redeploy + a11y spot; evidence `deployment-evidence.md`; review `review-f012-r3` incl. IF-8 checkpointer deadlock fix, IF-9 tabs overflow fix, IF-10/11 build/seed fixes; backend 477+4skip + ruff, web 97 + tsc + lint, deployed E2E 5/5); awaiting commit/push/PR authorization | `2026-09-02T22:30:00+08:00` |
 | `A-003` | `F003 Recoverable Unit Lesson Plans` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/6` | N/A - terminal (PR #7 merge `ad81c82`) | `2026-08-29T00:24:37+08:00` |
 | `A-002` | `F002 Confirmed Unit Blueprint (DONE reconciliation)` | `opencode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `ACTIVE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/3` | N/A - terminal | `2026-08-28T19:10:00+08:00` |
 
@@ -81,11 +82,15 @@
 | F011 | `UI READY` | `PASS` | `specs/F011-public-multi-account-guardrails/ux-ui.md` UI READY Record @ `ux-ui-f011-r1` / `ab827a69abd6` (owner-ratified 2026-09-01) |
 | F011 | `TEST DESIGN READY` | `PASS` | `specs/F011-public-multi-account-guardrails/test-design.md` Record @ `test-design-f011-r1` / `d4ceb6eb0d30`, TS-001..TS-019 (approved 2026-09-01); Plan `plan-f011-r1` @ `850c40e8e41a` valid; `Roadmap Status: READY` then `IN_PROGRESS` recorded 2026-09-01 |
 | F011 | `DONE` | `PASS` | PR #23 merge `42fd778`; DONE evidence manifest in `specs/F011-public-multi-account-guardrails/spec.md` Gate Record |
+| F012 | `SPEC READY` | `PASS` | revalidated @ `5edfc9352c1e` 2026-09-02 with ADR-0006 (D2/D9 revised, D11/D12 added; prior `8c033df6a4e6` STALE) |
+| F012 | `UI READY` | `PASS` | revalidated @ `ux-ui-f012-r2` / `8ddb95ac7315` 2026-09-02 (sign-in flow removed; prior r1 STALE) |
+| F012 | `TEST DESIGN READY` | `PASS` | revalidated @ `test-design-f012-r2` / `ff71c903386f` 2026-09-02 (TS-016 added; TS-005/012/015 revised; Plan `plan-f012-r2`; prior r1 STALE) |
 
 ## Blockers and Conflicts
 
 | ID | Affected Activity / Work Item | Type | Evidence | Owner | Unblock / Resolution Condition |
 | --- | --- | --- | --- | --- | --- |
+| `B-003` | F012 (`A-012`) T8 deployed verification | `RESOLVED 2026-09-02` | Docker socket requires membership (user `ymy` not in `docker` group; passwordless sudo unavailable); `infra/deploy.env` needs real DB/MinIO passwords + DeepSeek key. [UPDATED 2026-09-02, ADR-0006] The Clerk LAN-origin prerequisite is removed. Code T1–T7 complete and green (backend 474+1skip, web 90). | `YMY / Project Owner` | Resolved: owner provided sudo (docker group added; `sg docker` used), DeepSeek key + random infra passwords in untracked `infra/deploy.env`; deploy chain and full T8/T9 executed |
 | `B-002` | F007 (`A-007`) | `RESOLVED 2026-08-31` | Owner answered interactively: Issue creation authorized (Issue #14 bound); D1 = field-level conservative matrix; D2 = teacher-triggered per family. Spec finalized with D1..D7 resolved. | `YMY / Project Owner` | Resolved |
 | `B-001` | F002 | `NON_BLOCKING residual from F001` | Authenticated Playwright E2E RESOLVED 2026-08-28: Clerk device verification disabled by owner; full teacher-journey spec passes against live DeepSeek after live-model JSON-contract fixes (PR [#5](https://github.com/MaoyuanYang/LessonCanvas/pull/5) merged `f6d3b4a`, authorized merge by `YMY / Project Owner`; main re-verified 80 backend tests + ruff). Remaining: keyboard manual pass pending; Postgres LangGraph checkpointer investigation deferred to F012 | `YMY / Project Owner` | Keyboard manual pass at next UI touch; checkpointer at F012 |
 

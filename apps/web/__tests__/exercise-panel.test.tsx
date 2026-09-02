@@ -3,8 +3,9 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ExercisePanel } from "../components/exercise-panel";
 
-vi.mock("@clerk/nextjs", () => ({
-  useAuth: () => ({ getToken: async () => "test-token" }),
+vi.mock("@/lib/auth", () => ({
+  getApiToken: async () => "test-token",
+  clearApiToken: () => {},
 }));
 
 let matchMediaMatches = true;

@@ -120,7 +120,7 @@ def create_evaluation(
         scenario=scenario,
         model_config_json=model_config_snapshot(),
         memory_state_json=MEMORY_STATE_EMPTY_JSON,
-        created_by=workspace.clerk_user_id,
+        created_by=workspace.subject,
     )
     session.add(evaluation)
     try:

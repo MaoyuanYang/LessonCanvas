@@ -1,7 +1,7 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
 import { useQuery } from "@tanstack/react-query";
+import { getApiToken } from "@/lib/auth";
 import { Alert, EmptyState, SkeletonRows } from "@/components/ui";
 import { ApiClientError, getCurrentTransition, type ImpactPreview } from "@/lib/api";
 
@@ -54,12 +54,16 @@ export function ImpactRegion({ impact }: { impact: ImpactPreview }) {
   );
 }
 
-export function VersionComparePanel({ projectId }: { projectId: string }) {
-  const { getToken } = useAuth();
+export function VersionComparePanel({
+  projectId,
+}: {
+  projectId: string;
+  readOnly?: boolean;
+}) {
 
   const transitionQuery = useQuery({
     queryKey: ["current-transition", projectId],
-    queryFn: async () => getCurrentTransition(await getToken(), projectId),
+    queryFn: async () => getCurrentTransition(await getApiToken(), projectId),
     retry: false,
   });
 

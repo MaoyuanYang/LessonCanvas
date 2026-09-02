@@ -31,7 +31,7 @@ Phase 1 produces a publicly inspectable, multi-account LessonCanvas workflow in 
 | `F009` | Technical Portfolio Evaluation | Produce reproducible Agent, artifact, concurrency, and recovery evidence | Makes technical claims falsifiable | `P0` | `F008` | `DONE` | Fixed representative units, trace-bound metrics, fault injection, duplicate/concurrency checks, and technical results |
 | `F010` | Teacher Product Validation | Record independent teacher-quality pass, fail, or not-complete status | Prevents technical completion from becoming a false usability claim | `P1` | `F009` | `DONE` | External teacher rubric for representative complete units with separate product-validation status |
 | `F011` | Public Multi-Account Guardrails | Verify the complete system's privacy, abuse, cost, and deletion controls | Makes public use bounded and defensible | `P0` | `F009` | `DONE` | System-wide isolation, quotas, rate/concurrency limits, injection defense, authorized objects, operator audit, and deletion |
-| `F012` | Deployed Portfolio Proof | Make the protected workflow independently inspectable in the cloud | Converts repository claims into observable release evidence | `P0` | `F009`, `F011` | `DRAFT` | Public entry, synthetic demo data, complete runtime deployment, accessibility, recovery, and honest validation status |
+| `F012` | Deployed Portfolio Proof | Make the protected workflow independently inspectable in the cloud | Converts repository claims into observable release evidence | `P0` | `F009`, `F011` | `IN_PROGRESS` | Public entry, synthetic demo data, complete runtime deployment, accessibility, recovery, and honest validation status |
 | `F013` | Teacher Memory | Personalize future work with teacher-confirmed workspace memory | Faster repeat preparation and governed-memory portfolio evidence | `P1` | `F001` | `DRAFT` | Agent-proposed, teacher-confirmed memory records; management UI; subordinate context application; untrusted-input handling |
 
 Only `DRAFT/NEXT/READY/IN_PROGRESS/REVIEW/DONE/BLOCKED` may appear in this Roadmap. No Feature becomes `READY` during `coding-start`.
@@ -55,7 +55,19 @@ F001 -> F013
 
 ## Handoff
 
-### Current: F011 DONE
+### Current: F012 NEXT
+
+- Feature: `F012 Deployed Portfolio Proof`
+- Selection: `DRAFT -> NEXT` confirmed by `YMY / Project Owner` on 2026-09-02 (start instruction after F011 DONE; dependencies `F009` DONE and `F011` DONE; F013 P1 unclaimed).
+- Owner direction 2026-09-02: local-first full-stack deployment (complete real deployment verified on the local environment first); public exposure / cloud provider selection refined during Spec clarification.
+- Work item: [GitHub Issue #24](https://github.com/MaoyuanYang/LessonCanvas/issues/24) — bound 2026-09-02 (authorized); work-status authority.
+- Gates: `SPEC READY: PASS` (`8c033df6a4e6`) approved by `YMY / Project Owner` on 2026-09-02 (interactive decisions D1 local full-stack containerization as DONE boundary, D2 LAN access, D3 synthetic sample + self-service bounded generation, D4 checkpointer inclusion; D5-D10 evidence-resolved). `UI READY: PASS` (`ux-ui-f012-r1` / `36d3aa65cfaa`, owner-approved 2026-09-02). `TEST DESIGN READY: PASS` (`test-design-f012-r1` / `36b64b867e42`, TS-001..TS-015, risk-based scope) + Plan `plan-f012-r1` (`c266fd767156`, T0-T11) approved together 2026-09-02; `Roadmap Status: READY` then `IN_PROGRESS` recorded 2026-09-02; branch `feature/F012-deployed-portfolio-proof`.
+- Carry-in obligations from F011/F010 records: verify the F011 D10 provider constraint set against the selected deployment topology; re-check the single-process SSE registry assumption (F011 M-2) for the deployed topology; investigate the Postgres LangGraph checkpointer deferred from F001 (B-001 residual); display product validation as passed/failed/not-complete (F010 D9).
+- Design Change (L3) 2026-09-02: ADR-0006 removes Clerk — Phase 1 has no login/logout; identity is application-issued anonymous workspace tokens (`POST /auth/guest-token`, per-browser subject; `clerk_user_id` columns renamed `subject`). F012 Gates revalidated (SPEC/UI/TEST DESIGN r2) after D2/D9 revision + D11/D12. E2E becomes fully deterministic (F011 M-1 pattern obsolete).
+- Implementation COMPLETE on `feature/F012-deployed-portfolio-proof` (plan `plan-f012-r2`: T0-T11 incl. ADR-0006 identity-removal slices T4b/T4c/T6b). Deployed verification executed 2026-09-02 on the owner machine (LAN 192.168.9.101): deploy chain/migrate/smoke PASS, seed idempotent, live DeepSeek recovery journey TS-029 PASS, deletion completeness all-zero with retained ledger, SSE single-process verified, F011 D10 constraints re-verified, teardown+redeploy+re-seed PASS, accessibility/420px spot PASS. Defects found+fixed in review `review-f012-r3` (IF-8 checkpointer setup deadlock in multi-process topology — entrypoint pre-setup; IF-9 tabs nav 420px overflow; IF-10 image build fixes; IF-11 seed exit). Suites: backend 477+4skip + ruff clean; web 97 + tsc + lint 0 errors; deployed E2E 5/5. Evidence: `specs/F012-deployed-portfolio-proof/deployment-evidence.md`. Awaiting delivery authorization (commit/push/PR).
+- Next: delivery (owner authorization), then `DONE`.
+
+### Previous: F011 DONE
 
 - Feature: `F011 Public Multi-Account Guardrails`
 - Selection: `DRAFT -> NEXT` confirmed by `YMY / Project Owner` on 2026-09-01 (start instruction after F010 DONE; dependency `F009` DONE; F012 waits on F011, F013 P1 unclaimed).

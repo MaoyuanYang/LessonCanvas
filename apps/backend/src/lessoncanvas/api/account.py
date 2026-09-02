@@ -4,7 +4,6 @@ from datetime import datetime
 from fastapi import APIRouter
 from sqlalchemy import func, select
 
-from lessoncanvas.adapters.clerk_admin import ClerkAdminError, get_clerk_admin
 from lessoncanvas.adapters.storage import StorageAdapter
 from lessoncanvas.api.deps import SessionDep, WorkspaceDep
 from lessoncanvas.api.sse_registry import active_stream_count
@@ -137,7 +136,7 @@ def usage(workspace: WorkspaceDep, session: SessionDep) -> dict:
 def deletion_status(workspace: WorkspaceDep, session: SessionDep) -> list[dict]:
     events = session.scalars(
         select(AccountDeletionEvent)
-        .where(AccountDeletionEvent.clerk_user_id == workspace.clerk_user_id)
+        .where(AccountDeletionEvent.subject == workspace.subject)
         .order_by(AccountDeletionEvent.created_at.desc())
     ).all()
     return [
@@ -148,27 +147,20 @@ def deletion_status(workspace: WorkspaceDep, session: SessionDep) -> list[dict]:
 
 @router.delete("")
 def delete_account(workspace: WorkspaceDep, session: SessionDep) -> dict:
+    """ADR-0006: deletion ends after the application-side purge; there is no
+    external identity-provider step anymore."""
     workspace_id: uuid.UUID = workspace.id
-    clerk_user_id = workspace.clerk_user_id
+    subject = workspace.subject
     try:
         delete_workspace_cascade(session, StorageAdapter(), workspace)
     except DeletionFailedError as error:
         session.rollback()
         fresh = session.get(Workspace, workspace_id)
-        record_account_deletion(session, clerk_user_id, "purge_failed", str(error))
+        record_account_deletion(session, subject, "purge_failed", str(error))
         session.commit()
         _ = fresh
-        return {"purged": False, "clerk_deleted": False}
+        return {"purged": False}
 
-    record_account_deletion(session, clerk_user_id, "purged", None)
+    record_account_deletion(session, subject, "purged", None)
     session.commit()
-
-    try:
-        get_clerk_admin().delete_user(clerk_user_id)
-        record_account_deletion(session, clerk_user_id, "clerk_deleted", None)
-        session.commit()
-        return {"purged": True, "clerk_deleted": True}
-    except ClerkAdminError as error:
-        record_account_deletion(session, clerk_user_id, "clerk_failed", str(error))
-        session.commit()
-        return {"purged": True, "clerk_deleted": False}
+    return {"purged": True}

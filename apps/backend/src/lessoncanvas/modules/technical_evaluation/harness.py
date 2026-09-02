@@ -82,7 +82,7 @@ def upload_unit_sources(
             session,
             storage,
             workspace_id,
-            workspace.clerk_user_id if workspace else "",
+            workspace.subject if workspace else "",
             project_id,
             source_file.filename,
             source_file.content.encode("utf-8"),

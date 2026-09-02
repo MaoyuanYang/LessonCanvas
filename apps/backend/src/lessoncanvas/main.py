@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 
 from lessoncanvas.api.account import router as account_router
 from lessoncanvas.api.alignment import router as alignment_router
+from lessoncanvas.api.auth import router as auth_router
 from lessoncanvas.api.blueprint import router as blueprint_router
 from lessoncanvas.api.brief import router as brief_router
 from lessoncanvas.api.decks import deck_router as decks_artifact_router
@@ -23,6 +24,7 @@ from lessoncanvas.api.generation import router as generation_router
 from lessoncanvas.api.planning import router as planning_router
 from lessoncanvas.api.product_validation import router as product_validation_router
 from lessoncanvas.api.projects import router as projects_router
+from lessoncanvas.api.sample import router as sample_router
 from lessoncanvas.api.sources import router as sources_router
 from lessoncanvas.api.technical_evaluation import router as technical_evaluation_router
 from lessoncanvas.api.versions import router as versions_router
@@ -91,9 +93,15 @@ def create_app() -> FastAPI:
         delivery_router,
         technical_evaluation_router,
         product_validation_router,
+        sample_router,
     )
     for router in all_routers:
         app.include_router(router, dependencies=[Depends(require_general_rate)])
+
+    # ADR-0006 D11: token issuance precedes workspace existence, so it stays
+    # outside the workspace-scoped general-rate guard. It is unauthenticated
+    # by design and discloses nothing.
+    app.include_router(auth_router)
 
     @app.get("/health")
     def health() -> dict[str, str]:

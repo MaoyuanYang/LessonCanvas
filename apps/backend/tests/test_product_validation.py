@@ -241,7 +241,7 @@ class TestModelCascade:
     def test_rows_deleted_with_project(self, db_session):
         from lessoncanvas.modules.identity_workspace.deletion import delete_project_cascade
 
-        workspace = Workspace(clerk_user_id="owner_a")
+        workspace = Workspace(subject="owner_a")
         db_session.add(workspace)
         db_session.flush()
         project = Project(workspace_id=workspace.id, name="evaluation anchor")

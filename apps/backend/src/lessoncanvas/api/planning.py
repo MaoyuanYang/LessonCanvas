@@ -46,15 +46,15 @@ class NarrateIn(BaseModel):
     text: str = "请叙述下一步规划。"
 
 
-def _owned(session, workspace, project_id):
+def _owned(session, workspace, project_id, *, sample_read: bool = False):
     try:
-        get_owned_project(session, workspace, project_id)
+        get_owned_project(session, workspace, project_id, allow_sample_read=sample_read)
     except ServiceNotFound as err:
         raise NotFoundError("project not found") from err
 
 
-def _run_or_404(session, workspace, project_id):
-    _owned(session, workspace, project_id)
+def _run_or_404(session, workspace, project_id, *, sample_read: bool = False):
+    _owned(session, workspace, project_id, sample_read=sample_read)
     try:
         return planning_service.get_planning_run_or_raise(session, project_id)
     except KeyError as err:
@@ -81,7 +81,7 @@ def start(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep) -
 
 @router.get("", response_model=PlanningOut)
 def status(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep) -> PlanningOut:
-    _run_or_404(session, workspace, project_id)
+    _run_or_404(session, workspace, project_id, sample_read=True)
     return PlanningOut(**planning_service.planning_status(session, project_id))
 
 

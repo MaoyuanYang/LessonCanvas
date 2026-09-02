@@ -49,6 +49,39 @@ export function apiBaseUrl(): string {
   return process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 }
 
+// ADR-0006 D11: unauthenticated guest-workspace token issuance. Plain fetch,
+// not apiFetch, because the caller has no token yet and errors surface as a
+// simple failure to obtain one.
+export interface GuestTokenResponse {
+  token: string;
+  subject: string;
+}
+
+export async function requestGuestToken(): Promise<GuestTokenResponse> {
+  let response: Response;
+  try {
+    response = await fetch(`${apiBaseUrl()}/auth/guest-token`, {
+      method: "POST",
+      headers: { accept: "application/json" },
+      cache: "no-store",
+    });
+  } catch {
+    throw new ApiClientError("UNEXPECTED", "network unavailable", 0, null, {});
+  }
+
+  const payload = (await response.json().catch(() => null)) as GuestTokenResponse | null;
+  if (!response.ok || !payload?.token) {
+    throw new ApiClientError(
+      "UNEXPECTED",
+      "guest token request failed",
+      response.status,
+      null,
+      {},
+    );
+  }
+  return payload;
+}
+
 interface ApiFetchOptions {
   method?: "GET" | "POST" | "PATCH" | "DELETE";
   body?: unknown;
@@ -106,6 +139,17 @@ export async function createProject(
 
 export async function deleteProject(token: string | null, projectId: string): Promise<void> {
   return apiFetch<void>(`/projects/${projectId}`, { method: "DELETE", token });
+}
+
+// F012 deployed portfolio proof (Spec AC-001 / U1): the sample pointer resolves
+// server-side; the frontend never accepts a sample id from query params.
+export interface SampleProject {
+  project_id: string;
+  name: string;
+}
+
+export async function getSampleProject(token: string | null): Promise<SampleProject> {
+  return apiFetch<SampleProject>("/sample", { token });
 }
 
 // F011 account usage and audit surfaces (Spec AC-011 / D-USAGE / D-AUDITLIST).

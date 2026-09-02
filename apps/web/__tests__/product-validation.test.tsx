@@ -6,8 +6,9 @@ import { AlignmentPanel } from "../components/alignment-panel";
 import TechnicalEvaluationReportView from "../app/(authed)/projects/[projectId]/technical-evaluation/report/technical-evaluation-report-view";
 import * as api from "../lib/api";
 
-vi.mock("@clerk/nextjs", () => ({
-  useAuth: () => ({ getToken: async () => "test-token" }),
+vi.mock("@/lib/auth", () => ({
+  getApiToken: async () => "test-token",
+  clearApiToken: () => {},
 }));
 
 beforeEach(() => {

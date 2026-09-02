@@ -4,8 +4,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TechnicalEvaluationRegion } from "../components/technical-evaluation-region";
 import TechnicalEvaluationReportView from "../app/(authed)/projects/[projectId]/technical-evaluation/report/technical-evaluation-report-view";
 
-vi.mock("@clerk/nextjs", () => ({
-  useAuth: () => ({ getToken: async () => "test-token" }),
+vi.mock("@/lib/auth", () => ({
+  getApiToken: async () => "test-token",
+  clearApiToken: () => {},
 }));
 
 beforeEach(() => {

@@ -5,8 +5,9 @@ import { BriefPanel } from "../components/brief-panel";
 import { DiscoveryPanel } from "../components/discovery-panel";
 import { SourcesPanel } from "../components/sources-panel";
 
-vi.mock("@clerk/nextjs", () => ({
-  useAuth: () => ({ getToken: async () => "test-token" }),
+vi.mock("@/lib/auth", () => ({
+  getApiToken: async () => "test-token",
+  clearApiToken: () => {},
 }));
 
 let matchMediaMatches = true;

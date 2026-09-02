@@ -1,14 +1,9 @@
-import { UserButton } from "@clerk/nextjs";
-import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
-export default async function AuthedLayout({ children }: { children: React.ReactNode }) {
-  const { userId } = await auth();
-  if (!userId) {
-    redirect("/sign-in");
-  }
-
+// ADR-0006: no managed identity for the MVP. The authed shell is a plain
+// server layout; the browser-scoped workspace token is managed client-side
+// by lib/auth and the backend guest-token endpoint.
+export default function AuthedLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen">
       <header className="border-b border-line bg-paper">
@@ -26,7 +21,6 @@ export default async function AuthedLayout({ children }: { children: React.React
               </Link>
             </nav>
           </div>
-          <UserButton />
         </div>
       </header>
       <div className="mx-auto w-full max-w-5xl px-6 py-8">{children}</div>

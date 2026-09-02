@@ -4,7 +4,6 @@ import {
   createProject,
   deleteProject,
   openWorkspace,
-  PROFILE_DIR,
 } from "./journey-helpers";
 
 // F005 exercise-generation journeys (test-design-f005-r1 TS-024..TS-030).
@@ -29,11 +28,6 @@ test.describe("exercise journeys - live stack", () => {
   test.skip(!liveGate, "set E2E_EXERCISE_LIVE=1 with the live backend + worker running");
   test.setTimeout(600000);
 
-  test.beforeAll(async () => {
-    const { clerkSetup } = await import("@clerk/testing/playwright");
-    await clerkSetup();
-  });
-
   async function completedPlans(page: import("@playwright/test").Page): Promise<string> {
     const projectName = await createProject(page);
     await confirmedBlueprint(page);
@@ -44,11 +38,8 @@ test.describe("exercise journeys - live stack", () => {
   }
 
   test("TS-030(exercise): completed lesson plans to downloadable pairs (live stack)", async ({
-    page: _,
+    page,
   }) => {
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -77,17 +68,12 @@ test.describe("exercise journeys - live stack", () => {
     } finally {
       if (projectName && process.env.E2E_KEEP_PROJECTS !== "1")
         await deleteProject(page, projectName).catch(() => {});
-      await context.close();
     }
-    void _;
   });
 
   test("TS-027(exercise): newer confirmed version supersedes the active exercise run", async ({
-    page: _,
+    page,
   }) => {
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -109,17 +95,12 @@ test.describe("exercise journeys - live stack", () => {
     } finally {
       if (projectName && process.env.E2E_KEEP_PROJECTS !== "1")
         await deleteProject(page, projectName).catch(() => {});
-      await context.close();
     }
-    void _;
   });
 
   test("TS-029(exercise): reload and reconnect restore authoritative exercise progress", async ({
-    page: _,
+    page,
   }) => {
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -143,9 +124,7 @@ test.describe("exercise journeys - live stack", () => {
     } finally {
       if (projectName && process.env.E2E_KEEP_PROJECTS !== "1")
         await deleteProject(page, projectName).catch(() => {});
-      await context.close();
     }
-    void _;
   });
 });
 
@@ -153,15 +132,7 @@ test.describe("exercise journeys - fault stack", () => {
   test.skip(!faultGate, "set E2E_EXERCISE_FAULT=1 with the fake-adapter backend + worker running");
   test.setTimeout(420000);
 
-  test.beforeAll(async () => {
-    const { clerkSetup } = await import("@clerk/testing/playwright");
-    await clerkSetup();
-  });
-
-  test("TS-025(exercise): incomplete lesson plans route to the prerequisite", async ({ page: _ }) => {
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
+  test("TS-025(exercise): incomplete lesson plans route to the prerequisite", async ({ page }) => {
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -185,17 +156,12 @@ test.describe("exercise journeys - fault stack", () => {
     } finally {
       if (projectName && process.env.E2E_KEEP_PROJECTS !== "1")
         await deleteProject(page, projectName).catch(() => {});
-      await context.close();
     }
-    void _;
   });
 
   test("TS-026(exercise): partial failure, scoped resume, completed work preserved", async ({
-    page: _,
+    page,
   }) => {
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -228,15 +194,10 @@ test.describe("exercise journeys - fault stack", () => {
     } finally {
       if (projectName && process.env.E2E_KEEP_PROJECTS !== "1")
         await deleteProject(page, projectName).catch(() => {});
-      await context.close();
     }
-    void _;
   });
 
-  test("TS-024(exercise): scripted keyboard pass incl. the tier fieldset", async ({ page: _ }) => {
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
+  test("TS-024(exercise): scripted keyboard pass incl. the tier fieldset", async ({ page }) => {
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -276,9 +237,7 @@ test.describe("exercise journeys - fault stack", () => {
     } finally {
       if (projectName && process.env.E2E_KEEP_PROJECTS !== "1")
         await deleteProject(page, projectName).catch(() => {});
-      await context.close();
     }
-    void _;
   });
 });
 
@@ -286,17 +245,9 @@ test.describe("exercise journeys - fault stack (small exercise cap)", () => {
   test.skip(!faultGate, "set E2E_EXERCISE_FAULT=1 with the small exercise-cap fake backend");
   test.setTimeout(420000);
 
-  test.beforeAll(async () => {
-    const { clerkSetup } = await import("@clerk/testing/playwright");
-    await clerkSetup();
-  });
-
   test("TS-028(exercise): exercise cap exhaustion keeps completed pairs downloadable", async ({
-    page: _,
+    page,
   }) => {
-    const { chromium } = await import("@playwright/test");
-    const context = await chromium.launchPersistentContext(PROFILE_DIR);
-    const page = context.pages()[0] ?? (await context.newPage());
     let projectName = "";
     try {
       await openWorkspace(page);
@@ -316,8 +267,6 @@ test.describe("exercise journeys - fault stack (small exercise cap)", () => {
     } finally {
       if (projectName && process.env.E2E_KEEP_PROJECTS !== "1")
         await deleteProject(page, projectName).catch(() => {});
-      await context.close();
     }
-    void _;
   });
 });

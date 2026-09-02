@@ -34,7 +34,7 @@
 
 | Module / boundary | Owns | May depend on | Must not own / depend on |
 | --- | --- | --- | --- |
-| Identity and Workspace | Workspace identity, owner authorization, quotas | Managed identity, PostgreSQL | Password storage, planning content, Agent workflow |
+| Identity and Workspace | Workspace identity (application-issued subject tokens, ADR-0006), owner authorization, quotas | PostgreSQL | Password storage, planning content, Agent workflow, reintroducing an external identity provider without a superseding ADR |
 | Sources and Grounding | Private source lifecycle, parsing, retrieval, citations | Workspace authorization, object storage, PostgreSQL/pgvector, controlled official sources (MCP) | Teacher intent, artifact completion |
 | Discovery and Planning | Requirement gaps, confirmed brief and blueprint versions | Sources and Grounding, Run Orchestration | Binary storage, task transport, product-validation claims |
 | Artifact Production | Version-bound lesson plans, slides, exercises, answers | Confirmed intent, sources, MCP-defined generation tools, Run Orchestration | Source ownership, final validation status |
@@ -62,6 +62,11 @@ Frontend: corepack pnpm install                            (pnpm via corepack)
           corepack pnpm web:test                           (Vitest)
           corepack pnpm web:lint
           corepack pnpm web:typecheck
+
+Deployed stack (F012):
+          infra/scripts/deploy.sh                          (full-stack containers; needs infra/deploy.env)
+          infra/scripts/smoke.sh                           (deployed health/entry checks)
+          infra/scripts/teardown.sh                        (destructive clean-state teardown)
 ```
 
 - Never invent a command. When tooling changes, update this file, `README.md`, and `docs/TESTING.md` together.

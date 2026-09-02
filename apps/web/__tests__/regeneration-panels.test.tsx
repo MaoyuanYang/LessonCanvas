@@ -5,8 +5,9 @@ import { GenerationPanel } from "../components/generation-panel";
 import { VersionComparePanel } from "../components/version-compare-panel";
 import WorkspaceView from "../app/(authed)/projects/[projectId]/workspace-view";
 
-vi.mock("@clerk/nextjs", () => ({
-  useAuth: () => ({ getToken: async () => "test-token" }),
+vi.mock("@/lib/auth", () => ({
+  getApiToken: async () => "test-token",
+  clearApiToken: () => {},
 }));
 
 let matchMediaMatches = true;
