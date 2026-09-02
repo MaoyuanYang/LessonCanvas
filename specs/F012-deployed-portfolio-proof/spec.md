@@ -1,7 +1,7 @@
 # F012: Deployed Portfolio Proof
 
-- Spec Status: `SPEC READY`
-- Roadmap Status: `NEXT`
+- Spec Status: `DONE`
+- Roadmap Status: `DONE`
 - Priority: `P0`
 - Owner: `YMY / Project Owner` (driving `ZCode feature-dev` session, A-012)
 - Work item: [GitHub Issue #24](https://github.com/MaoyuanYang/LessonCanvas/issues/24) — bound 2026-09-02 (authorized); work-status authority
@@ -30,6 +30,14 @@
   - `docs/PRODUCT.md` @ `2ec972e941fc`
   - `docs/TESTING.md` @ `c300110fce4d`
   - `docs/UX.md` @ `abd0ced09605`
+
+## Gate Record: DONE
+
+- Status: `PASS`
+- Validation time: 2026-09-02
+- Delivery: PR [#25](https://github.com/MaoyuanYang/LessonCanvas/pull/25) merged as `c6c7b53` (commit `dd04e72` + docs `d56a7ca`; full delivery flow authorized by `YMY / Project Owner` 2026-09-02: commit, push, PR, merge, DONE record, Issue close). Main re-verified after merge: backend 477 passed + 4 skipped + ruff clean; web 97 tests + tsc clean + lint 0 errors; deployed LAN stack healthy (`http://192.168.9.101:3002`).
+- DONE evidence manifest: `deployment-evidence.md` (14 executed rows, all PASS: deploy chain/migrate/smoke, idempotent seeding ×3 incl. post-redeploy, live DeepSeek recovery journey TS-029, deletion completeness all-zero + retained ledger, SSE single-process, F011 D10 recheck, teardown/redeploy, accessibility + 420px spot, deployed E2E 5/5); review `review-f012-r3` (IF-1..IF-11 all fixed or accepted with rationale); ADR-0006 `Accepted`; Gates revalidated after the L3 design change (SPEC/UI/TEST DESIGN r2).
+- Documentation sync: README, AGENTS, docs/API, ARCHITECTURE, DATABASE, TESTING, UX, PRODUCT, ADR-0006 + index, ROADMAP/STAGE; historical F001/F011 records immutable.
 
 ## Baseline Evidence (Preflight Inventory, 2026-09-02)
 
