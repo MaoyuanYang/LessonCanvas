@@ -21,6 +21,8 @@ from lessoncanvas.api.exercises import exercise_router as exercises_artifact_rou
 from lessoncanvas.api.exercises import router as exercises_router
 from lessoncanvas.api.generation import lesson_router as generation_lesson_router
 from lessoncanvas.api.generation import router as generation_router
+from lessoncanvas.api.memory import project_router as memory_project_router
+from lessoncanvas.api.memory import router as memory_router
 from lessoncanvas.api.planning import router as planning_router
 from lessoncanvas.api.product_validation import router as product_validation_router
 from lessoncanvas.api.projects import router as projects_router
@@ -94,6 +96,8 @@ def create_app() -> FastAPI:
         technical_evaluation_router,
         product_validation_router,
         sample_router,
+        memory_router,
+        memory_project_router,
     )
     for router in all_routers:
         app.include_router(router, dependencies=[Depends(require_general_rate)])

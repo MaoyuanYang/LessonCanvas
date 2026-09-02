@@ -103,10 +103,17 @@ def test_engine_missing_evidence_never_zeroes_cost(db_session):
 
 
 def test_engine_memory_pinning_evaluates_recording_itself(db_session):
-    recorded = TechnicalEvaluation(memory_state_json=service.MEMORY_STATE_EMPTY_JSON)
+    # F013 D6: a recorded pinning is the structured revision-list snapshot;
+    # the pre-F013 bare-label placeholder no longer satisfies C-MEM-1.
+    structured_empty = json.dumps(
+        {"memory_state": "empty", "record_ids": [], "record_hashes": []}
+    )
+    recorded = TechnicalEvaluation(memory_state_json=structured_empty)
     assert criteria.evaluate_memory_pinning(recorded).outcome == "pass"
     unrecorded = TechnicalEvaluation(memory_state_json="{}")
     assert criteria.evaluate_memory_pinning(unrecorded).outcome == "fail"
+    legacy_placeholder = TechnicalEvaluation(memory_state_json=service.MEMORY_STATE_EMPTY_JSON)
+    assert criteria.evaluate_memory_pinning(legacy_placeholder).outcome == "fail"
 
 
 # ---------------------------------------------------------------------------

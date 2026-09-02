@@ -22,6 +22,7 @@ from lessoncanvas.settings import get_settings
 TABLES = (
     "product_validation_evidence, product_validation_assignments, "
     "technical_evaluation_results, technical_evaluations, "
+    "memory_project_overrides, memory_proposals, memory_records, memory_passes, "
     "retained_security_events, deletion_residuals, rate_window_counters, "
     "run_events, exercise_artifacts, slide_deck_artifacts, lesson_plan_artifacts, "
     "generation_runs, delivery_exports, alignment_overrides, trace_events, "

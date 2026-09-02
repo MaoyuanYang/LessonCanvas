@@ -20,6 +20,8 @@ from lessoncanvas.modules.technical_evaluation.dataset import (
 from lessoncanvas.settings import get_settings
 
 MODES = ("live", "deterministic")
+# Legacy placeholder kept only so pre-F013 rows remain interpretable; new
+# evaluations pin the structured revision-list snapshot below (F013 D6).
 MEMORY_STATE_EMPTY_JSON = json.dumps(
     {"memory_state": criteria.MEMORY_STATE_EMPTY}, ensure_ascii=False
 )
@@ -53,6 +55,16 @@ def model_config_snapshot() -> str:
         },
         ensure_ascii=False,
     )
+
+
+def _memory_state_snapshot(session: Session, workspace_id: uuid.UUID) -> str:
+    """F013 D6: pin the applied memory-set revision list at evaluation
+    creation. Harness workspaces never confirm proposals, so the snapshot is
+    the empty set by construction; comparability below includes it."""
+
+    from lessoncanvas.modules.teacher_memory.service import memory_state_snapshot
+
+    return memory_state_snapshot(session, workspace_id)
 
 
 def create_evaluation(
@@ -119,7 +131,7 @@ def create_evaluation(
         mode=mode,
         scenario=scenario,
         model_config_json=model_config_snapshot(),
-        memory_state_json=MEMORY_STATE_EMPTY_JSON,
+        memory_state_json=_memory_state_snapshot(session, workspace.id),
         created_by=workspace.subject,
     )
     session.add(evaluation)
@@ -304,7 +316,16 @@ def evaluation_detail(
 
 
 def _config_signature(entry: dict) -> str:
-    return json.dumps(entry["model_config"], sort_keys=True, ensure_ascii=False)
+    # F013 D6: the memory-set snapshot joins the model-config signature so
+    # passes with different memory state never compare silently.
+    return json.dumps(
+        {
+            "model_config": entry.get("model_config"),
+            "memory_state": entry.get("memory_state"),
+        },
+        sort_keys=True,
+        ensure_ascii=False,
+    )
 
 
 def _product_validation_status(session, project_id) -> str:

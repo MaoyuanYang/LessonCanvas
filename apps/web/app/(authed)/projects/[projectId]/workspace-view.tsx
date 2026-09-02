@@ -9,6 +9,7 @@ import { DiscoveryPanel } from "@/components/discovery-panel";
 import { EvidencePanel } from "@/components/evidence-panel";
 import { ExercisePanel } from "@/components/exercise-panel";
 import { GenerationPanel } from "@/components/generation-panel";
+import { MemoryBadge } from "@/components/memory-badge";
 import { SourcesPanel } from "@/components/sources-panel";
 import { VersionComparePanel } from "@/components/version-compare-panel";
 
@@ -48,6 +49,11 @@ export default function WorkspaceView({
 
   return (
     <section aria-label="单元备课工作区">
+      {!readOnly ? (
+        <div className="mb-3 flex justify-end">
+          <MemoryBadge onNavigate={setTab} />
+        </div>
+      ) : null}
       <nav
         aria-label="工作区导航"
         className="mb-6 flex flex-wrap gap-2 border-b border-line"

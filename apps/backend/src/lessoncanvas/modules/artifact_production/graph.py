@@ -45,6 +45,7 @@ class GenerationState(TypedDict, total=False):
     run_id: str
     cursor: int
     outcome: str
+    memory_context: list
 
 
 def artifact_key(
@@ -106,7 +107,13 @@ def assemble_node(state: GenerationState) -> dict:
             session, run.id, "phase", {"phase": "generating", "status": "generating"}
         )
         session.commit()
-        return {"cursor": 0, "outcome": "running"}
+        # F013: snapshot the effective memory set once per run; the labeled
+        # payload list travels with the graph state into model calls.
+        from lessoncanvas.modules.teacher_memory.context import attach_generation_run_memory
+
+        memory_context = attach_generation_run_memory(session, run)
+        session.commit()
+        return {"cursor": 0, "outcome": "running", "memory_context": memory_context}
     finally:
         session.close()
 
@@ -174,7 +181,9 @@ def process_lesson_node(state: GenerationState) -> dict:
         )
 
         try:
-            _process_one_lesson(session, run, artifact, context)
+            _process_one_lesson(
+                session, run, artifact, context, state.get("memory_context") or []
+            )
         except CapExhaustedError:
             return {"outcome": "capped"}
         except ModelProviderError as error:
@@ -196,7 +205,9 @@ def process_lesson_node(state: GenerationState) -> dict:
         session.close()
 
 
-def _process_one_lesson(session, run, artifact, context: dict) -> None:
+def _process_one_lesson(
+    session, run, artifact, context: dict, memory_context: list | None = None
+) -> None:
     from lessoncanvas.adapters.storage import StorageAdapter
     from lessoncanvas.settings import get_settings
 
@@ -224,6 +235,9 @@ def _process_one_lesson(session, run, artifact, context: dict) -> None:
             "language_mode": artifact.language_mode,
             "lesson": context,
         }
+        if memory_context:
+            # F013: subordinate teacher memory as labeled, capped data only.
+            user_payload["memory_context"] = memory_context
         started = time.monotonic()
         try:
             response = adapter.complete(
@@ -375,6 +389,12 @@ def finalize_node(state: GenerationState) -> dict:
             {"status": status, "complete_count": complete, "total_count": len(artifacts)},
         )
         session.commit()
+        # F013 D3: a completed run is proposal evidence; the pass is
+        # best-effort and idempotent per run identity (never re-bills).
+        if status == "complete":
+            from lessoncanvas.modules.teacher_memory.service import schedule_pass
+
+            schedule_pass(session, run.workspace_id, "run_settled", run.id)
         return {"outcome": status}
     finally:
         session.close()

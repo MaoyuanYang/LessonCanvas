@@ -677,6 +677,9 @@ def test_exercise_injection_payload_stays_inert(client, auth, db_session):
         "model.generation_write_exercises",
         "tool.render_lesson_exercises_docx",
         "tool.validate_exercise_pair",
+        # F013: every run records its (possibly empty) applied-memory
+        # snapshot for evidence honesty.
+        "memory.applied",
     }
     for trace in traces:
         payload_json = json.loads(trace.payload_json)
@@ -690,6 +693,12 @@ def test_exercise_injection_payload_stays_inert(client, auth, db_session):
             "reason",
             "item_count",
             "category_count",
+            # F013 memory.applied snapshot keys.
+            "applied",
+            "conflicts",
+            "budget_skipped",
+            "project_disabled",
+            "injected_chars",
         }
 
 

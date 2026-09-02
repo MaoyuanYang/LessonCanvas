@@ -159,4 +159,9 @@ def confirm(
     session.commit()
     import json
 
+    # F013 D3: confirmed blueprint is proposal evidence; the pass is
+    # idempotent per (workspace, blueprint version) and best-effort.
+    from lessoncanvas.modules.teacher_memory.service import schedule_pass
+
+    schedule_pass(session, workspace.id, "blueprint_confirm", version.id)
     return ConfirmOut(version=version.version, payload=json.loads(version.payload_json))

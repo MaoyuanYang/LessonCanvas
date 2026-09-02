@@ -7,6 +7,7 @@ import { ConversationRegion } from "@/components/conversation-region";
 import { DesktopRequiredNotice, useDesktop } from "@/components/desktop-gate";
 import { ImpactRegion } from "@/components/version-compare-panel";
 import { Alert, Button, ConfirmModal, EmptyState, Modal } from "@/components/ui";
+import { MemoryProposalRegion } from "@/components/memory-proposal-region";
 import type { BlueprintFinding, BlueprintLesson, BlueprintPayload } from "@/lib/api";
 import {
   getImpact,
@@ -211,6 +212,7 @@ export function BlueprintPanel({
 
   return (
     <div className="space-y-4">
+      <MemoryProposalRegion kinds={["blueprint_confirm"]} readOnly={readOnly} />
       <div>
         <h2 className="text-xl font-semibold text-ink">单元蓝图</h2>
         <p className="mt-1 text-sm text-ink-secondary">

@@ -14,6 +14,7 @@ import {
 import { getApiToken } from "@/lib/auth";
 import { DesktopRequiredNotice, useDesktop } from "@/components/desktop-gate";
 import { Alert, Button, ConfirmModal, EmptyState, SkeletonRows, StatusBadge } from "@/components/ui";
+import { MemoryProposalRegion } from "@/components/memory-proposal-region";
 import {
   ApiClientError,
   guardrailFeedback,
@@ -350,6 +351,7 @@ export function DeckPanel({
         <h2 className="text-lg font-semibold">课件生成</h2>
         <StatusBadge status={snapshot.status} />
       </div>
+      <MemoryProposalRegion kinds={["run_settled"]} readOnly={readOnly} />
       <p className="mb-4 text-sm text-ink-secondary">{`绑定版本：教学简报 v${snapshot.brief_version} · 单元蓝图 v${snapshot.blueprint_version} · 输出语言：${snapshot.language_mode} · 模型调用 ${snapshot.model_calls}/${snapshot.model_call_cap}`}</p>
 
       <ReconnectBanner visible={!connected && !TERMINAL_RUN_STATUSES.has(snapshot.status)} />

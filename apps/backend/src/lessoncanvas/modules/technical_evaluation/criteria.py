@@ -54,7 +54,10 @@ CRITERION_LABELS = {
     "M-JUDGE": "Model-assisted opinion (diagnostic)",
 }
 
-MEMORY_STATE_EMPTY = "empty (F013 not implemented)"
+# F013 D6: the empty-memory label once F013 is implemented; pre-F013 rows
+# recorded the legacy "empty (F013 not implemented)" placeholder and remain
+# historical.
+MEMORY_STATE_EMPTY = "empty"
 
 
 class CriterionError(Exception):
@@ -212,12 +215,23 @@ def evaluate_memory_pinning(evaluation: TechnicalEvaluation) -> CriterionResult:
         memory = json.loads(evaluation.memory_state_json)
     except json.JSONDecodeError:
         memory = None
-    recorded = isinstance(memory, dict) and bool(str(memory.get("memory_state") or "").strip())
+    # F013 D6: a recorded pinning is the structured revision-list snapshot
+    # (memory_state label plus the record id list); the pre-F013 bare-label
+    # placeholder no longer satisfies the criterion for new passes.
+    recorded = (
+        isinstance(memory, dict)
+        and bool(str(memory.get("memory_state") or "").strip())
+        and isinstance(memory.get("record_ids"), list)
+    )
+    record_ids = memory.get("record_ids") if isinstance(memory, dict) else None
     return CriterionResult(
         criterion_key="C-MEM-1",
         classification=BLOCKING,
         outcome="pass" if recorded else "fail",
-        evidence={"memory_state": (memory or {}).get("memory_state") if memory else None},
+        evidence={
+            "memory_state": (memory or {}).get("memory_state") if memory else None,
+            "record_count": len(record_ids) if isinstance(record_ids, list) else None,
+        },
     )
 
 

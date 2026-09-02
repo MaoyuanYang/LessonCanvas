@@ -51,6 +51,13 @@ class RunAdmissionError(ApiError):
     code = "RUN_ADMISSION"
 
 
+class MemoryLimitError(ApiError):
+    """F013 D8 memory cap rejection (record count or per-record length)."""
+
+    status_code = 429
+    code = "MEMORY_LIMIT"
+
+
 def render_error(request: Request, error: ApiError) -> JSONResponse:
     return JSONResponse(
         status_code=error.status_code,

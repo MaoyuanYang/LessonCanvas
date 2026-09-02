@@ -25,6 +25,10 @@ WORKSPACE_SELF_GETS = {
     "/account/usage",
     "/account/audit",
     "/account/deletion-status",
+    # F013: workspace-scoped memory overview; cross-account assertion is
+    # "no foreign content", and project-scoped memory views stay 404-denied
+    # below through get_owned_project.
+    "/memory",
 }
 # ADR-0006 D11: the guest-token endpoint is unauthenticated by design (it
 # mints the first credential); its disclosure behavior is covered directly by

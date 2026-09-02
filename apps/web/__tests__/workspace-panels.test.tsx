@@ -75,16 +75,24 @@ describe("BriefPanel", () => {
   });
 
   it("shows stale banner on version conflict", async () => {
-    const fetchMock = vi
-      .fn()
-      .mockReturnValueOnce(jsonResponse(BRIEF_COMPLETE))
-      .mockReturnValueOnce(
-        jsonResponse(
-          { error: { code: "STALE_VERSION", message: "stale", correlation_id: null, details: {} } },
-          409,
-        ),
-      )
-      .mockReturnValue(jsonResponse(BRIEF_COMPLETE));
+    // Route by URL: the panel also hosts the F013 memory region whose
+    // /memory poll must not consume the scripted brief-response sequence.
+    let patchCount = 0;
+    const fetchMock = vi.fn().mockImplementation((url: string, init?: RequestInit) => {
+      if (String(url).includes("/memory")) {
+        return jsonResponse({ records: [], proposals: [], passes: [], quota: { used: 0, limit: 20 } });
+      }
+      if (init?.method === "PATCH") {
+        patchCount += 1;
+        if (patchCount === 1) {
+          return jsonResponse(
+            { error: { code: "STALE_VERSION", message: "stale", correlation_id: null, details: {} } },
+            409,
+          );
+        }
+      }
+      return jsonResponse(BRIEF_COMPLETE);
+    });
     vi.stubGlobal("fetch", fetchMock);
     renderUi(<BriefPanel projectId="p1" />);
     await screen.findAllByText("教师陈述");

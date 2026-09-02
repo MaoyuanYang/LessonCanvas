@@ -27,6 +27,7 @@ class DiscoveryState(TypedDict, total=False):
     round_count: int
     draft: dict[str, Any] | None
     status: str
+    memory_context: list
 
 
 def extract_known_fields(corpus: str) -> dict[str, str]:
@@ -112,6 +113,9 @@ def analyze_node(state: DiscoveryState) -> dict:
             "known_fields": list(state.get("known_fields", {}).keys()),
             "required_fields": REQUIRED_FIELDS,
         }
+        if state.get("memory_context"):
+            # F013: subordinate teacher memory as labeled, capped data only.
+            user_payload["memory_context"] = state["memory_context"]
         started = time.monotonic()
         response = adapter.complete(
             "You are a requirements discovery specialist. Ask only material requirement gaps. "
@@ -224,6 +228,9 @@ def build_draft_node(state: DiscoveryState) -> dict:
             "fields": state.get("known_fields", {}),
             "required_fields": REQUIRED_FIELDS,
         }
+        if state.get("memory_context"):
+            # F013: subordinate teacher memory as labeled, capped data only.
+            user_payload["memory_context"] = state["memory_context"]
         started = time.monotonic()
         response = adapter.complete(
             "You are a brief drafting specialist. Produce the structured requirements draft. "

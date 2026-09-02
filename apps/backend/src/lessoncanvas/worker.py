@@ -92,3 +92,19 @@ def run_technical_evaluation(evaluation_id: str) -> str:
     from lessoncanvas.modules.technical_evaluation.service import execute_evaluation
 
     return execute_evaluation(uuid.UUID(evaluation_id))
+
+
+@celery_app.task(name="lessoncanvas.generate_memory_proposals", max_retries=0)
+def generate_memory_proposals(pass_id: str) -> str:
+    """Execute one F013 proposal pass (Spec D3): one bounded model call over
+    confirmed evidence, best-effort by contract — failure settles the pass's
+    own failed state and never touches the triggering confirmation/run flow.
+    Pass identity is unique, so Celery redelivery and the explicit retry
+    action converge on the same row instead of re-billing a completed pass.
+    """
+
+    import uuid
+
+    from lessoncanvas.modules.teacher_memory.service import execute_pass
+
+    return execute_pass(uuid.UUID(pass_id))

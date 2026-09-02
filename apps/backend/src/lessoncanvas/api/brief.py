@@ -87,4 +87,9 @@ def confirm(project_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep)
         raise NotFoundError("brief draft not found") from err
     import json
 
+    # F013 D3: confirmed brief is proposal evidence; the pass is idempotent
+    # per (workspace, brief version) and best-effort (never blocks the flow).
+    from lessoncanvas.modules.teacher_memory.service import schedule_pass
+
+    schedule_pass(session, workspace.id, "brief_confirm", version.id)
     return ConfirmOut(version=version.version, fields=json.loads(version.fields_json))
