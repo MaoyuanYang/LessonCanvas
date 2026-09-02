@@ -1,0 +1,85 @@
+{
+  "executed_at": "2026-09-03T00:57:06+0800",
+  "brief_confirm_elapsed_s": 18.4,
+  "passes": [
+    {
+      "id": "01a0630d-8637-76a8-ba97-419971f0e244",
+      "trigger_kind": "run_settled",
+      "trigger_id": "01a0630d-5f4b-7ec1-82c2-f5014c934359",
+      "status": "completed",
+      "proposal_count": 0,
+      "prompt_tokens": 435,
+      "completion_tokens": 6,
+      "cost_usd": 0.000124,
+      "created_at": "2026-09-02T16:57:05.847921+00:00",
+      "completed_at": "2026-09-02T16:57:06.904270+00:00"
+    },
+    {
+      "id": "01a0630d-59ed-739c-89b2-d20e83be72f3",
+      "trigger_kind": "blueprint_confirm",
+      "trigger_id": "01a0630d-59eb-753a-afaf-38993d31536d",
+      "status": "failed",
+      "proposal_count": 0,
+      "prompt_tokens": null,
+      "completion_tokens": null,
+      "cost_usd": null,
+      "created_at": "2026-09-02T16:56:54.509270+00:00",
+      "completed_at": null
+    },
+    {
+      "id": "01a0630d-4296-793d-aef3-16878b67987f",
+      "trigger_kind": "brief_confirm",
+      "trigger_id": "01a0630d-4294-7290-b861-920dc865a4f0",
+      "status": "completed",
+      "proposal_count": 3,
+      "prompt_tokens": 305,
+      "completion_tokens": 81,
+      "cost_usd": 0.000171,
+      "created_at": "2026-09-02T16:56:48.534823+00:00",
+      "completed_at": "2026-09-02T16:56:49.865961+00:00"
+    }
+  ],
+  "proposals": [
+    {
+      "id": "01a0630d-47c7-7580-8686-cadd903418ae",
+      "category": "assessment_style",
+      "content": "评价方式以形成性评价为主，并喜欢小组展示活动。",
+      "value": null,
+      "status": "pending",
+      "trigger_kind": "brief_confirm",
+      "brief_version_id": "01a0630d-4294-7290-b861-920dc865a4f0",
+      "blueprint_version_id": null,
+      "generation_run_id": null,
+      "created_at": "2026-09-02T16:56:49.863530+00:00",
+      "decided_at": null
+    },
+    {
+      "id": "01a0630d-47c7-75cd-8671-b7f494db99d6",
+      "category": "exercise_format",
+      "content": "学生偏好图表类任务，教学设计中应多采用图表辅助理解。",
+      "value": null,
+      "status": "pending",
+      "trigger_kind": "brief_confirm",
+      "brief_version_id": "01a0630d-4294-7290-b861-920dc865a4f0",
+      "blueprint_version_id": null,
+      "generation_run_id": null,
+      "created_at": "2026-09-02T16:56:49.863528+00:00",
+      "decided_at": null
+    },
+    {
+      "id": "01a0630d-47c7-70ec-ab4a-8e7f47e93eb1",
+      "category": "language_mode",
+      "content": "课堂输出语言模式偏好全英文教学。",
+      "value": "english",
+      "status": "pending",
+      "trigger_kind": "brief_confirm",
+      "brief_version_id": "01a0630d-4294-7290-b861-920dc865a4f0",
+      "blueprint_version_id": null,
+      "generation_run_id": null,
+      "created_at": "2026-09-02T16:56:49.863523+00:00",
+      "decided_at": null
+    }
+  ],
+  "records": [],
+  "note": "Run 2 of the owner-authorized live evidence (2026-09-03). Run 1 (same day, journey deleted afterwards) additionally showed blueprint_confirm completing with one teacher-plausible pacing_structure proposal and brief_confirm proposing language_mode with value=english derived from the 全英文 brief; run 2's blueprint_confirm hit a real transient provider failure (pass settled failed, journey unaffected) and run_settled completed with an honest 0-proposal result because the brief's candidates were already pending (live dedupe). Account deletion purged both journeys (200 purged)."
+}

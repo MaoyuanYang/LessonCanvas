@@ -32,7 +32,7 @@ Phase 1 produces a publicly inspectable, multi-account LessonCanvas workflow in 
 | `F010` | Teacher Product Validation | Record independent teacher-quality pass, fail, or not-complete status | Prevents technical completion from becoming a false usability claim | `P1` | `F009` | `DONE` | External teacher rubric for representative complete units with separate product-validation status |
 | `F011` | Public Multi-Account Guardrails | Verify the complete system's privacy, abuse, cost, and deletion controls | Makes public use bounded and defensible | `P0` | `F009` | `DONE` | System-wide isolation, quotas, rate/concurrency limits, injection defense, authorized objects, operator audit, and deletion |
 | `F012` | Deployed Portfolio Proof | Make the protected workflow independently inspectable in the cloud | Converts repository claims into observable release evidence | `P0` | `F009`, `F011` | `DONE` | Public entry, synthetic demo data, complete runtime deployment, accessibility, recovery, and honest validation status |
-| `F013` | Teacher Memory | Personalize future work with teacher-confirmed workspace memory | Faster repeat preparation and governed-memory portfolio evidence | `P1` | `F001` | `DRAFT` | Agent-proposed, teacher-confirmed memory records; management UI; subordinate context application; untrusted-input handling |
+| `F013` | Teacher Memory | Personalize future work with teacher-confirmed workspace memory | Faster repeat preparation and governed-memory portfolio evidence | `P1` | `F001` | `REVIEW` | Agent-proposed, teacher-confirmed memory records; management UI; subordinate context application; untrusted-input handling |
 
 Only `DRAFT/NEXT/READY/IN_PROGRESS/REVIEW/DONE/BLOCKED` may appear in this Roadmap. No Feature becomes `READY` during `coding-start`.
 
@@ -55,7 +55,19 @@ F001 -> F013
 
 ## Handoff
 
-### Current: F012 NEXT
+### Current: F013 NEXT
+
+- Feature: `F013 Teacher Memory`
+- Selection: `DRAFT -> NEXT` confirmed by `YMY / Project Owner` on 2026-09-02 (start instruction after F012 DONE; dependency `F001` DONE).
+- Work item: [GitHub Issue #26](https://github.com/MaoyuanYang/LessonCanvas/issues/26) — bound 2026-09-02 (authorized); work-status authority.
+- Governing decision: ADR-0005 (workspace-scoped, teacher-confirmed, subordinate context; deleted with the workspace; untrusted input at re-injection; no cross-user or training use).
+- Known integration anchors from delivered code: F009 `memory_state_json` pinning (`empty (F013 not implemented)` today) and the `C-MEM-1` criterion must become memory-revision-bound; deletion-completeness sweep (`identity_workspace/deletion.py`) must cover the new memory tables; proposal triggers sit at brief/blueprint confirmation and run completion.
+- Next: `SPEC_REFINEMENT` toward `SPEC READY`; resolve DRAFT open questions (preference categories, applicability scope, applied-context display, F009 memory pinning, re-proposal policy) with the owner during refinement.
+- Gates (all 2026-09-02, approved by `YMY / Project Owner` interactively): `SPEC READY: PASS` (`75ee61c2cf0b`; decision log D1–D8: fixed four categories, workspace-default applicability with per-project adjust, all three proposal triggers with identity idempotency, content-hash rejection dedupe, deterministic language_mode conflict rule, F009 constructed-empty revision-list pinning, account-section + in-workspace proposal cards + evidence applied-context region, caps 20/300/2500). `UI READY: PASS` (`ux-ui-f013-r1` / `8b39aeebb9a9`; U1–U6 incl. injection budget priority language > exercise > pacing > assessment, most-recent-first within category, whole records, disclosed truncation). `TEST DESIGN READY: PASS` (`test-design-f013-r1` / `c033f186772a`, TS-001..TS-027, recommended risk-based scope with recorded exclusions) + Plan `plan-f013-r1` @ `427356ca088e` (T0–T10, new `teacher_memory` module, one migration, Celery proposal task, four payload injection points) approved together; `Roadmap Status: READY` recorded 2026-09-02.
+- Next: branch `feature/F013-teacher-memory`, then `CODING_TESTING` (T0–T10).
+- Implementation COMPLETE on `feature/F013-teacher-memory` (T0–T10, plan `plan-f013-r1`): new `teacher_memory` module (records/proposals/passes/overrides + proposal pipeline + effective-set assembly), migration `f013b1d2e3f4`, Celery task `generate_memory_proposals`, brief/blueprint/run-settle triggers, `memory_context` injection into discovery/planning/generation payloads with snapshot-once `memory.applied` trace events, F009 structured revision-list pinning joining the comparability signature, F011 deletion-sweep registration, `MEMORY_LIMIT` error class; web adds `/account` 教师记忆 section, shared proposal region + badge across five host panels, evidence 教师记忆（本项目） region, and the E2E journey. Verification: backend 504 passed + 4 skipped + ruff clean; web 108/108 + tsc clean + eslint 0 errors (3 pre-existing warnings); memory E2E 3/3 behind `E2E_MEM_FAULT=1`. Review `review-f013-r1`: IF-1..IF-5 + M-1 dispositioned, no Critical/unfixed-High; residual TS-026 live proposal-quality pass pending owner authorization. Documentation synced (API/DATABASE/ARCHITECTURE/TESTING/AGENTS module-consumer note). `Roadmap Status: REVIEW` recorded 2026-09-02; delivery pending authorization (commit/push/PR).
+
+### Previous: F012 NEXT
 
 - Feature: `F012 Deployed Portfolio Proof`
 - Selection: `DRAFT -> NEXT` confirmed by `YMY / Project Owner` on 2026-09-02 (start instruction after F011 DONE; dependencies `F009` DONE and `F011` DONE; F013 P1 unclaimed).

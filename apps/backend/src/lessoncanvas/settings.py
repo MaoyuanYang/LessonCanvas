@@ -63,6 +63,12 @@ class Settings(BaseSettings):
     max_concurrent_sse_streams_per_workspace: int = 6
     upload_daily_bytes_per_workspace: int = 200 * 1024 * 1024
 
+    # F013 teacher memory (Spec D8, owner-confirmed 2026-09-02 "更松" set).
+    memory_max_records: int = 20
+    memory_record_max_chars: int = 300
+    memory_injection_budget_chars: int = 2500
+    memory_max_candidates_per_pass: int = 3
+
 
 @lru_cache
 def get_settings() -> Settings:

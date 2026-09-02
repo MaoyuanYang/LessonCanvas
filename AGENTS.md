@@ -36,8 +36,8 @@
 | --- | --- | --- | --- |
 | Identity and Workspace | Workspace identity (application-issued subject tokens, ADR-0006), owner authorization, quotas | PostgreSQL | Password storage, planning content, Agent workflow, reintroducing an external identity provider without a superseding ADR |
 | Sources and Grounding | Private source lifecycle, parsing, retrieval, citations | Workspace authorization, object storage, PostgreSQL/pgvector, controlled official sources (MCP) | Teacher intent, artifact completion |
-| Discovery and Planning | Requirement gaps, confirmed brief and blueprint versions | Sources and Grounding, Run Orchestration | Binary storage, task transport, product-validation claims |
-| Artifact Production | Version-bound lesson plans, slides, exercises, answers | Confirmed intent, sources, MCP-defined generation tools, Run Orchestration | Source ownership, final validation status |
+| Discovery and Planning | Requirement gaps, confirmed brief and blueprint versions | Sources and Grounding, Run Orchestration, Teacher Memory (subordinate context input) | Binary storage, task transport, product-validation claims |
+| Artifact Production | Version-bound lesson plans, slides, exercises, answers | Confirmed intent, sources, MCP-defined generation tools, Run Orchestration, Teacher Memory (subordinate context input) | Source ownership, final validation status |
 | Alignment and Evaluation | Findings, technical package-validation status, product-validation status, evaluation results | Sources, confirmed intent, artifacts, runs | Silent mutation of owning content or intent |
 | Run Orchestration and Observability | Workflow sequence, checkpoints, idempotency, progress, cost, complete traces | All Agent-capable modules, PostgreSQL, Celery | Independent domain truth outside the bound version |
 | Export and Delivery | Authorized packaging, download, and printable report behavior | Workspace authorization, artifact versions, object storage | In-browser Office-class editing |

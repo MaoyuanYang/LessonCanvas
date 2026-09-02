@@ -8,6 +8,7 @@ import { ARTIFACT_STATUS_LABELS, RUN_STATUS_LABELS } from "@/components/artifact
 import { Alert, Button, EmptyState, SkeletonRows } from "@/components/ui";
 import { ProductValidationRegion } from "@/components/product-validation-region";
 import { TechnicalEvaluationRegion } from "@/components/technical-evaluation-region";
+import { MemoryContextRegion } from "@/components/memory-context-region";
 import type { WorkspaceTab } from "@/app/(authed)/projects/[projectId]/workspace-view";
 import {
   ApiClientError,
@@ -297,6 +298,14 @@ export function EvidencePanel({
         </ul>
       </section>
 
+      {selectedId !== null && !summaryLoading && summary !== null ? (
+        <MemoryContextRegion
+          projectId={projectId}
+          runMemory={summary.memory ?? null}
+          readOnly={readOnly}
+        />
+      ) : null}
+
       {selectedId === null ? null : summaryLoading ? (
         <SkeletonRows count={2} />
       ) : summary === null ? (
@@ -307,8 +316,7 @@ export function EvidencePanel({
         </Alert>
       ) : (
         <section aria-label="任务摘要" className="rounded border border-line bg-paper p-4">
-          <div className="mb-2 flex flex-wrap items-center gap-3">
-            <h3 className="text-base font-medium">{kindLabel(summary.kind)}</h3>
+          <div className="mb-2 flex flex-wrap items-center gap-3">            <h3 className="text-base font-medium">{kindLabel(summary.kind)}</h3>
             <span className="text-sm">{statusLabel(summary.kind, summary.status)}</span>
           </div>
           <p className="text-sm text-ink-secondary">

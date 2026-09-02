@@ -531,11 +531,17 @@ def test_deck_injection_payload_stays_inert(client, auth, db_session):
         "model.generation_write_deck",
         "tool.render_lesson_deck_pptx",
         "tool.validate_lesson_deck_pptx",
+        # F013: every run records its (possibly empty) applied-memory
+        # snapshot for evidence honesty.
+        "memory.applied",
     }
     for trace in traces:
         payload_json = json.loads(trace.payload_json)
         assert set(payload_json) <= {
-            "prompt", "response", "lesson_index", "size_bytes", "ok", "reason"
+            "prompt", "response", "lesson_index", "size_bytes", "ok", "reason",
+            # F013 memory.applied snapshot keys (applied/conflicts/budget_skipped/
+            # project_disabled/injected_chars).
+            "applied", "conflicts", "budget_skipped", "project_disabled", "injected_chars",
         }
 
 

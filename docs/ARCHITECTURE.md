@@ -73,6 +73,7 @@ FastAPI modular monolith ---------------- Managed identity
 - `Run Orchestration -> all Agent-capable modules, PostgreSQL, and Celery`: control sequence and state without making modules or task transport a competing workflow truth.
 - `Export and Delivery -> workspace authorization, artifact versions, and object storage`: never expose a storage location without authorization.
 - `Teacher Memory and Preferences -> workspace authorization, PostgreSQL, and Discovery and Planning context`: propose from confirmed outcomes, persist only teacher-confirmed records, and supply subordinate context.
+- `Discovery and Planning / Artifact Production -> Teacher Memory (context input only)` [F013]: the discovery, planning, and generation graphs read the snapshot-once effective set as a labeled, capped data payload; memory never enters system prompts or gains instruction framing, and the bound confirmed version always wins (deterministic `language_mode` conflict check).
 - `Sources and Grounding -> MCP official-source servers`: consume curriculum evidence through the controlled protocol boundary while treating server content and metadata as untrusted.
 - `Artifact Production -> MCP tool definitions`: register generation and validation tools once and consume the same definitions from the workflow.
 
@@ -133,7 +134,7 @@ Local and CI environments must be reproducible once scaffolding exists. The publ
 - Complete trace retention increases private-content exposure. Revisit if regulatory, provider, or operational constraints prevent user-scoped deletion and access control.
 - Celery and LangGraph can overlap if responsibilities drift. Revisit if task transport begins to own semantic state or the graph begins to replace reliable task delivery.
 - MCP framework coupling. Revisit if the ecosystem or LangGraph integration destabilizes the tool boundary, or if reviewer evidence justifies exposing a read-only evidence server.
-- Applied memory biasing generation. Revisit if evaluation shows confirmed memory harms comparability or teacher outcomes. [RESOLVED, 2026-09-01] F009 records a memory-state snapshot on every evaluation pass (Phase 1: `empty (F013 not implemented)`; binds recorded memory-set revisions once F013 lands), so compared passes are memory-comparable by construction (ADR-0005).
+- Applied memory biasing generation. Revisit if evaluation shows confirmed memory harms comparability or teacher outcomes. [RESOLVED, 2026-09-01] F009 records a memory-state snapshot on every evaluation pass , so compared passes are memory-comparable by construction (ADR-0005). [UPDATED, 2026-09-02] F013 supplies the structured revision-list snapshot (`memory_state` + `record_ids` + `record_hashes`); harness workspaces stay empty by construction and the snapshot joins the comparability signature (F013 D6).
 - [PARTIALLY RESOLVED, 2026-08-24; REVISED 2026-09-02] F001 providers selected: Clerk (identity), DeepSeek (model), local MinIO (object storage). ADR-0006 supersedes the identity item: Phase 1 has no managed identity — the application issues anonymous workspace tokens (`POST /auth/guest-token`) with no login/logout. DeepSeek and MinIO remain. Cloud/region topology stays a follow-up deployment Feature.
 
 ## Related ADRs

@@ -6,6 +6,7 @@ import { getApiToken } from "@/lib/auth";
 import { DesktopRequiredNotice, useDesktop } from "@/components/desktop-gate";
 import { Alert, Button, ConfirmModal } from "@/components/ui";
 import { ApiClientError, confirmBrief, getBrief, patchDraft } from "@/lib/api";
+import { MemoryProposalRegion } from "@/components/memory-proposal-region";
 
 const FIELD_LABELS: Record<string, string> = {
   unit_theme: "单元主题",
@@ -78,6 +79,7 @@ export function BriefPanel({
 
   return (
     <div className="space-y-4">
+      <MemoryProposalRegion kinds={["brief_confirm"]} readOnly={readOnly} />
       <div className="flex items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-semibold text-ink">教学简报</h2>

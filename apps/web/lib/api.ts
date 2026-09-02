@@ -20,6 +20,7 @@ export type ApiErrorCode =
   | "STALE_VERSION"
   | "QUOTA_EXCEEDED"
   | "RUN_ADMISSION"
+  | "MEMORY_LIMIT"
   | "PROVIDER_TRANSIENT"
   | "PARTIAL_RECOVERY"
   | "UNEXPECTED";
@@ -919,6 +920,9 @@ export interface EvidenceRunDetail extends EvidenceRunRow {
   interview_message_count: number | null;
   superseded_by: { brief_version: number | null; blueprint_version: number | null } | null;
   recovery_view: string | null;
+  /** F013: the run's snapshot-once applied-memory section (null before
+   * memory surfaces existed for the run's family). */
+  memory: MemoryEffective | null;
 }
 
 export interface EvidenceEvent {
@@ -1607,3 +1611,184 @@ export const PRODUCT_VALIDATION_RULE_LABELS: Record<string, string> = {
   core_mean_below_threshold: "核心均值低于 4.0",
   structural_rework_required: "需要结构性返工",
 };
+
+// ---------------------------------------------------------------------------
+// F013: teacher memory (workspace-scoped, teacher-confirmed, subordinate)
+// ---------------------------------------------------------------------------
+
+export type MemoryCategory =
+  | "language_mode"
+  | "exercise_format"
+  | "pacing_structure"
+  | "assessment_style";
+
+export const MEMORY_CATEGORY_LABELS: Record<MemoryCategory, string> = {
+  language_mode: "语言模式",
+  exercise_format: "练习格式",
+  pacing_structure: "节奏结构",
+  assessment_style: "测评风格",
+};
+
+export const MEMORY_TRIGGER_LABELS: Record<string, string> = {
+  brief_confirm: "简报确认后",
+  blueprint_confirm: "蓝图确认后",
+  run_settled: "生成完成后",
+};
+
+export const MEMORY_RECORD_LIMIT_CHARS = 300;
+
+export interface MemoryRecord {
+  id: string;
+  category: MemoryCategory;
+  content: string;
+  value: string | null;
+  brief_version_id: string | null;
+  blueprint_version_id: string | null;
+  generation_run_id: string | null;
+  created_at: string | null;
+  has_project_disabled?: boolean;
+  conflicts_with_latest_brief?: boolean;
+  project_enabled?: boolean;
+}
+
+export interface MemoryProposal {
+  id: string;
+  category: MemoryCategory;
+  content: string;
+  value: string | null;
+  status: "pending" | "confirmed" | "rejected" | "superseded";
+  trigger_kind: string | null;
+  brief_version_id: string | null;
+  blueprint_version_id: string | null;
+  generation_run_id: string | null;
+  created_at: string | null;
+  decided_at: string | null;
+}
+
+export interface MemoryPass {
+  id: string;
+  trigger_kind: string;
+  trigger_id: string;
+  status: "scheduled" | "running" | "completed" | "failed";
+  proposal_count: number;
+  prompt_tokens: number | null;
+  completion_tokens: number | null;
+  cost_usd: number | null;
+  created_at: string | null;
+  completed_at: string | null;
+}
+
+export interface MemoryOverview {
+  records: MemoryRecord[];
+  proposals: MemoryProposal[];
+  passes: MemoryPass[];
+  quota: { used: number; limit: number };
+}
+
+export interface MemoryAppliedEntry {
+  id: string;
+  category: MemoryCategory;
+  content: string;
+}
+
+export interface MemoryConflictEntry extends MemoryAppliedEntry {
+  value: string | null;
+  brief_value: string | null;
+}
+
+export interface MemoryEffective {
+  applied: MemoryAppliedEntry[];
+  conflicts: MemoryConflictEntry[];
+  budget_skipped: { id: string; category: MemoryCategory }[];
+  project_disabled: MemoryAppliedEntry[];
+  injected_chars: number;
+}
+
+export interface ProjectMemoryView {
+  effective: MemoryEffective;
+  records: MemoryRecord[];
+}
+
+export async function getMemoryOverview(token: string | null): Promise<MemoryOverview> {
+  return apiFetch<MemoryOverview>("/memory", { token });
+}
+
+export async function confirmMemoryProposal(
+  token: string | null,
+  proposalId: string,
+  content?: string,
+): Promise<MemoryRecord> {
+  return apiFetch<MemoryRecord>(`/memory/proposals/${proposalId}/confirm`, {
+    method: "POST",
+    body: { content: content ?? null },
+    token,
+  });
+}
+
+export async function rejectMemoryProposal(
+  token: string | null,
+  proposalId: string,
+): Promise<MemoryProposal> {
+  return apiFetch<MemoryProposal>(`/memory/proposals/${proposalId}/reject`, {
+    method: "POST",
+    token,
+  });
+}
+
+export async function retryMemoryPass(token: string | null, passId: string): Promise<MemoryPass> {
+  return apiFetch<MemoryPass>(`/memory/passes/${passId}/retry`, {
+    method: "POST",
+    token,
+  });
+}
+
+export async function editMemoryRecord(
+  token: string | null,
+  recordId: string,
+  content: string,
+): Promise<MemoryRecord> {
+  return apiFetch<MemoryRecord>(`/memory/records/${recordId}`, {
+    method: "PATCH",
+    body: { content },
+    token,
+  });
+}
+
+export async function deleteMemoryRecord(
+  token: string | null,
+  recordId: string,
+): Promise<{ deleted: boolean }> {
+  return apiFetch<{ deleted: boolean }>(`/memory/records/${recordId}`, {
+    method: "DELETE",
+    token,
+  });
+}
+
+export async function getProjectMemory(
+  token: string | null,
+  projectId: string,
+): Promise<ProjectMemoryView> {
+  return apiFetch<ProjectMemoryView>(`/projects/${projectId}/memory`, { token });
+}
+
+export async function setMemoryOverride(
+  token: string | null,
+  projectId: string,
+  recordId: string,
+  enabled: boolean,
+): Promise<{ record_id: string; enabled: boolean }> {
+  return apiFetch<{ record_id: string; enabled: boolean }>(
+    `/projects/${projectId}/memory/records/${recordId}/override`,
+    { method: "POST", body: { enabled }, token },
+  );
+}
+
+/** F013 D8: distinct, honest MEMORY_LIMIT copies — never a vague toast. */
+export function memoryLimitFeedback(err: unknown): string | null {
+  if (!(err instanceof ApiClientError) || err.code !== "MEMORY_LIMIT") return null;
+  const details = err.details as { limit?: number; max_chars?: number };
+  if (details?.max_chars) {
+    return `单条记忆不超过 ${details.max_chars} 字符，请精简后再保存。`;
+  }
+  return `记忆数量已达上限（${details?.limit ?? 20} 条）。可删除不再需要的记忆后再确认。`;
+}

@@ -4,6 +4,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { DesktopRequiredNotice, useDesktop } from "@/components/desktop-gate";
 import { Alert, Button, ConfirmModal } from "@/components/ui";
+import { AccountMemorySection } from "@/components/account-memory";
 import {
   apiFetch,
   getAccountAudit,
@@ -140,6 +141,8 @@ export default function AccountPage() {
           所有限额按工作区独立计算，窗口到点自动恢复；达到上限时操作会被拒绝并提示恢复时间。
         </p>
       </section>
+
+      <AccountMemorySection />
 
       <section aria-labelledby="privacy-heading" className="space-y-2">
         <h2 id="privacy-heading" className="text-base font-semibold text-ink">

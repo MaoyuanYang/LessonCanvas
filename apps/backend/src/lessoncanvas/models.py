@@ -706,3 +706,133 @@ class ProductValidationEvidence(Base):
         UUID(as_uuid=True), ForeignKey("product_validation_evidence.id"), nullable=True
     )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class MemoryRecord(Base):
+    """F013 confirmed workspace-scoped teacher memory record (ADR-0005):
+    teacher-confirmed only, subordinate context, deleted with the workspace.
+    Evidence references null out when the owning version/run is deleted
+    (project deletion keeps workspace memory; the reference is history)."""
+
+    __tablename__ = "memory_records"
+    __table_args__ = (
+        UniqueConstraint(
+            "workspace_id", "category", "content_hash", name="uq_memory_record_identity"
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=False, index=True
+    )
+    category: Mapped[str] = mapped_column(String(32), nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    # Structured value only for field-mapped categories (Phase 1:
+    # language_mode in {chinese, english, bilingual}); drives deterministic
+    # conflict detection against the bound brief's language field (Spec D5).
+    value: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    brief_version_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("brief_versions.id", ondelete="SET NULL"), nullable=True
+    )
+    blueprint_version_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("blueprint_versions.id", ondelete="SET NULL"), nullable=True
+    )
+    generation_run_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("generation_runs.id", ondelete="SET NULL"), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
+
+
+class MemoryPass(Base):
+    """F013 proposal pass: one bounded model call per trigger evidence identity
+    (Spec D3). The unique identity makes scheduling, Celery retries, and the
+    explicit retry action idempotent — a completed pass never re-bills."""
+
+    __tablename__ = "memory_passes"
+    __table_args__ = (
+        UniqueConstraint(
+            "workspace_id", "trigger_kind", "trigger_id", name="uq_memory_pass_identity"
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=False, index=True
+    )
+    trigger_kind: Mapped[str] = mapped_column(String(24), nullable=False)
+    # Polymorphic evidence identity (brief/blueprint version or generation run
+    # id); intentionally not a foreign key, mirroring TraceEvent.run_id.
+    trigger_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False, default="scheduled")
+    proposal_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    prompt_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    completion_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    cost_usd: Mapped[float | None] = mapped_column(nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class MemoryProposal(Base):
+    """F013 proposal state machine (Spec State Transitions):
+    pending -> confirmed | rejected | superseded. Rejected proposals persist
+    as the permanent identical-form dedupe set; superseded ones carry no
+    dedupe penalty."""
+
+    __tablename__ = "memory_proposals"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=False, index=True
+    )
+    pass_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("memory_passes.id"), nullable=False, index=True
+    )
+    category: Mapped[str] = mapped_column(String(32), nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    value: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    brief_version_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("brief_versions.id", ondelete="SET NULL"), nullable=True
+    )
+    blueprint_version_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("blueprint_versions.id", ondelete="SET NULL"), nullable=True
+    )
+    generation_run_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("generation_runs.id", ondelete="SET NULL"), nullable=True
+    )
+    status: Mapped[str] = mapped_column(String(16), nullable=False, default="pending")
+    decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class MemoryProjectOverride(Base):
+    """F013 per-project applicability override (Spec D2): default enabled; a
+    row with enabled=false excludes that record from the project's runs only."""
+
+    __tablename__ = "memory_project_overrides"
+    __table_args__ = (
+        UniqueConstraint("project_id", "record_id", name="uq_memory_override_identity"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("projects.id"), nullable=False, index=True
+    )
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=False, index=True
+    )
+    record_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("memory_records.id"), nullable=False
+    )
+    enabled: Mapped[bool] = mapped_column(nullable=False, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )

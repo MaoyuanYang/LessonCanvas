@@ -4,16 +4,16 @@
 
 | Field | Value |
 | --- | --- |
-| Snapshot Revision | `STAGE-75` |
-| Parent Snapshot | `STAGE-74` @ pre-write (same-session sequential guard) |
-| Last Reconciled At | `2026-09-02T20:30:00+08:00` |
+| Snapshot Revision | `STAGE-82` |
+| Parent Snapshot | `STAGE-81` @ `13c5a95a9a21` (pre-write hash guard) |
+| Last Reconciled At | `2026-09-03T00:58:30+08:00` |
 | Reconciled By | `ZCode feature-dev session (YMY / Project Owner driving)` |
-| Repository Ref | `main @ 42fd778` (PR #23 merge) |
+| Repository Ref | `main @ 505232e` (clean tree; F012 docs commits after PR #25 merge) |
 | Write Coordination | `SINGLE_WRITER:ZCode feature-dev session` |
 | Lifecycle Path | `GREENFIELD` |
 | Project Phase | `COMPLETE` |
 | Overall State | `ACTIVE` |
-| Current Milestone | F012 Deployed Portfolio Proof DONE (PR #25 merge `c6c7b53`; deployed LAN stack at http://192.168.9.101:3002 healthy; ADR-0006 identity change delivered; B-001 closed). Next actionable F013 Teacher Memory (P1, unclaimed); cloud/internet exposure stays a follow-up Feature per F012 D1 |
+| Current Milestone | F013 Teacher Memory selected (start instruction 2026-09-02 after F012 DONE; `DRAFT -> NEXT`, P1, dependency F001 DONE; A-013 bound to Issue #26; SPEC_REFINEMENT next under ADR-0005). Prior: F012 DONE (PR #25 merge `c6c7b53`, deployed LAN stack healthy, ADR-0006 delivered, B-001 closed); cloud/internet exposure stays a follow-up Feature per F012 D1 |
 | Tracking Mode | `REMOTE` |
 
 ## Lifecycle Progress
@@ -30,6 +30,7 @@
 
 | Activity ID | Work Item | Member | Type | Skill | Skill Stage | Activity State | Work Status | Branch / Worktree | Status Authority | Next Checkpoint | Updated At |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `A-013` | `F013 Teacher Memory` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `DELIVERY` | `ACTIVE` | `REVIEW` | `feature/F013-teacher-memory` | `https://github.com/MaoyuanYang/LessonCanvas/issues/26` | TS-026 live evidence executed (owner-authorized; `live-evidence.json`); full delivery flow authorized 2026-09-03 (commit/push/PR/merge) | `2026-09-03T00:58:30+08:00` |
 | `A-010` | `F010 Teacher Product Validation` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/20` | N/A - terminal (PR #21 merge `683172b`) | `2026-09-01T20:25:15+08:00` |
 | `A-012` | `F012 Deployed Portfolio Proof` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/24` | N/A - terminal (PR #25 merge `c6c7b53`; DONE record in spec Gate Record) | `2026-09-02T23:30:00+08:00` |
 | `A-003` | `F003 Recoverable Unit Lesson Plans` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/6` | N/A - terminal (PR #7 merge `ad81c82`) | `2026-08-29T00:24:37+08:00` |
@@ -86,6 +87,9 @@
 | F012 | `UI READY` | `PASS` | revalidated @ `ux-ui-f012-r2` / `8ddb95ac7315` 2026-09-02 (sign-in flow removed; prior r1 STALE) |
 | F012 | `TEST DESIGN READY` | `PASS` | revalidated @ `test-design-f012-r2` / `ff71c903386f` 2026-09-02 (TS-016 added; TS-005/012/015 revised; Plan `plan-f012-r2`; prior r1 STALE) |
 | F012 | `DONE` | `PASS` | PR #25 merge `c6c7b53` (commit `dd04e72`); main re-verified backend 477+4skip + ruff, web 97 + tsc + lint 0 errors; deployed LAN stack healthy; DONE evidence manifest in `specs/F012-deployed-portfolio-proof/spec.md` Gate Record |
+| F013 | `SPEC READY` | `PASS` | `specs/F013-teacher-memory/spec.md` Gate Record @ `75ee61c2cf0b` (decision log D1–D8; approved 2026-09-02) |
+| F013 | `UI READY` | `PASS` | `specs/F013-teacher-memory/ux-ui.md` UI READY Record @ `ux-ui-f013-r1` / `8b39aeebb9a9` (owner-ratified 2026-09-02) |
+| F013 | `TEST DESIGN READY` | `PASS` | `specs/F013-teacher-memory/test-design.md` Record @ `test-design-f013-r1` / `c033f186772a`, TS-001..TS-027 (risk-based scope; Plan `plan-f013-r1` @ `427356ca088e` approved together 2026-09-02); `Roadmap Status: READY` recorded 2026-09-02 |
 
 ## Blockers and Conflicts
 

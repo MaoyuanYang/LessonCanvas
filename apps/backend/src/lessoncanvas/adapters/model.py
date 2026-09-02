@@ -145,10 +145,19 @@ class DeepSeekAdapter:
 class FakeModelAdapter:
     _transient_failures: dict[str, int] = {}
     _eval_faults: dict | None = None
+    _memory_proposals: list | None = None
 
     @classmethod
     def reset_transient_failures(cls) -> None:
         cls._transient_failures.clear()
+        cls._memory_proposals = None
+
+    @classmethod
+    def set_memory_proposals(cls, proposals: list | None) -> None:
+        """F013 test scripting: exact candidate list for the next proposal
+        pass (None restores the default evidence-derived derivation)."""
+
+        cls._memory_proposals = proposals
 
     @classmethod
     def activate_eval_faults(cls, spec: dict | None) -> None:
@@ -224,6 +233,8 @@ class FakeModelAdapter:
             return ModelResponse(
                 text=json.dumps(_fake_exercise_set(data)), latency_ms=1
             )
+        if kind == "memory_propose":
+            return ModelResponse(text=json.dumps(_fake_memory_proposals(data)), latency_ms=1)
         if "fail" in data.get("scenario", ""):
             raise ModelProviderError("model provider unavailable")
         return ModelResponse(text=json.dumps({}), latency_ms=1)
@@ -245,6 +256,37 @@ class FakeModelAdapter:
     def stream(self, system: str, user: str):
         tokens, _usage = self.stream_with_usage(system, user)
         yield from tokens
+
+
+def _fake_memory_proposals(data: dict) -> dict:
+    """Deterministic F013 proposal candidates for tests and E2E journeys.
+
+    Tests script exact candidates via FakeModelAdapter.set_memory_proposals
+    (including invalid entries to exercise untrusted-output dropping); the
+    default derives one language_mode and one assessment_style candidate from
+    the confirmed evidence. MEMORY_PASS_FAIL inside the evidence text raises
+    a provider error so the best-effort pass failure path is exercised."""
+
+    evidence = data.get("evidence") or {}
+    evidence_text = json.dumps(evidence, ensure_ascii=False)
+    if "MEMORY_PASS_FAIL" in evidence_text:
+        raise ModelProviderError("model provider unavailable")
+    scripted = FakeModelAdapter._memory_proposals
+    if scripted is not None:
+        return {"proposals": scripted}
+    fields = evidence.get("fields") or evidence.get("brief_fields") or {}
+    proposals = []
+    language = fields.get("output_language_mode")
+    if language:
+        proposals.append(
+            {"category": "language_mode", "content": f"输出语言偏好保持「{language}」"}
+        )
+    assessment = fields.get("assessment_orientation")
+    if assessment:
+        proposals.append(
+            {"category": "assessment_style", "content": f"测评风格延续「{assessment}」"}
+        )
+    return {"proposals": proposals}
 
 
 def _fake_generation_plan(data: dict) -> dict:

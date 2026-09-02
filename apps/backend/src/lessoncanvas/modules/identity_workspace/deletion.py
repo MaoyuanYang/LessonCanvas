@@ -20,6 +20,10 @@ from lessoncanvas.models import (
     GenerationRun,
     InteractionMessage,
     LessonPlanArtifact,
+    MemoryPass,
+    MemoryProjectOverride,
+    MemoryProposal,
+    MemoryRecord,
     ProductValidationAssignment,
     ProductValidationEvidence,
     Project,
@@ -57,6 +61,7 @@ PROJECT_SCOPED_TABLES = (
     DiscoveryRun,
     BriefDraft,
     BriefVersion,
+    MemoryProjectOverride,
 )
 
 CHECKPOINT_TABLES = ("checkpoints", "checkpoint_blobs", "checkpoint_writes")
@@ -413,6 +418,12 @@ def delete_project_cascade(
     session.execute(sql_delete(DiscoveryRun).where(DiscoveryRun.project_id == project_id))
     session.execute(sql_delete(BriefDraft).where(BriefDraft.project_id == project_id))
     session.execute(sql_delete(BriefVersion).where(BriefVersion.project_id == project_id))
+    # F013: project deletion removes this project's applicability overrides;
+    # workspace memory records survive (workspace-scoped, Spec D2) with their
+    # evidence references nulled by the SET NULL foreign keys above.
+    session.execute(
+        sql_delete(MemoryProjectOverride).where(MemoryProjectOverride.project_id == project_id)
+    )
 
     # F011 D5: checkpoint rows share the project's deletion boundary, and the
     # cascade is not complete while any governed store still holds owned data.
@@ -493,6 +504,20 @@ def delete_workspace_cascade(session, storage, workspace: Workspace) -> None:
         sql_delete(RateWindowCounter).where(RateWindowCounter.workspace_id == workspace.id)
     )
     session.execute(sql_delete(AuditEvent).where(AuditEvent.workspace_id == workspace.id))
+    # F013: teacher memory follows the workspace boundary (ADR-0005);
+    # proposals reference passes, overrides reference records.
+    session.execute(
+        sql_delete(MemoryProjectOverride).where(MemoryProjectOverride.workspace_id == workspace.id)
+    )
+    session.execute(
+        sql_delete(MemoryProposal).where(MemoryProposal.workspace_id == workspace.id)
+    )
+    session.execute(
+        sql_delete(MemoryPass).where(MemoryPass.workspace_id == workspace.id)
+    )
+    session.execute(
+        sql_delete(MemoryRecord).where(MemoryRecord.workspace_id == workspace.id)
+    )
     session.add(RetainedSecurityEvent(workspace_id=workspace.id, action="workspace.purged"))
     session.execute(
         sql_delete(DeletionResidual).where(DeletionResidual.workspace_id == workspace.id)

@@ -73,7 +73,17 @@ def _initial_state(session, run: DiscoveryRun) -> dict:
     if project and project.unit_hints:
         project_hints = project.unit_hints
     known = graph.extract_known_fields("\n".join(p for p in [corpus, project_hints] if p))
-    return {"run_id": str(run.id), "known_fields": known, "round_count": 0}
+    # F013: snapshot the effective memory set once per discovery run; no
+    # confirmed brief exists yet, so no field conflict check applies here.
+    from lessoncanvas.modules.teacher_memory.context import attach_run_memory
+
+    memory_context = attach_run_memory(session, run.workspace_id, run.project_id, run.id)
+    return {
+        "run_id": str(run.id),
+        "known_fields": known,
+        "round_count": 0,
+        "memory_context": memory_context,
+    }
 
 
 def _pending_questions(session, run: DiscoveryRun) -> list[dict]:

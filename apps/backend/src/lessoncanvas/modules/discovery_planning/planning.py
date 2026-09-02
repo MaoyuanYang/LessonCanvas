@@ -34,6 +34,7 @@ class PlanningState(TypedDict, total=False):
     questions: list[dict[str, str]]
     round_count: int
     draft: dict[str, Any] | None
+    memory_context: list
 
 
 def build_grounding(session, project_id, brief_fields: dict) -> dict:
@@ -82,6 +83,9 @@ def analyze_node(state: PlanningState) -> dict:
             "brief": state.get("brief", {}),
             "corpus_excerpt": (state.get("grounding", {}).get("corpus") or "")[:2000],
         }
+        if state.get("memory_context"):
+            # F013: subordinate teacher memory as labeled, capped data only.
+            user_payload["memory_context"] = state["memory_context"]
         started = time.monotonic()
         response = adapter.complete(
             "You are a unit planning specialist. Given the planning-gap task, ask only material "
@@ -201,6 +205,9 @@ def build_draft_node(state: PlanningState) -> dict:
             "corpus_excerpt": (grounding.get("corpus") or "")[:2000],
             "standards": grounding.get("standards_sections", []),
         }
+        if state.get("memory_context"):
+            # F013: subordinate teacher memory as labeled, capped data only.
+            user_payload["memory_context"] = state["memory_context"]
         started = time.monotonic()
         response = adapter.complete(
             "You are a unit planning specialist. Given the confirmed brief, produce the complete "
@@ -280,12 +287,24 @@ def _initial_state(session, run: DiscoveryRun) -> dict:
     brief_version = session.get(BriefVersion, run.brief_version_id)
     brief_fields = json.loads(brief_version.fields_json)
     grounding = build_grounding(session, run.project_id, brief_fields)
+    # F013: snapshot the effective memory set once per planning run; the
+    # bound brief's language field drives the deterministic conflict check.
+    from lessoncanvas.modules.teacher_memory.context import attach_run_memory
+
+    language_entry = brief_fields.get("output_language_mode") or {}
+    language_raw = (
+        str(language_entry.get("value")) if isinstance(language_entry, dict) else None
+    )
+    memory_context = attach_run_memory(
+        session, run.workspace_id, run.project_id, run.id, language_raw
+    )
     return {
         "run_id": str(run.id),
         "brief": {field: (entry or {}).get("value") for field, entry in brief_fields.items()},
         "grounding": grounding,
         "known_fields": {},
         "round_count": 0,
+        "memory_context": memory_context,
     }
 
 

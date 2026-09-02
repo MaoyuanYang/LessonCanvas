@@ -260,9 +260,27 @@ def resolve_run(
     raise RunNotFoundError("run not found")
 
 
+def _memory_section(session: Session, run_id: uuid.UUID) -> dict | None:
+    """F013 applied-memory read model: the run's snapshot-once `memory.applied`
+    trace event (Spec D5/D7); None when the run used no memory surface yet."""
+
+    event = session.scalar(
+        select(TraceEvent)
+        .where(TraceEvent.run_id == run_id, TraceEvent.event_type == "memory.applied")
+        .order_by(TraceEvent.created_at.desc())
+    )
+    if event is None:
+        return None
+    try:
+        return json.loads(event.payload_json)
+    except json.JSONDecodeError:
+        return None
+
+
 def run_summary(session: Session, project_id: uuid.UUID, run_id: uuid.UUID) -> dict:
     kind, run = resolve_run(session, project_id, run_id)
     stats = _trace_stats(session, run.id)
+    memory = _memory_section(session, run.id)
 
     if isinstance(run, DiscoveryRun):
         return {
@@ -291,6 +309,7 @@ def run_summary(session: Session, project_id: uuid.UUID, run_id: uuid.UUID) -> d
             ),
             "superseded_by": None,
             "recovery_view": None,
+            "memory": memory,
             **stats,
         }
 
@@ -343,6 +362,7 @@ def run_summary(session: Session, project_id: uuid.UUID, run_id: uuid.UUID) -> d
             if run.status in ("partial_failure", "capped_failure")
             else None
         ),
+        "memory": memory,
         **stats,
     }
 
