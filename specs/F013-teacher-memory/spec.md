@@ -1,13 +1,21 @@
 # F013: Teacher Memory
 
-- Spec Status: `SPEC READY`
-- Roadmap Status: `NEXT`
+- Spec Status: `DONE`
+- Roadmap Status: `DONE`
 - Priority: `P1`
 - Owner: `YMY / Project Owner` (driving `ZCode feature-dev` session, A-013)
 - Work item: [GitHub Issue #26](https://github.com/MaoyuanYang/LessonCanvas/issues/26) — bound 2026-09-02 (authorized); work-status authority
 - Decision Authority: `YMY / Project Owner`
 - Dependencies: `F001` (DONE; workspace authorization, confirmed briefs, evidence boundary); integration anchors in delivered code: F009 memory pinning placeholder, F011 deletion sweep, F006 evidence panel, ADR-0005 governing decision
 - Last Updated: 2026-09-02 (implementation complete; Review recorded in `review.md`)
+
+## Gate Record: DONE
+
+- Status: `PASS`
+- Validation time: 2026-09-03
+- Delivery: PR [#27](https://github.com/MaoyuanYang/LessonCanvas/pull/27) merged as `66a0b6c` (commit `8ddae59`; full delivery flow authorized by `YMY / Project Owner` 2026-09-03: commit, push, PR, merge; Issue #26 auto-closed by the PR). Main re-verified after merge: backend 515 passed + 4 skipped + ruff clean; web 108/108 + tsc clean + eslint 0 errors (3 warnings pre-existing on main).
+- DONE evidence manifest (working tree @ gate time): spec `75ee61c2cf0b` (SPEC READY revision; status fields updated here), ux-ui `8b39aeebb9a9`, test-design `c033f186772a` + execution snapshot + `live-evidence.json` (TS-026 owner-authorized live DeepSeek evidence), plan `427356ca088e`, review `review-f013-r1` (IF-1..IF-5 dispositioned; M-1 resolved by the live pass); verification: backend suite green incl. 22 F013 tests + adversarial re-injection, web 108/108 incl. 11 memory component tests, E2E memory journeys 3/3 behind `E2E_MEM_FAULT=1`; documentation synced (API, DATABASE, ARCHITECTURE, TESTING, AGENTS module-consumer note, ROADMAP, STAGE).
+- All acceptance criteria AC-001..AC-009 satisfied with traceable evidence (see `review.md` AC→TS→evidence table and the Test Design execution snapshot).
 
 ## Gate Record: SPEC READY
 

@@ -4,16 +4,16 @@
 
 | Field | Value |
 | --- | --- |
-| Snapshot Revision | `STAGE-82` |
-| Parent Snapshot | `STAGE-81` @ `13c5a95a9a21` (pre-write hash guard) |
-| Last Reconciled At | `2026-09-03T00:58:30+08:00` |
+| Snapshot Revision | `STAGE-83` |
+| Parent Snapshot | `STAGE-82` @ `9fff33a2ea92` (pre-write hash guard; PR #27 merged `66a0b6c`, main re-verified) |
+| Last Reconciled At | `2026-09-03T01:03:40+08:00` |
 | Reconciled By | `ZCode feature-dev session (YMY / Project Owner driving)` |
-| Repository Ref | `main @ 505232e` (clean tree; F012 docs commits after PR #25 merge) |
+| Repository Ref | `main @ 66a0b6c` (PR #27 merge; F013 delivered) |
 | Write Coordination | `SINGLE_WRITER:ZCode feature-dev session` |
 | Lifecycle Path | `GREENFIELD` |
 | Project Phase | `COMPLETE` |
 | Overall State | `ACTIVE` |
-| Current Milestone | F013 Teacher Memory selected (start instruction 2026-09-02 after F012 DONE; `DRAFT -> NEXT`, P1, dependency F001 DONE; A-013 bound to Issue #26; SPEC_REFINEMENT next under ADR-0005). Prior: F012 DONE (PR #25 merge `c6c7b53`, deployed LAN stack healthy, ADR-0006 delivered, B-001 closed); cloud/internet exposure stays a follow-up Feature per F012 D1 |
+| Current Milestone | F013 Teacher Memory DONE (PR #27 merge `66a0b6c`; backend 515+4skip + ruff, web 108 + tsc + lint 0 errors on main; TS-026 live DeepSeek evidence recorded; Issue #26 closed). Phase-1 Feature Map complete: F001–F013 all DONE. Follow-up candidate: public cloud/internet exposure deployment Feature (F012 D1 residual). Prior: F012 DONE (deployed LAN stack healthy; ADR-0006 delivered) |
 | Tracking Mode | `REMOTE` |
 
 ## Lifecycle Progress
@@ -30,7 +30,7 @@
 
 | Activity ID | Work Item | Member | Type | Skill | Skill Stage | Activity State | Work Status | Branch / Worktree | Status Authority | Next Checkpoint | Updated At |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `A-013` | `F013 Teacher Memory` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `DELIVERY` | `ACTIVE` | `REVIEW` | `feature/F013-teacher-memory` | `https://github.com/MaoyuanYang/LessonCanvas/issues/26` | TS-026 live evidence executed (owner-authorized; `live-evidence.json`); full delivery flow authorized 2026-09-03 (commit/push/PR/merge) | `2026-09-03T00:58:30+08:00` |
+| `A-013` | `F013 Teacher Memory` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/26` | N/A - terminal (PR #27 merge `66a0b6c`; DONE record in spec Gate Record) | `2026-09-03T01:03:40+08:00` |
 | `A-010` | `F010 Teacher Product Validation` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/20` | N/A - terminal (PR #21 merge `683172b`) | `2026-09-01T20:25:15+08:00` |
 | `A-012` | `F012 Deployed Portfolio Proof` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/24` | N/A - terminal (PR #25 merge `c6c7b53`; DONE record in spec Gate Record) | `2026-09-02T23:30:00+08:00` |
 | `A-003` | `F003 Recoverable Unit Lesson Plans` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/6` | N/A - terminal (PR #7 merge `ad81c82`) | `2026-08-29T00:24:37+08:00` |
@@ -90,6 +90,7 @@
 | F013 | `SPEC READY` | `PASS` | `specs/F013-teacher-memory/spec.md` Gate Record @ `75ee61c2cf0b` (decision log D1–D8; approved 2026-09-02) |
 | F013 | `UI READY` | `PASS` | `specs/F013-teacher-memory/ux-ui.md` UI READY Record @ `ux-ui-f013-r1` / `8b39aeebb9a9` (owner-ratified 2026-09-02) |
 | F013 | `TEST DESIGN READY` | `PASS` | `specs/F013-teacher-memory/test-design.md` Record @ `test-design-f013-r1` / `c033f186772a`, TS-001..TS-027 (risk-based scope; Plan `plan-f013-r1` @ `427356ca088e` approved together 2026-09-02); `Roadmap Status: READY` recorded 2026-09-02 |
+| F013 | `DONE` | `PASS` | PR #27 merge `66a0b6c` (commit `8ddae59`); main re-verified backend 515+4skip + ruff, web 108 + tsc + lint 0 errors; TS-026 live evidence in `specs/F013-teacher-memory/live-evidence.json`; DONE evidence manifest in `specs/F013-teacher-memory/spec.md` Gate Record |
 
 ## Blockers and Conflicts
 
@@ -109,6 +110,7 @@
 
 | Activity ID | Work Item | Member | Outcome | Final Work Status | Final Status Authority | Delivery Evidence | Completed At |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| `A-013` | `F013 Teacher Memory` | `ZCode feature-dev session` | Teacher memory delivered end to end (governed proposal pipeline with identity idempotency + best-effort failure + content-hash dedupe; confirmed records with caps and race-safe admission; snapshot-once subordinate injection across discovery/planning/generation with `memory.applied` traces; deterministic language conflict rule; U6 budget priority with disclosed skips; per-project overrides; account + workspace + evidence surfaces; F009 revision-list pinning joining the comparability signature; F011 deletion sweep extension; adversarial inertness proven; TS-026 live DeepSeek quality evidence incl. a real transient failure and live dedupe; review IF-1..IF-5 dispositioned) | `DONE` | Issue #26 (auto-closed by merge) | PR #27 merge `66a0b6c` | `2026-09-03` |
 | `A-012` | `F012 Deployed Portfolio Proof` | `ZCode feature-dev session` | Deployed portfolio proof delivered end to end (local full-stack containers + LAN entry with deploy/smoke/teardown chain, synthetic sample read-only journey + idempotent seeding, live DeepSeek recovery journey TS-029, deletion completeness all-zero + retained ledger, SSE single-process + D10 recheck, teardown/redeploy, a11y/420px spot; ADR-0006 removed Clerk for the MVP — guest workspace tokens, subject rename, deterministic E2E; B-001 checkpointer deadlock found+fixed via entrypoint pre-setup; review IF-1..IF-11 all dispositioned) | `DONE` | Issue #24 (closed) | PR #25 merge `c6c7b53` | `2026-09-02` |
 | `A-011` | `F011 Public Multi-Account Guardrails` | `ZCode feature-dev session` | Public multi-account guardrails delivered end to end (PostgreSQL-authoritative nested rate windows, admission + SSE/upload caps, upload hardening with bomb guards, race-safe quotas and workspace resolution, deletion completeness incl. checkpoints with metadata-only residual repair, worker fast-fail F006 M-2, download audits + usage/audit surfaces + D4(b) retained ledger, governed adversarial corpus + 71-path sweep + 5-workspace journey; latent F001 content_type defect fixed; dependency audits clean) | `DONE` | Issue #22 (auto-closed by merge) | PR #23 merge `42fd778` | `2026-09-02` |
 | `A-010` | `F010 Teacher Product Validation` | `ZCode feature-dev session` | Teacher product validation delivered end to end (fixed rubric-r1, version-bound assignments with staleness, deterministic zero-model outcomes, owner-mediated evidence import with private original documents, honest not-complete, live separate status on all shared surfaces; SF-1/SF-2 review fixes; real-teacher reviews deferred by owner per D9 with follow-up import pending) | `DONE` | Issue #20 (auto-closed by merge) | PR #21 merge `683172b` | `2026-09-01` |
