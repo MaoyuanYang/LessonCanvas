@@ -691,6 +691,20 @@ def test_evaluation_signature_includes_retrieval_mode(db_session):
     assert _config_signature(legacy) != _config_signature(modern)
 
 
+def test_worker_registers_source_parse_task():
+    # Delivery-found defect (F014 review M-4): the deployed worker rejected
+    # queued parses as unregistered. The include list mirrors what the
+    # Celery worker imports at start-up; importing it must register the task.
+    import importlib
+
+    from lessoncanvas.worker import celery_app
+
+    assert "lessoncanvas.modules.sources_grounding.tasks" in celery_app.conf.include
+    for module_name in celery_app.conf.include:
+        importlib.import_module(module_name)
+    assert "lessoncanvas.parse_source" in celery_app.tasks
+
+
 def test_workspace_deletion_removes_embedding_data(db_session, client, auth):
     project_id = create_project(client, auth)
     source = add_source(client, auth, project_id, "自然灾害应对阅读素材。")

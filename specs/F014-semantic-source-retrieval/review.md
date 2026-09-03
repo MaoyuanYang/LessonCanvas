@@ -25,6 +25,10 @@
 
 With that marker in the retrieved corpus the fake planner skips its gap questions, leaving a second waivable finding (`period_warning`) that the shared `confirmedBlueprint` helper does not decide (single decision click). The journey's source fixture omits the line (comment in `retrieval-journey.spec.ts`). Backend suites cover the with-marker path explicitly.
 
+### M-4 (delivery-found defect, FIXED): deployed worker never registered `lessoncanvas.parse_source`
+
+The first re-baseline attempt completed every pass with `C-GROUND-1 missing_evidence` ("blueprint carries no citations to verify") because the eval projects' sources stayed `processing`: the deployed worker logged `Received unregistered task of type 'lessoncanvas.parse_source'`. The task is decorated in its owning module (`sources_grounding/tasks.py`) but nothing imported that module into the worker process — a latent defect since F001 that the old coarse first-source citations (metadata-only, chunk-free) never exposed; every queued upload parse on the deployed stack silently no-op'd (eager dev/test environments always parsed inline, and the F012 sample was seeded eager). Fixed by registering the module via Celery `include` (module-level import would cycle) plus a regression test asserting the include list and post-import registration (`test_worker_registers_source_parse_task`). The polluted first re-baseline passes (6 evaluations, terminal-immutable) are deleted with their isolated harness workspaces before the clean re-run.
+
 ### M-1 (residual, owner-visible): fake embedding quality is lexical, not semantic
 
 The deterministic fake embedder ranks by hashed character-n-gram overlap. It proves ranking/budget/degradation mechanics (TS-005/006/009/010) but not real semantic quality; that judgment belongs to the TS-026 live re-baseline on the deployed stack (ADR-0007 follow-up), which requires owner authorization at delivery (Spec D5).
