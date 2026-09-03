@@ -18,8 +18,11 @@ COPY alembic.ini ./
 RUN uv sync --locked --no-dev --group embedding
 
 # F014/ADR-0007: bake the embedding model weights so deployed startup and
-# backfill never depend on a runtime model download.
-RUN python -c "from fastembed import TextEmbedding; TextEmbedding(model_name='BAAI/bge-small-zh-v1.5')"
+# backfill never depend on a runtime model download. Build-time download
+# pins a reachable mirror endpoint and disables the xet transfer protocol
+# (mirror-incompatible); runtime never downloads.
+RUN HF_ENDPOINT=https://hf-mirror.com HF_HUB_DISABLE_XET=1 \
+    python -c "from fastembed import TextEmbedding; TextEmbedding(model_name='BAAI/bge-small-zh-v1.5')"
 
 EXPOSE 8000
 
