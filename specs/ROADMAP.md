@@ -4,6 +4,10 @@
 
 Phase 1 produces a publicly inspectable, multi-account LessonCanvas workflow in which a senior-high English teacher confirms grounded unit intent, generates every lesson's editable teaching package, reviews alignment and evidence, recovers or revises versioned work, and sees technical and teacher-product validation reported separately.
 
+## Phase 2 Milestone
+
+Phase 2 closes the gap between documented and actual grounding capability and deepens Agent specialization under the existing governance: source context recalled by semantic similarity with chunk-level traceable citations (F014), specialists that call whitelisted tools themselves inside a bounded traced loop (F015), and a real specialist division of labor with per-stage trace and model-assisted quality review (F016). Phase-1 close-out state is recorded in `specs/PHASE1-retrospective.md` (2026-09-03).
+
 ## Status Contract
 
 | Status | Meaning |
@@ -33,6 +37,9 @@ Phase 1 produces a publicly inspectable, multi-account LessonCanvas workflow in 
 | `F011` | Public Multi-Account Guardrails | Verify the complete system's privacy, abuse, cost, and deletion controls | Makes public use bounded and defensible | `P0` | `F009` | `DONE` | System-wide isolation, quotas, rate/concurrency limits, injection defense, authorized objects, operator audit, and deletion |
 | `F012` | Deployed Portfolio Proof | Make the protected workflow independently inspectable in the cloud | Converts repository claims into observable release evidence | `P0` | `F009`, `F011` | `DONE` | Public entry, synthetic demo data, complete runtime deployment, accessibility, recovery, and honest validation status |
 | `F013` | Teacher Memory | Personalize future work with teacher-confirmed workspace memory | Faster repeat preparation and governed-memory portfolio evidence | `P1` | `F001` | `DONE` | Agent-proposed, teacher-confirmed memory records; management UI; subordinate context application; untrusted-input handling |
+| `F014` | Semantic Source Retrieval | Recall the most relevant source chunks by semantic similarity and cite them traceably | Makes the documented pgvector grounding real and improves grounding quality and traceability as corpora grow | `P0` | None | `NEXT` | Embedding pipeline behind a thin adapter (ADR-gated), pgvector top-k retrieval replacing full-corpus truncation, chunk-level server-injected citations with content hashes, honest degradation; drafted 2026-09-03 |
+| `F015` | Governed Model Tool Calling | Let workflow specialists invoke whitelisted tools in a bounded traced loop | Turns MCP-compatible tool definitions into real governed agentic tool use | `P1` | None | `DRAFT` | Adapter `tools`/`tool_calls` support, bounded tool loop in discovery/planning, per-round trace, whitelist refusal policy, F009 fault scenarios and signature; drafted 2026-09-03 |
+| `F016` | Specialist Role Expansion | Add source-analysis, activity-design, and quality-review specialists to the workflows | Real specialist division of labor with per-stage trace and model-assisted review | `P1` | `F014` | `DRAFT` | Structured source analysis, designer→writer split for lesson plans, reviewer with one bounded revise round, cap/quota/cost updates, F009 stage-set signature; drafted 2026-09-03 |
 
 Only `DRAFT/NEXT/READY/IN_PROGRESS/REVIEW/DONE/BLOCKED` may appear in this Roadmap. No Feature becomes `READY` during `coding-start`.
 
@@ -51,11 +58,20 @@ F009 -> F010
 F009 -> F011
 F009 + F011 -> F012
 F001 -> F013
+F014 -> F016
 ```
 
 ## Handoff
 
-### Current: F013 NEXT
+### Current: Phase 2 drafted (F014 NEXT)
+
+- Direction: capability audit on 2026-09-03 (owner session) compared delivered behavior against project claims and found three gaps — the documented pgvector semantic recall is unimplemented (grounding is full-corpus truncation), tool definitions are not model-callable (all tool calls are issued by orchestration code), and the source-analysis / activity-design / quality-review specialist roles do not exist. Phase 2 makes those claims true under the existing governance.
+- Drafted 2026-09-03 by `coding-start`: F014 Semantic Source Retrieval (`NEXT`, from the owner-approved drafting sequence; confirm or adjust at `feature-dev` start), F015 Governed Model Tool Calling (`DRAFT`), F016 Specialist Role Expansion (`DRAFT`). Specs: `specs/F014-semantic-source-retrieval/`, `specs/F015-governed-model-tool-calling/`, `specs/F016-specialist-role-expansion/`.
+- Required L3 decision before F014 coding: embedding provider/model/dimension behind a thin adapter (leading option: local in-process embedding model, keeping the single-hosted-LLM constraint); record an ADR and move it to `Accepted` per the Design Change Policy before `coding-start` on F014.
+- Phase-1 close-out is recorded in `specs/PHASE1-retrospective.md` (2026-09-03); its owner-decision residuals (F010 real-teacher evidence import, public cloud exposure deployment Feature, DTO convention) remain open and separate from this wave.
+- Next: bind an Issue to F014 (authorized remote action) and run `feature-dev` SPEC_REFINEMENT toward `SPEC READY`.
+
+### Previous: F013 DONE
 
 - Feature: `F013 Teacher Memory`
 - Selection: `DRAFT -> NEXT` confirmed by `YMY / Project Owner` on 2026-09-02 (start instruction after F012 DONE; dependency `F001` DONE).
@@ -66,6 +82,8 @@ F001 -> F013
 - Gates (all 2026-09-02, approved by `YMY / Project Owner` interactively): `SPEC READY: PASS` (`75ee61c2cf0b`; decision log D1–D8: fixed four categories, workspace-default applicability with per-project adjust, all three proposal triggers with identity idempotency, content-hash rejection dedupe, deterministic language_mode conflict rule, F009 constructed-empty revision-list pinning, account-section + in-workspace proposal cards + evidence applied-context region, caps 20/300/2500). `UI READY: PASS` (`ux-ui-f013-r1` / `8b39aeebb9a9`; U1–U6 incl. injection budget priority language > exercise > pacing > assessment, most-recent-first within category, whole records, disclosed truncation). `TEST DESIGN READY: PASS` (`test-design-f013-r1` / `c033f186772a`, TS-001..TS-027, recommended risk-based scope with recorded exclusions) + Plan `plan-f013-r1` @ `427356ca088e` (T0–T10, new `teacher_memory` module, one migration, Celery proposal task, four payload injection points) approved together; `Roadmap Status: READY` recorded 2026-09-02.
 - Next: branch `feature/F013-teacher-memory`, then `CODING_TESTING` (T0–T10).
 - Implementation COMPLETE on `feature/F013-teacher-memory` (T0–T10, plan `plan-f013-r1`): new `teacher_memory` module (records/proposals/passes/overrides + proposal pipeline + effective-set assembly), migration `f013b1d2e3f4`, Celery task `generate_memory_proposals`, brief/blueprint/run-settle triggers, `memory_context` injection into discovery/planning/generation payloads with snapshot-once `memory.applied` trace events, F009 structured revision-list pinning joining the comparability signature, F011 deletion-sweep registration, `MEMORY_LIMIT` error class; web adds `/account` 教师记忆 section, shared proposal region + badge across five host panels, evidence 教师记忆（本项目） region, and the E2E journey. Verification: backend 504 passed + 4 skipped + ruff clean; web 108/108 + tsc clean + eslint 0 errors (3 pre-existing warnings); memory E2E 3/3 behind `E2E_MEM_FAULT=1`. Review `review-f013-r1`: IF-1..IF-5 + M-1 dispositioned, no Critical/unfixed-High; residual TS-026 live proposal-quality pass pending owner authorization. Documentation synced (API/DATABASE/ARCHITECTURE/TESTING/AGENTS module-consumer note). `Roadmap Status: REVIEW` recorded 2026-09-02; delivery pending authorization (commit/push/PR).
+- Delivery & DONE: full flow authorized 2026-09-03; TS-026 live DeepSeek proposal-quality evidence executed first (owner-authorized; `specs/F013-teacher-memory/live-evidence.json` — quality proposals with derived values, one real transient-provider best-effort failure, live dedupe honest-empty, journeys purged by account deletion). PR [#27](https://github.com/MaoyuanYang/LessonCanvas/pull/27) merged as `66a0b6c` (commit `8ddae59`; Issue #26 auto-closed); main re-verified (backend 515 passed + 4 skipped + ruff clean; web 108/108 + tsc clean + eslint 0 errors). `DONE: PASS` + `Roadmap Status: DONE` recorded 2026-09-03; evidence manifest in `specs/F013-teacher-memory/spec.md` Gate Record.
+- Next actionable: none remaining in the Phase-1 Feature Map (F001–F013 all DONE); follow-up candidates recorded earlier: public cloud/region/internet exposure deployment Feature (F012 D1 residual); Phase-1 close-out review recorded in `specs/PHASE1-retrospective.md` (2026-09-03).
 
 ### Previous: F012 NEXT
 
@@ -211,6 +229,10 @@ F001 -> F013
 - Security, ownership, accessibility, and untrusted-input behavior are obligations in every Feature. `F011` verifies the completed system rather than introducing these concerns late.
 - Token streaming lands with `F001` (interview), `F003` (generation narration), and `F006` (explanation); MCP consumption lands with `F001` (official sources) and `F003` (tool definitions).
 - `F013` may be refined after `F001`; `F003`–`F005` can adopt confirmed memory as optional context after `F013` without a hard dependency.
+- `F014` lands first in Phase 2: retrieval quality and chunk-level citations are what make `F016`'s grounded review meaningful, and it converts the existing README/docs pgvector claim into implemented behavior.
+- `F016` may additionally consume `F015` tool calling when available (designer/reviewer using standards search); that dependency is soft and must not delay `F016` refinement after `F014`.
+- Phase-2 stages multiply per-lesson model calls; per-run caps (F003 contract), quota classification (F011), and evidence-panel cost visibility must change together with the stage set, never after it.
+- F009 comparability: retrieval mode (F014), tool mode (F015), and the specialist stage set (F016) each join the pass-comparability signature so mixed-configuration evaluation passes cannot compare silently.
 
 ## Roadmap Risks
 
@@ -219,5 +241,7 @@ F001 -> F013
 - Full trace retention increases deletion and operator-access risk across `F006` and `F011`; public portfolio samples remain synthetic-only.
 - Exact providers, official sources, formats, evaluation topics, and rubric details remain Feature-level questions with documented resolution points.
 - Product validation has one stable external teacher, so conclusions remain bounded to that evidence and cannot be generalized without new research.
-- Delivery & DONE: full flow authorized 2026-09-03; TS-026 live DeepSeek proposal-quality evidence executed first (owner-authorized; `specs/F013-teacher-memory/live-evidence.json` — quality proposals with derived values, one real transient-provider best-effort failure, live dedupe honest-empty, journeys purged by account deletion). PR [#27](https://github.com/MaoyuanYang/LessonCanvas/pull/27) merged as `66a0b6c` (commit `8ddae59`; Issue #26 auto-closed); main re-verified (backend 515 passed + 4 skipped + ruff clean; web 108/108 + tsc clean + eslint 0 errors). `DONE: PASS` + `Roadmap Status: DONE` recorded 2026-09-03; evidence manifest in `specs/F013-teacher-memory/spec.md` Gate Record.
-- Next actionable: none remaining in the Phase-1 Feature Map (F001–F013 all DONE); follow-up candidates recorded earlier: public cloud/region/internet exposure deployment Feature (F012 D1 residual).
+- Embedding dependency (F014): local model weights affect image size and offline deployment; a hosted embedding API would supersede the Phase-1 single-hosted-model constraint and requires an L3 ADR.
+- Provider function-calling reliability and variance may destabilize F015; the no-tool path must remain a deterministic fallback, and deterministic/live evaluation stay separate.
+- F016 multiplies model cost per lesson; without cap, quota, and evidence updates landing together, it would silently break the cost-honesty contract.
+- F009 live evidence was produced under the Phase-1 configuration; after F014/F015/F016 the comparability signature changes and existing live passes must not be presented as comparable with new ones.
