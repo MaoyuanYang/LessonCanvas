@@ -31,6 +31,7 @@ FastAPI modular monolith ---------------- Managed identity
                                          |
                                          +-- LangGraph workflow/checkpoints
                                          +-- Hosted model adapter
+                                         +-- Local embedding adapter (F014)
                                          +-- Document generation tools
 ```
 
@@ -66,7 +67,7 @@ FastAPI modular monolith ---------------- Managed identity
 ## Dependencies
 
 - `Identity and Workspace -> managed identity`: trust authenticated subject identity, then apply application-owned workspace authorization.
-- `Sources and Grounding -> workspace authorization, object storage, PostgreSQL/pgvector, and controlled official sources`: process only owner-authorized material and keep retrieval inside the approved evidence boundary.
+- `Sources and Grounding -> workspace authorization, object storage, PostgreSQL/pgvector, and controlled official sources`: process only owner-authorized material and keep retrieval inside the approved evidence boundary. F014: the thin embedding adapter (`adapters/embedding.py`, ADR-0007) and the vector-retrieval service live here; planning and all three generation families consume top-k retrieval per item, and retrieved text always travels as labeled user payload, never prompt authority.
 - `Discovery and Planning -> Sources and Grounding, Run Orchestration`: consume source evidence and participate in the governed workflow without owning source files or task delivery.
 - `Artifact Production -> approved brief and blueprint, Sources and Grounding, Run Orchestration, generation tools`: generate only against an immutable confirmed version and cited evidence.
 - `Alignment and Evaluation -> sources, approved intent, artifacts, and runs`: compare evidence and own validation outcomes but never silently rewrite the owning concepts.
@@ -109,6 +110,7 @@ FastAPI modular monolith ---------------- Managed identity
 | Service | Purpose | Failure impact | Boundary |
 | --- | --- | --- | --- |
 | Hosted model provider | Requirements analysis, planning, generation, and supported evaluation | The affected step pauses or fails visibly; completed state remains recoverable | One provider through an application adapter; no silent fallback |
+| Local embedding model (ADR-0007) | Chunk/query embeddings for semantic source retrieval (F014) | Chunks persist an explicit `embedding_failed` state and retrieval excludes them with disclosure; generation proceeds honestly ungrounded | In-process fastembed + bge-small-zh-v1.5 with weights baked into the image; no network service, no external data flow |
 | Managed identity provider | Registration, login, verification, and identity sessions | New login or session refresh may be unavailable | The application still owns workspace authorization and deletion orchestration |
 | S3-compatible storage | Private uploads and generated files | Upload, generation, or download pauses; database state must not claim a missing file is ready | Access only through authorized application flows or scoped signed delivery |
 | Controlled official sources | Curriculum-grounding evidence | Missing evidence triggers a question, source warning, or blocked generation | Only configured public authoritative sources; no arbitrary Web search |

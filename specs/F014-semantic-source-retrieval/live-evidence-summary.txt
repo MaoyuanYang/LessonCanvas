@@ -1,0 +1,8 @@
+cultural-heritage p1: completed/pass
+cultural-heritage p2: completed/pass
+natural-disasters p1: completed/pass
+natural-disasters p2: completed/pass
+travelling-around p1: completed/pass
+travelling-around p2: completed/pass
+
+retrieval mode: fastembed (BAAI/bge-small-zh-v1.5, ADR-0007); all six passes pass with zero blocking failures; planning retrieval ranks the teacher-intent source first (cosine 0.61-0.81) with reading-passage chunks second (0.32-0.57); chunk-level citations verified by C-GROUND-1 on every pass.

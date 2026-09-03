@@ -23,6 +23,7 @@ from lessoncanvas.modules.artifact_production.docx_tools import (
 from lessoncanvas.modules.artifact_production.fastfail import settle_vanished_run
 from lessoncanvas.modules.discovery_planning.graph import record_trace
 from lessoncanvas.modules.run_orchestration import service as run_service
+from lessoncanvas.modules.sources_grounding import retrieval
 
 RETRYABLE_LESSON_RETRIES = 1
 
@@ -180,9 +181,40 @@ def process_lesson_node(state: GenerationState) -> dict:
             lesson, _objectives_text(session, blueprint_payload), brief_fields, unit_title
         )
 
+        # F014 D9: per-lesson semantic retrieval grounds this artifact; the
+        # captured hit set is the only source of its citations (Spec AC-003).
+        objective_ids = set(lesson.get("objective_ids") or [])
+        objective_texts = [
+            str(item.get("text") or "")
+            for item in (blueprint_payload.get("unit") or {}).get("objectives") or []
+            if item.get("id") in objective_ids
+        ]
+        retrieval_query = " ".join(
+            part for part in [str(lesson.get("title") or ""), *objective_texts] if part
+        )
+        retrieval_result = retrieval.retrieve(session, run.project_id, retrieval_query)
+        record_trace(
+            session,
+            run.id,
+            "retrieval.semantic_search",
+            retrieval.trace_payload(
+                retrieval_result,
+                family="plans",
+                purpose="corpus",
+                lesson_index=artifact.lesson_index,
+            ),
+            0,
+        )
+        session.commit()
+
         try:
             _process_one_lesson(
-                session, run, artifact, context, state.get("memory_context") or []
+                session,
+                run,
+                artifact,
+                context,
+                state.get("memory_context") or [],
+                retrieval_result=retrieval_result,
             )
         except CapExhaustedError:
             return {"outcome": "capped"}
@@ -206,7 +238,12 @@ def process_lesson_node(state: GenerationState) -> dict:
 
 
 def _process_one_lesson(
-    session, run, artifact, context: dict, memory_context: list | None = None
+    session,
+    run,
+    artifact,
+    context: dict,
+    memory_context: list | None = None,
+    retrieval_result: dict | None = None,
 ) -> None:
     from lessoncanvas.adapters.storage import StorageAdapter
     from lessoncanvas.settings import get_settings
@@ -234,7 +271,18 @@ def _process_one_lesson(
             "kind": "generation_write_lesson",
             "language_mode": artifact.language_mode,
             "lesson": context,
+            "grounding_state": (retrieval_result or {}).get("grounding_state", "none"),
         }
+        if (retrieval_result or {}).get("hits"):
+            # F014: retrieved chunks travel only as labeled user payload.
+            user_payload["retrieved_sources"] = [
+                {
+                    "filename": hit["filename"],
+                    "position": hit["position"],
+                    "text": hit["text"],
+                }
+                for hit in retrieval_result["hits"]
+            ]
         if memory_context:
             # F013: subordinate teacher memory as labeled, capped data only.
             user_payload["memory_context"] = memory_context
@@ -318,6 +366,11 @@ def _process_one_lesson(
         artifact.checksum = hashlib.sha256(content).hexdigest()
         artifact.status = "complete"
         artifact.failure_reason = None
+        # F014: citations bind to this lesson's captured retrieval set.
+        artifact.citations_json = json.dumps(
+            retrieval.citation_objects(retrieval_result or {}), ensure_ascii=False
+        )
+        artifact.grounding_state = (retrieval_result or {}).get("grounding_state", "none")
         session.commit()
         run_service.append_event(
             session, run.id, "lesson",

@@ -10,7 +10,7 @@ from typing_extensions import TypedDict
 
 from lessoncanvas.adapters.model import ModelProviderError, get_model_adapter, parse_model_json
 from lessoncanvas.db import SessionLocal
-from lessoncanvas.models import DiscoveryRun, InteractionMessage, Source, SourceChunk
+from lessoncanvas.models import DiscoveryRun, InteractionMessage, Source
 from lessoncanvas.modules.discovery_planning.fields import (
     MAX_QUESTIONS_PER_ROUND,
     MAX_ROUNDS,
@@ -37,25 +37,31 @@ class PlanningState(TypedDict, total=False):
     memory_context: list
 
 
-def build_grounding(session, project_id, brief_fields: dict) -> dict:
+def build_grounding(session, run_id, project_id, brief_fields: dict) -> dict:
     sources = session.scalars(
         select(Source).where(Source.project_id == project_id, Source.status == "ready")
     ).all()
-    source_entries = []
-    corpus_parts = []
-    for source in sources:
-        source_entries.append({"source_id": str(source.id), "filename": source.filename})
-        chunks = session.scalars(
-            select(SourceChunk)
-            .where(SourceChunk.source_id == source.id)
-            .order_by(SourceChunk.position)
-        ).all()
-        corpus_parts.extend(chunk.text for chunk in chunks)
-    corpus = "\n".join(corpus_parts)
+    source_entries = [
+        {"source_id": str(source.id), "filename": source.filename} for source in sources
+    ]
 
     theme = (brief_fields.get("unit_theme") or {}).get("value") or ""
     objectives = (brief_fields.get("teaching_objectives") or {}).get("value") or ""
     tokens = [t for t in re.split(r"[：:，,、；;。\s]+", f"{theme} {objectives}") if t]
+
+    # F014: vector top-k retrieval replaces full-corpus concatenation; the
+    # query is derived from the confirmed brief, and the retrieval is traced.
+    from lessoncanvas.modules.sources_grounding import retrieval
+
+    result = retrieval.retrieve(session, project_id, f"{theme} {objectives}".strip())
+    record_trace(
+        session,
+        run_id,
+        "retrieval.semantic_search",
+        retrieval.trace_payload(result, family="planning", purpose="corpus"),
+        0,
+    )
+
     standards_sections = (
         execute_tool("search_curriculum_standards", {"query": " ".join(tokens[:6]), "limit": 3})
         if tokens
@@ -64,7 +70,7 @@ def build_grounding(session, project_id, brief_fields: dict) -> dict:
 
     return {
         "sources": source_entries,
-        "corpus": corpus,
+        "retrieval": result,
         "standards_sections": standards_sections,
     }
 
@@ -76,12 +82,18 @@ def analyze_node(state: PlanningState) -> dict:
         run = session.get(DiscoveryRun, run_id)
         run.status = "questioning"
         adapter = get_model_adapter()
+        from lessoncanvas.modules.sources_grounding import retrieval as retrieval_module
+
+        grounding = state.get("grounding", {})
+        result = grounding.get("retrieval") or {}
         user_payload = {
             "kind": "planning_gap_analysis",
             "known_fields": list(state.get("known_fields", {}).keys()),
             "planning_gaps": PLANNING_GAP_KEYS,
             "brief": state.get("brief", {}),
-            "corpus_excerpt": (state.get("grounding", {}).get("corpus") or "")[:2000],
+            "corpus_excerpt": retrieval_module.corpus_excerpt(result),
+            "retrieved_sources": retrieval_module.retrieved_source_entries(result),
+            "grounding_state": result.get("grounding_state", "none"),
         }
         if state.get("memory_context"):
             # F013: subordinate teacher memory as labeled, capped data only.
@@ -181,7 +193,10 @@ def build_draft_node(state: PlanningState) -> dict:
     run_id = state["run_id"]
     session = SessionLocal()
     try:
-        from lessoncanvas.modules.discovery_planning.blueprint import normalize_blueprint
+        from lessoncanvas.modules.discovery_planning.blueprint import (
+            build_citation_retrieval,
+            normalize_blueprint,
+        )
 
         run = session.get(DiscoveryRun, run_id)
         run.status = "drafting"
@@ -198,11 +213,16 @@ def build_draft_node(state: PlanningState) -> dict:
                 0,
             )
         adapter = get_model_adapter()
+        from lessoncanvas.modules.sources_grounding import retrieval as retrieval_module
+
+        result = grounding.get("retrieval") or {}
         user_payload = {
             "kind": "planning_build_draft",
             "brief": state.get("brief", {}),
             "known": state.get("known_fields", {}),
-            "corpus_excerpt": (grounding.get("corpus") or "")[:2000],
+            "corpus_excerpt": retrieval_module.corpus_excerpt(result),
+            "retrieved_sources": retrieval_module.retrieved_source_entries(result),
+            "grounding_state": result.get("grounding_state", "none"),
             "standards": grounding.get("standards_sections", []),
         }
         if state.get("memory_context"):
@@ -231,7 +251,11 @@ def build_draft_node(state: PlanningState) -> dict:
         )
         run.model_calls += 1
 
-        payload = normalize_blueprint(data.get("blueprint", data), grounding)
+        payload = normalize_blueprint(
+            data.get("blueprint", data),
+            grounding,
+            citation_retrieval=build_citation_retrieval(session, run_id, run.project_id),
+        )
         run.draft_json = json.dumps(payload, ensure_ascii=False)
         run.status = "draft_ready"
         session.commit()
@@ -286,7 +310,7 @@ def _initial_state(session, run: DiscoveryRun) -> dict:
 
     brief_version = session.get(BriefVersion, run.brief_version_id)
     brief_fields = json.loads(brief_version.fields_json)
-    grounding = build_grounding(session, run.project_id, brief_fields)
+    grounding = build_grounding(session, run.id, run.project_id, brief_fields)
     # F013: snapshot the effective memory set once per planning run; the
     # bound brief's language field drives the deterministic conflict check.
     from lessoncanvas.modules.teacher_memory.context import attach_run_memory

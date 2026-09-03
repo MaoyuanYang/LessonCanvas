@@ -534,6 +534,8 @@ def test_deck_injection_payload_stays_inert(client, auth, db_session):
         # F013: every run records its (possibly empty) applied-memory
         # snapshot for evidence honesty.
         "memory.applied",
+        # F014: per-lesson semantic retrieval grounds the model payload.
+        "retrieval.semantic_search",
     }
     for trace in traces:
         payload_json = json.loads(trace.payload_json)
@@ -542,6 +544,10 @@ def test_deck_injection_payload_stays_inert(client, auth, db_session):
             # F013 memory.applied snapshot keys (applied/conflicts/budget_skipped/
             # project_disabled/injected_chars).
             "applied", "conflicts", "budget_skipped", "project_disabled", "injected_chars",
+            # F014 retrieval.semantic_search payload keys.
+            "family", "purpose", "query", "hits", "hit_count", "excluded_count",
+            "excluded_reasons", "budget_chars", "used_chars", "grounding_state",
+            "error", "item_kind", "item_id",
         }
 
 

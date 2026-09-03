@@ -59,6 +59,7 @@ services:
       LESSONCANVAS_S3_ENDPOINT_URL: http://minio:9000
       LESSONCANVAS_S3_ACCESS_KEY: lessoncanvas
       LESSONCANVAS_S3_SECRET_KEY: ${LESSONCANVAS_MINIO_PASSWORD:-lessoncanvas_dev_only}
+      LESSONCANVAS_EMBEDDING_ADAPTER: fastembed
     ports:
       - "8000:8000"
     depends_on:
@@ -91,6 +92,7 @@ services:
       LESSONCANVAS_S3_ENDPOINT_URL: http://minio:9000
       LESSONCANVAS_S3_ACCESS_KEY: lessoncanvas
       LESSONCANVAS_S3_SECRET_KEY: ${LESSONCANVAS_MINIO_PASSWORD:-lessoncanvas_dev_only}
+      LESSONCANVAS_EMBEDDING_ADAPTER: fastembed
     # F012 TS-011: pre-create the checkpointer schema before the worker starts
     # (same rationale as the api entrypoint).
     command: ["sh", "-c", "python -m lessoncanvas.checkpointer_setup && celery -A lessoncanvas.worker.celery_app worker --loglevel=INFO --concurrency=2"]

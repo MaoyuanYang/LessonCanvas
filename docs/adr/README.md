@@ -24,6 +24,7 @@ A confirmed L3 decision must have an Accepted ADR before implementation relies o
 | `0004-mcp-tool-and-source-protocol.md` | Adopt MCP for external source consumption and internal tool definitions without exposing a public server | `Accepted` | 2026-08-23 |
 | `0005-workspace-scoped-teacher-memory.md` | Persist teacher memory only as workspace-scoped, teacher-confirmed, subordinate context | `Accepted` | 2026-08-23 |
 | `0006-remove-managed-identity-for-mvp.md` | Remove Clerk for the MVP; application-issued anonymous workspace tokens without login | `Accepted` | 2026-09-02 |
+| `0007-local-in-process-embedding-adapter.md` | Use a local in-process embedding model (fastembed + bge-small-zh-v1.5) behind a thin adapter for semantic source retrieval | `Accepted` | 2026-09-03 |
 
 ## When to Create an ADR
 

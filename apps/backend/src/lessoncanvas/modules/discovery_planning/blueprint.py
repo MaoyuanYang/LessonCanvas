@@ -60,14 +60,50 @@ def parse_lesson_count(brief_fields: dict) -> int | None:
     return int(match.group()) if match else None
 
 
+def build_citation_retrieval(session, run_id, project_id):
+    """F014: per-item chunk-citation retrieval closure (Spec AC-003).
+
+    Each objective/lesson citation binds to the chunk set actually retrieved
+    for that item's own query; with a run bound, every citation retrieval is
+    traced. Citations arriving inside model or teacher payloads are never
+    trusted — only this server-side path produces them.
+    """
+
+    from lessoncanvas.modules.discovery_planning.graph import record_trace
+    from lessoncanvas.modules.sources_grounding import retrieval
+
+    def retrieve_citations(item_kind: str, item_id: str, query: str) -> list[dict]:
+        result = retrieval.retrieve(session, project_id, query)
+        if run_id is not None:
+            record_trace(
+                session,
+                run_id,
+                "retrieval.semantic_search",
+                retrieval.trace_payload(
+                    result,
+                    family="planning",
+                    purpose="citation",
+                    item_kind=item_kind,
+                    item_id=item_id,
+                ),
+                0,
+            )
+        return retrieval.citation_objects(result)
+
+    return retrieve_citations
+
+
 def normalize_blueprint(
     raw: dict,
     grounding: dict | None = None,
+    citation_retrieval=None,
 ) -> dict:
     """Normalize untrusted model/teacher payload into the canonical blueprint shape.
 
-    Server-authoritative enrichment: citations are injected from verified grounding
-    context (ready sources and the standards snapshot), never trusted from the payload.
+    Server-authoritative enrichment: citations are injected from verified
+    grounding context (the standards snapshot and, when a citation retrieval
+    is provided, the chunk sets actually retrieved per item), never trusted
+    from the payload.
     """
 
     grounding = grounding or {}
@@ -80,14 +116,11 @@ def normalize_blueprint(
             "section_id": first.get("section_id"),
             "snapshot_version": first.get("snapshot_version"),
         }
-    source_citation = None
-    if grounding.get("sources"):
-        first_source = grounding["sources"][0]
-        source_citation = {
-            "type": "source",
-            "source_id": first_source.get("source_id"),
-            "filename": first_source.get("filename"),
-        }
+
+    def item_citations(item_kind: str, item_id: str, query: str) -> list[dict]:
+        if citation_retrieval is None or not query.strip():
+            return []
+        return citation_retrieval(item_kind, item_id, query)
 
     unit_raw = raw.get("unit") if isinstance(raw.get("unit"), dict) else {}
     objectives_raw = unit_raw.get("objectives")
@@ -102,6 +135,7 @@ def normalize_blueprint(
         citations = []
         if standards_citation:
             citations.append(dict(standards_citation))
+        citations.extend(item_citations("objective", f"obj-{index}", text))
         objectives.append({"id": f"obj-{index}", "text": text[:500], "citations": citations})
 
     lessons_raw = raw.get("lessons")
@@ -122,9 +156,18 @@ def normalize_blueprint(
         )
         period_raw = item.get("period_count")
         period_count = int(period_raw) if isinstance(period_raw, int) and period_raw > 0 else None
-        citations = []
-        if source_citation:
-            citations.append(dict(source_citation))
+        citations = item_citations(
+            "lesson",
+            str(index),
+            " ".join(
+                part
+                for part in [
+                    _text(item.get("title")) or "",
+                    _text(item.get("assessment_intent")) or "",
+                ]
+                if part
+            ),
+        )
         if standards_citation and index == 1:
             citations.append(dict(standards_citation))
         lessons.append(
@@ -457,7 +500,11 @@ def patch_draft(
 ) -> BlueprintDraft:
     draft, brief_version = _require_current_draft(session, project_id, base_revision)
     existing = json.loads(draft.payload_json)
-    incoming = normalize_blueprint(payload)
+    # F014: teacher-edited blueprints get freshly server-injected chunk
+    # citations; payload-supplied citations are never trusted.
+    incoming = normalize_blueprint(
+        payload, citation_retrieval=build_citation_retrieval(session, None, project_id)
+    )
     if "unit" in (payload or {}):
         existing["unit"] = incoming["unit"]
     if "lessons" in (payload or {}):

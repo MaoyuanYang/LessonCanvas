@@ -23,6 +23,19 @@ class RetainedArtifactOut(BaseModel):
     download_available: bool = True
 
 
+class CitationOut(BaseModel):
+    """F014 U1: server-injected chunk citation (source + position + hash)."""
+
+    type: str
+    source_id: str | None = None
+    filename: str | None = None
+    chunk_position: int | None = None
+    text_sha256: str | None = None
+    excerpt: str | None = None
+    section_id: str | None = None
+    snapshot_version: str | None = None
+
+
 class LessonArtifactOut(BaseModel):
     id: str
     lesson_index: int
@@ -31,6 +44,9 @@ class LessonArtifactOut(BaseModel):
     failure_reason: str | None = None
     retry_count: int
     download_url: str | None = None
+    # F014 U1/U2: chunk citations and the honest per-lesson grounding state.
+    citations: list[CitationOut] = []
+    grounding_state: str | None = None
 
 
 class GenerationSnapshot(BaseModel):
@@ -57,6 +73,8 @@ class DeckArtifactOut(BaseModel):
     failure_reason: str | None = None
     retry_count: int
     download_url: str | None = None
+    citations: list[CitationOut] = []
+    grounding_state: str | None = None
 
 
 class DeckGenerationSnapshot(BaseModel):
@@ -85,6 +103,8 @@ class ExerciseArtifactOut(BaseModel):
     retry_count: int
     exercise_download_url: str | None = None
     answer_download_url: str | None = None
+    citations: list[CitationOut] = []
+    grounding_state: str | None = None
 
 
 class ExerciseGenerationSnapshot(BaseModel):
@@ -112,6 +132,14 @@ class RunEventOut(BaseModel):
     created_at: str
 
 
+def _citations_of(artifact) -> list[CitationOut]:
+    import json
+
+    if not getattr(artifact, "citations_json", None):
+        return []
+    return [CitationOut(**item) for item in json.loads(artifact.citations_json)]
+
+
 def artifact_out(artifact) -> LessonArtifactOut:
     return LessonArtifactOut(
         id=str(artifact.id),
@@ -123,6 +151,8 @@ def artifact_out(artifact) -> LessonArtifactOut:
         download_url=f"/projects/{artifact.project_id}/lesson-plans/{artifact.id}/download"
         if artifact.status == "complete"
         else None,
+        citations=_citations_of(artifact),
+        grounding_state=artifact.grounding_state,
     )
 
 
@@ -138,6 +168,8 @@ def deck_artifact_out(artifact) -> DeckArtifactOut:
         download_url=f"/projects/{artifact.project_id}/slide-decks/{artifact.id}/download"
         if artifact.status == "complete"
         else None,
+        citations=_citations_of(artifact),
+        grounding_state=artifact.grounding_state,
     )
 
 
@@ -162,6 +194,8 @@ def exercise_artifact_out(artifact) -> ExerciseArtifactOut:
             if complete
             else None
         ),
+        citations=_citations_of(artifact),
+        grounding_state=artifact.grounding_state,
     )
 
 

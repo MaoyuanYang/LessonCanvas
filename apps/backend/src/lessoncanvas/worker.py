@@ -4,9 +4,19 @@ from lessoncanvas.settings import get_settings
 
 settings = get_settings()
 
-celery_app = Celery("lessoncanvas", broker=settings.redis_url, backend=settings.redis_url)
+# `include` registers the source-parse task (decorated in its owning module).
+# F014 delivery found the deployed worker rejecting queued parses as
+# unregistered — a latent defect since F001 that coarse first-source
+# citations never exposed; retrieval-grounded citations need parsed,
+# embedded chunks. include-import happens after app init, avoiding the
+# worker <-> tasks import cycle a module-level import would create.
+celery_app = Celery(
+    "lessoncanvas",
+    broker=settings.redis_url,
+    backend=settings.redis_url,
+    include=["lessoncanvas.modules.sources_grounding.tasks"],
+)
 celery_app.conf.task_track_started = True
-
 
 @celery_app.task(name="lessoncanvas.health_check")
 def health_check() -> str:

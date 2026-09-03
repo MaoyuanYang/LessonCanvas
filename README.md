@@ -26,6 +26,7 @@ LessonCanvas is a portfolio-first Agent application for individual mainland Chin
 | Files | S3-compatible object storage | `CONFIRMED` | Private uploads and generated DOCX/PPTX artifacts |
 | Identity | Application-issued anonymous workspace tokens (ADR-0006; no login in Phase 1) | `CONFIRMED` | The application owns authorization and issues per-browser workspace tokens; no password storage |
 | Model | One hosted model behind a thin adapter | `CONFIRMED` | Provider selection remains open until the Agent runtime Feature |
+| Embeddings | Local in-process model behind a thin adapter (ADR-0007) | `CONFIRMED` | fastembed + bge-small-zh-v1.5; weights baked into the deployed image; semantic source retrieval (F014) with chunk-level citations |
 | Tool protocol | MCP | `CONFIRMED` | External source consumption and internal tool definitions; no public server |
 
 ## Current Stage
