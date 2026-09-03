@@ -547,7 +547,9 @@ function AssignmentRow({
   const [concludeReason, setConcludeReason] = useState("");
 
   const detailQuery = useQuery({
-    queryKey: ["product-validation-detail", assignment.id],
+    // Nested under the region key so the import/conclude invalidations
+    // refresh an already-expanded detail instead of leaving stale evidence.
+    queryKey: ["product-validation", projectId, "detail", assignment.id],
     queryFn: async () => productValidationDetail(await getApiToken(), projectId, assignment.id),
     enabled: expanded,
   });

@@ -81,6 +81,8 @@ Sample seeding:            LESSONCANVAS_MODEL_ADAPTER=fake LESSONCANVAS_TASKS_EA
 
 Deterministic suites replace DeepSeek with the scripted fake adapter and use application-issued workspace tokens (ADR-0006; no third-party identity in any suite); live-provider evidence runs separately (F001 Test Design TQ-001). Integration tests that require local services skip automatically when a service is unreachable.
 
+E2E operational notes (Phase-1 review, 2026-09-03): each gated spec enables via its `E2E_*_FAULT=1` / `E2E_*_LIVE=1` variable. Run journeys with `--workers=1` (serial). The fault-marker scripting is one-shot per fake-API process per key: `TRANSIENT_FAIL` fails only the first three attempts for a lesson, and the plan-phase key is shared by the generation/deck/exercise TS-026 journeys — start a fresh fake instance before each such suite. Cap-exhaustion journeys additionally need a separately configured fake instance (e.g. `LESSONCANVAS_MAX_MODEL_CALLS_PER_RUN=3`, `..._PER_DECK_RUN=1`, `..._PER_EXERCISE_RUN=1`) paired with its own web server whose `NEXT_PUBLIC_API_BASE_URL` targets that instance, because the browser calls the API baked into the web build/server, not `E2E_API_BASE_URL` (which only mints the workspace token). Run at most one `next dev` per app directory at a time: concurrent dev servers share `.next` and cross-contaminate `NEXT_PUBLIC_*` inlining. Recorded green executions served the web from `next dev`; production builds surface the known fill/save re-render race more often (F004 M-1 / F013 IF-4 class).
+
 When commands change, update this file, `README.md`, and `AGENTS.md` in the same change.
 
 ## Feature Test Design Rule

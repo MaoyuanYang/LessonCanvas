@@ -135,3 +135,28 @@ def test_account_deletion_purges_without_external_identity_step(client, auth):
     status = client.get("/account/deletion-status", headers=auth)
     statuses = [item["status"] for item in status.json()]
     assert "purged" in statuses
+
+
+def test_list_prefix_reports_never_created_bucket_as_empty():
+    """Deletion-completeness verification: a lazily never-created bucket holds
+    no objects, so listing it verifies as empty (Phase-1 review regression,
+    2026-09-03: deleting an upload-free project must not 500 on NoSuchBucket)."""
+    from lessoncanvas.adapters.storage import StorageAdapter
+
+    adapter = StorageAdapter(bucket=f"lessoncanvas-absent-{uuid.uuid4().hex[:12]}")
+    assert adapter.list_prefix(f"{uuid.uuid4()}/{uuid.uuid4()}/") == []
+
+
+def test_project_deletion_with_no_uploads_succeeds_when_bucket_absent(client, auth, monkeypatch):
+    """End-to-end regression for the same edge: a project that never wrote an
+    object is deletable even when the sources bucket does not exist yet."""
+    from lessoncanvas.settings import get_settings
+
+    absent_bucket = f"lessoncanvas-absent-{uuid.uuid4().hex[:12]}"
+    monkeypatch.setattr(get_settings(), "s3_bucket_sources", absent_bucket)
+
+    project_id = client.post("/projects", json={"name": "空项目删除"}, headers=auth).json()["id"]
+    deleted = client.delete(f"/projects/{project_id}", headers=auth)
+
+    assert deleted.status_code == 200
+    assert deleted.json()["deleted"] is True

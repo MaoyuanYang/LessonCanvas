@@ -47,12 +47,13 @@ test.describe("product validation journey - fault stack", () => {
       const assignDialog = page.getByRole("dialog");
       await assignDialog.getByLabel("评估单元").selectOption("travelling-around");
       await assignDialog.getByRole("button", { name: "确认分派" }).click({ timeout: 30000 });
+      // Scope to the assignment row: the technical-evaluation result row in
+      // the region above carries the same unit label and would win .first().
       const assignmentRow = page
         .getByRole("button")
         .filter({ hasText: "环游世界（英文输出）" })
-        .first();
+        .filter({ hasText: "待证据" });
       await expect(assignmentRow).toBeVisible({ timeout: 30000 });
-      await expect(page.getByText("待证据").first()).toBeVisible({ timeout: 30000 });
 
       // Expand the detail: bound package summary and the rubric hand-out.
       await assignmentRow.click({ timeout: 30000 });

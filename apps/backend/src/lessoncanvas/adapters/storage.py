@@ -2,6 +2,7 @@ import io
 
 import boto3
 from botocore.client import Config as BotoConfig
+from botocore.exceptions import ClientError
 
 from lessoncanvas.settings import get_settings
 
@@ -49,14 +50,24 @@ class StorageAdapter:
             return False
 
     def list_prefix(self, prefix: str) -> list[str]:
-        """F011 deletion-completeness verification: keys under a prefix."""
+        """F011 deletion-completeness verification: keys under a prefix.
+
+        A bucket that was never created (buckets are created lazily on the
+        first write) holds no objects, so it verifies as empty instead of
+        failing the deletion check.
+        """
         keys: list[str] = []
         token: str | None = None
         while True:
             kwargs = {"Bucket": self._bucket, "Prefix": prefix}
             if token:
                 kwargs["ContinuationToken"] = token
-            response = self._client.list_objects_v2(**kwargs)
+            try:
+                response = self._client.list_objects_v2(**kwargs)
+            except ClientError as error:
+                if error.response.get("Error", {}).get("Code") == "NoSuchBucket":
+                    return []
+                raise
             keys.extend(item["Key"] for item in response.get("Contents", []))
             if not response.get("IsTruncated"):
                 return keys
