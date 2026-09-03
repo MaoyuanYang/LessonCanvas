@@ -1,10 +1,12 @@
 import uuid
 from datetime import UTC, datetime
 
+from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     BigInteger,
     DateTime,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
@@ -155,6 +157,10 @@ class Source(Base):
     rejection_message: Mapped[str | None] = mapped_column(Text, nullable=True)
     object_key: Mapped[str | None] = mapped_column(String(512), nullable=True)
     rights_acknowledged: Mapped[bool] = mapped_column(nullable=False, default=False)
+    # F014: content identity of the parsed text (sha256 over the chunk texts
+    # joined in position order) — written by the parse pipeline and the
+    # deploy-time backfill.
+    content_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, onupdate=utcnow
@@ -163,6 +169,14 @@ class Source(Base):
 
 class SourceChunk(Base):
     __tablename__ = "source_chunks"
+    __table_args__ = (
+        Index(
+            "ix_source_chunks_embedding_hnsw",
+            "embedding",
+            postgresql_using="hnsw",
+            postgresql_ops={"embedding": "vector_cosine_ops"},
+        ),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
     source_id: Mapped[uuid.UUID] = mapped_column(
@@ -170,6 +184,14 @@ class SourceChunk(Base):
     )
     position: Mapped[int] = mapped_column(Integer, nullable=False)
     text: Mapped[str] = mapped_column(Text, nullable=False)
+    # F014: one embedding per chunk at write time, or an explicit failed
+    # state with a recorded reason — never a silent NULL (Spec AC-001).
+    embedding = mapped_column(Vector(512), nullable=True)
+    embedding_status: Mapped[str] = mapped_column(
+        String(16), nullable=False, server_default="pending"
+    )
+    embedding_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    text_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
 
 
 class DiscoveryRun(Base):
@@ -383,6 +405,9 @@ class LessonPlanArtifact(Base):
     checksum: Mapped[str | None] = mapped_column(Text, nullable=True)
     failure_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     retry_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    # F014: server-injected chunk citations from this artifact's own retrieval.
+    citations_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    grounding_state: Mapped[str | None] = mapped_column(String(16), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, onupdate=utcnow
@@ -415,6 +440,9 @@ class SlideDeckArtifact(Base):
     object_key: Mapped[str | None] = mapped_column(Text, nullable=True)
     checksum: Mapped[str | None] = mapped_column(Text, nullable=True)
     failure_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # F014: server-injected chunk citations from this artifact's own retrieval.
+    citations_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    grounding_state: Mapped[str | None] = mapped_column(String(16), nullable=True)
     retry_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(
@@ -448,6 +476,9 @@ class ExerciseArtifact(Base):
     answer_object_key: Mapped[str | None] = mapped_column(Text, nullable=True)
     answer_checksum: Mapped[str | None] = mapped_column(Text, nullable=True)
     failure_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # F014: server-injected chunk citations from this artifact's own retrieval.
+    citations_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    grounding_state: Mapped[str | None] = mapped_column(String(16), nullable=True)
     retry_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(

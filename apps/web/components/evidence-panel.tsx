@@ -42,6 +42,22 @@ function eventLabel(eventType: string): string {
   return EVIDENCE_EVENT_LABELS[eventType] ?? eventType;
 }
 
+// F014 U4 (ux-ui.md): retrieval rows carry teacher-readable summary chips on
+// the collapsed row; full query/hit detail stays behind the existing expand.
+function retrievalSummaryChips(payload: Record<string, unknown>): string[] {
+  const chips: string[] = [];
+  if (typeof payload.hit_count === "number") {
+    chips.push(`命中 ${payload.hit_count}`);
+  }
+  if (typeof payload.excluded_count === "number" && payload.excluded_count > 0) {
+    chips.push(`排除 ${payload.excluded_count}`);
+  }
+  if (typeof payload.used_chars === "number" && typeof payload.budget_chars === "number") {
+    chips.push(`预算 ${payload.used_chars}/${payload.budget_chars} 字`);
+  }
+  return chips;
+}
+
 function formatCost(costUsd: number | null): string {
   if (costUsd === null) return "未记录";
   return `约 $${costUsd.toFixed(4)}（估算）`;
@@ -480,6 +496,18 @@ export function EvidencePanel({
                               {event.lesson_index !== null && event.lesson_index !== undefined ? (
                                 <span>第 {event.lesson_index} 课</span>
                               ) : null}
+                              {event.event_type === "retrieval.semantic_search"
+                                ? retrievalSummaryChips(event.payload as Record<string, unknown>).map(
+                                    (chip) => (
+                                      <span
+                                        key={chip}
+                                        className="rounded bg-evidence/10 px-1.5 py-0.5 text-xs text-evidence"
+                                      >
+                                        {chip}
+                                      </span>
+                                    ),
+                                  )
+                                : null}
                               <span className="text-ink-secondary">{formatTime(event.created_at)}</span>
                               <span className="text-ink-secondary">
                                 {event.latency_ms !== null ? `${event.latency_ms} ms` : ""}

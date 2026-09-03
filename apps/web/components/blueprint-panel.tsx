@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { getApiToken } from "@/lib/auth";
+import { CitationChipGroup } from "@/components/citation-chip";
 import { ConversationRegion } from "@/components/conversation-region";
 import { DesktopRequiredNotice, useDesktop } from "@/components/desktop-gate";
 import { ImpactRegion } from "@/components/version-compare-panel";
@@ -27,17 +28,6 @@ const FINDING_KIND_LABELS: Record<string, string> = {
   standards_warning: "课标对齐警示",
   period_warning: "课时分布警示",
 };
-
-function citationLabel(citation: {
-  type: string;
-  filename?: string | null;
-  snapshot_version?: string | null;
-}): string {
-  if (citation.type === "standards") {
-    return `课标 ${citation.snapshot_version ?? ""}`.trim();
-  }
-  return citation.filename ? `来源：${citation.filename}` : "项目来源";
-}
 
 export function BlueprintPanel({
   projectId,
@@ -351,14 +341,7 @@ export function BlueprintPanel({
                 <li key={objective.id} className="text-sm text-ink">
                   <span className="mr-2 font-medium">{objective.id}</span>
                   {objective.text}
-                  {objective.citations.map((citation, index) => (
-                    <span
-                      key={index}
-                      className="ml-2 rounded bg-evidence/10 px-1.5 py-0.5 text-xs text-evidence"
-                    >
-                      {citationLabel(citation)}
-                    </span>
-                  ))}
+                  <CitationChipGroup citations={objective.citations} />
                 </li>
               ))}
             </ul>

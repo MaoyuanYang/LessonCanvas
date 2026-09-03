@@ -52,6 +52,10 @@ def model_config_snapshot() -> str:
             "checkpoint_backend": settings.checkpoint_backend,
             "tasks_eager": settings.tasks_eager,
             "max_model_calls_per_run": settings.max_model_calls_per_run,
+            # F014 D5/AC-005: retrieval mode joins the pass-comparability
+            # signature so truncation-era and semantic-retrieval passes never
+            # compare silently.
+            "retrieval_mode": settings.embedding_adapter,
         },
         ensure_ascii=False,
     )

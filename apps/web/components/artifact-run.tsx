@@ -1,7 +1,9 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { CitationChipGroup } from "@/components/citation-chip";
 import { Alert } from "@/components/ui";
+import type { BlueprintCitation } from "@/lib/api";
 
 // Shared run/artifact progress surfaces promoted from F003 feature-local code
 // (F004 D-DECKDS): the per-lesson artifact progress list and the run outcome
@@ -41,6 +43,10 @@ export interface ArtifactRow {
   status: string;
   failure_reason: string | null;
   download_url?: string | null;
+  // F014 U1/U2: server-injected chunk citations and the honest per-lesson
+  // grounding state ("retrieved" | "none"); absent on pre-F014 artifacts.
+  citations?: BlueprintCitation[] | null;
+  grounding_state?: string | null;
 }
 
 export function ReconnectBanner({ visible }: { visible: boolean }) {
@@ -195,6 +201,14 @@ export function ArtifactProgressList({
               </span>
               {artifact.failure_reason ? (
                 <p className="mt-1 text-xs text-ink-secondary">原因：{artifact.failure_reason}</p>
+              ) : null}
+              {artifact.status === "complete" && artifact.grounding_state === "none" ? (
+                <p className="mt-1 text-xs text-ink-secondary">无强相关来源语料</p>
+              ) : null}
+              {artifact.status === "complete" ? (
+                <span className="mt-1 flex flex-wrap items-center">
+                  <CitationChipGroup citations={artifact.citations} />
+                </span>
               ) : null}
             </div>
             <div className="flex items-center gap-2">{renderActions?.(artifact)}</div>

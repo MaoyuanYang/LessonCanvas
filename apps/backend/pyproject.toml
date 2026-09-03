@@ -30,6 +30,11 @@ dev = [
     "httpx>=0.28",
     "ruff>=0.12",
 ]
+# F014/ADR-0007: the deployed image installs the real embedding runtime and
+# bakes the model weights; developer and CI environments use the fake adapter.
+embedding = [
+    "fastembed>=0.4",
+]
 
 [build-system]
 requires = ["hatchling"]

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from lessoncanvas.adapters.storage import StorageAdapter
 from lessoncanvas.models import AuditEvent, Project, Source, SourceChunk, Workspace
 from lessoncanvas.modules.identity_workspace.service import NotFoundError
-from lessoncanvas.modules.sources_grounding import parsing, policy, screening
+from lessoncanvas.modules.sources_grounding import embeddings, parsing, policy, screening
 from lessoncanvas.settings import get_settings
 
 
@@ -112,8 +112,21 @@ def process_source(session: Session, storage: StorageAdapter, source_id: uuid.UU
         return source
 
     session.query(SourceChunk).filter(SourceChunk.source_id == source.id).delete()
-    for position, chunk in enumerate(parsing.chunk_text(text)):
-        session.add(SourceChunk(source_id=source.id, position=position, text=chunk))
+    chunk_texts = list(parsing.chunk_text(text))
+    embedded = embeddings.embed_chunks(chunk_texts)
+    for position, (chunk, state) in enumerate(zip(chunk_texts, embedded, strict=True)):
+        session.add(
+            SourceChunk(
+                source_id=source.id,
+                position=position,
+                text=chunk,
+                embedding=state["vector"],
+                embedding_status=state["status"],
+                embedding_error=state["error"],
+                text_sha256=embeddings.text_hash(chunk),
+            )
+        )
+    source.content_sha256 = embeddings.content_hash(chunk_texts)
     source.status = "ready"
     source.rejection_code = None
     source.rejection_message = None

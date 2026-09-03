@@ -15,7 +15,7 @@ import sys
 from sqlalchemy import select
 
 from lessoncanvas.db import SessionLocal
-from lessoncanvas.models import Project, Workspace
+from lessoncanvas.models import Project
 from lessoncanvas.modules.identity_workspace import service as iw_service
 from lessoncanvas.modules.technical_evaluation import harness
 from lessoncanvas.modules.technical_evaluation.dataset import cached_dataset

@@ -6,6 +6,52 @@ import { getApiToken } from "@/lib/auth";
 import { DesktopRequiredNotice, useDesktop } from "@/components/desktop-gate";
 import { Alert, Button, StatusBadge } from "@/components/ui";
 import { ApiClientError, deleteSource, listSources, uploadSource } from "@/lib/api";
+import type { Source } from "@/lib/api";
+
+const EMBEDDING_STATUS_LABELS: Record<string, string> = {
+  ok: "已嵌入",
+  failed: "未嵌入",
+  pending: "待嵌入",
+};
+
+// F014 U1/U5 (ux-ui.md): expandable per-source chunk view — the full-fidelity
+// counterpart of citation tracing, with explicit 未嵌入 disclosure.
+function SourceChunkRegion({ source }: { source: Source }) {
+  const [expanded, setExpanded] = useState(false);
+  const chunks = source.chunks ?? [];
+  const failed = chunks.filter((chunk) => chunk.embedding_status !== "ok").length;
+  return (
+    <div className="mt-2">
+      <button
+        type="button"
+        aria-expanded={expanded}
+        onClick={() => setExpanded((value) => !value)}
+        className="text-xs text-evidence focus-visible:outline-2 focus-visible:outline-focus"
+      >
+        查看切块（{chunks.length} 段{failed > 0 ? `，${failed} 段未嵌入` : ""}）
+      </button>
+      {expanded ? (
+        <ol className="mt-2 space-y-2">
+          {chunks.map((chunk) => (
+            <li
+              key={chunk.position}
+              className="rounded border border-line bg-surface-alt/60 p-2 text-xs text-ink"
+            >
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-medium">第 {chunk.position} 段</span>
+                <StatusBadge status={EMBEDDING_STATUS_LABELS[chunk.embedding_status] ?? chunk.embedding_status} />
+                {chunk.embedding_status === "failed" && chunk.embedding_error ? (
+                  <span className="text-ink-secondary">原因：{chunk.embedding_error}</span>
+                ) : null}
+              </div>
+              <p className="mt-1 whitespace-pre-wrap break-words">{chunk.text}</p>
+            </li>
+          ))}
+        </ol>
+      ) : null}
+    </div>
+  );
+}
 
 export function SourcesPanel({
   projectId,
@@ -121,6 +167,9 @@ export function SourcesPanel({
                   <p className="mt-1 text-xs text-warning">
                     对象存储残留，删除未完成；再次点击「删除」即可修复。
                   </p>
+                ) : null}
+                {source.status === "ready" && (source.chunks?.length ?? 0) > 0 ? (
+                  <SourceChunkRegion source={source} />
                 ) : null}
               </div>
               {canWrite ? (

@@ -69,6 +69,17 @@ class Settings(BaseSettings):
     memory_injection_budget_chars: int = 2500
     memory_max_candidates_per_pass: int = 3
 
+    # F014 semantic source retrieval (Spec D1/D7, ADR-0007). The fake adapter
+    # is the safe code default; deployed environments set fastembed.
+    embedding_adapter: str = "fake"
+    embedding_model: str = "BAAI/bge-small-zh-v1.5"
+    embedding_dim: int = 512
+    retrieval_top_k: int = 6
+    retrieval_budget_chars: int = 2000
+    retrieval_similarity_threshold: float = 0.1
+    citation_top_chunks: int = 3
+    citation_excerpt_chars: int = 200
+
 
 @lru_cache
 def get_settings() -> Settings:

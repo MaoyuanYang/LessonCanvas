@@ -228,9 +228,43 @@ def process_deck_node(state: DeckState) -> dict:
 
         context = _deck_context(lesson, plan, brief_fields, unit_title)
 
+        # F014 D9: per-lesson retrieval grounds this deck from its own query
+        # (lesson identity plus the confirmed plan), never the plan's set.
+        from lessoncanvas.modules.discovery_planning.graph import record_trace
+        from lessoncanvas.modules.sources_grounding import retrieval
+
+        retrieval_query = " ".join(
+            part
+            for part in [
+                str(lesson.get("title") or ""),
+                str(plan.get("title") or ""),
+                " ".join(str(item) for item in (plan.get("objectives") or [])[:3]),
+            ]
+            if part
+        )
+        retrieval_result = retrieval.retrieve(session, run.project_id, retrieval_query)
+        record_trace(
+            session,
+            run.id,
+            "retrieval.semantic_search",
+            retrieval.trace_payload(
+                retrieval_result,
+                family="decks",
+                purpose="corpus",
+                lesson_index=artifact.lesson_index,
+            ),
+            0,
+        )
+        session.commit()
+
         try:
             _process_one_deck(
-                session, run, artifact, context, state.get("memory_context") or []
+                session,
+                run,
+                artifact,
+                context,
+                state.get("memory_context") or [],
+                retrieval_result=retrieval_result,
             )
         except CapExhaustedError:
             return {"outcome": "capped"}
@@ -256,7 +290,12 @@ def process_deck_node(state: DeckState) -> dict:
 
 
 def _process_one_deck(
-    session, run, artifact, context: dict, memory_context: list | None = None
+    session,
+    run,
+    artifact,
+    context: dict,
+    memory_context: list | None = None,
+    retrieval_result: dict | None = None,
 ) -> None:
     from lessoncanvas.adapters.storage import StorageAdapter
     from lessoncanvas.settings import get_settings
@@ -287,7 +326,18 @@ def _process_one_deck(
             "lesson": context,
             "max_stage_slides": settings.deck_max_stage_slides,
             "max_slides": settings.deck_max_slides,
+            "grounding_state": (retrieval_result or {}).get("grounding_state", "none"),
         }
+        if (retrieval_result or {}).get("hits"):
+            # F014: retrieved chunks travel only as labeled user payload.
+            user_payload["retrieved_sources"] = [
+                {
+                    "filename": hit["filename"],
+                    "position": hit["position"],
+                    "text": hit["text"],
+                }
+                for hit in retrieval_result["hits"]
+            ]
         if memory_context:
             # F013: subordinate teacher memory as labeled, capped data only.
             user_payload["memory_context"] = memory_context
@@ -356,6 +406,13 @@ def _process_one_deck(
         artifact.slide_count = slide_count_of(content)
         artifact.status = "complete"
         artifact.failure_reason = None
+        # F014: citations bind to this deck's own captured retrieval set.
+        from lessoncanvas.modules.sources_grounding import retrieval
+
+        artifact.citations_json = json.dumps(
+            retrieval.citation_objects(retrieval_result or {}), ensure_ascii=False
+        )
+        artifact.grounding_state = (retrieval_result or {}).get("grounding_state", "none")
         session.commit()
         run_service.append_event(
             session, run.id, "lesson",

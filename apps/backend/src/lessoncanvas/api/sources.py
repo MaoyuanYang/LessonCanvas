@@ -22,6 +22,16 @@ storage = StorageAdapter()
 DAY_SECONDS = 24 * 3600
 
 
+class ChunkOut(BaseModel):
+    """F014 U1/U5: per-chunk view for citation tracing and disclosure."""
+
+    position: int
+    text: str
+    embedding_status: str
+    embedding_error: str | None
+    text_sha256: str | None
+
+
 class SourceOut(BaseModel):
     id: uuid.UUID
     filename: str
@@ -31,11 +41,23 @@ class SourceOut(BaseModel):
     rejection_code: str | None
     rejection_message: str | None
     rights_acknowledged: bool
+    content_sha256: str | None
+    chunks: list[ChunkOut]
     created_at: datetime
     updated_at: datetime
 
 
-def to_out(source) -> SourceOut:
+def to_out(source, chunks) -> SourceOut:
+    chunk_outs = [
+        ChunkOut(
+            position=chunk.position,
+            text=chunk.text,
+            embedding_status=chunk.embedding_status,
+            embedding_error=chunk.embedding_error,
+            text_sha256=chunk.text_sha256,
+        )
+        for chunk in chunks
+    ]
     return SourceOut(
         id=source.id,
         filename=source.filename,
@@ -45,8 +67,25 @@ def to_out(source) -> SourceOut:
         rejection_code=source.rejection_code,
         rejection_message=source.rejection_message,
         rights_acknowledged=source.rights_acknowledged,
+        content_sha256=source.content_sha256,
+        chunks=chunk_outs,
         created_at=source.created_at,
         updated_at=source.updated_at,
+    )
+
+
+def chunks_of(session, source_id) -> list:
+    from sqlalchemy import select
+
+    from lessoncanvas.models import SourceChunk
+
+    return (
+        session.scalars(
+            select(SourceChunk)
+            .where(SourceChunk.source_id == source_id)
+            .order_by(SourceChunk.position)
+        )
+        .all()
     )
 
 
@@ -105,7 +144,7 @@ def upload_source(
         raise NotFoundError("project not found") from err
     enqueue_parse(source.id)
     session.refresh(source)
-    return to_out(source)
+    return to_out(source, chunks_of(session, source.id))
 
 
 @router.get("", response_model=list[SourceOut])
@@ -118,7 +157,7 @@ def list_sources(
         )
     except ServiceNotFound as err:
         raise NotFoundError("project not found") from err
-    return [to_out(s) for s in sources]
+    return [to_out(s, chunks_of(session, s.id)) for s in sources]
 
 
 @router.get("/{source_id}", response_model=SourceOut)
@@ -131,7 +170,7 @@ def get_source(
         )
     except ServiceNotFound as err:
         raise NotFoundError("source not found") from err
-    return to_out(source)
+    return to_out(source, chunks_of(session, source.id))
 
 
 @router.delete("/{source_id}", status_code=204)

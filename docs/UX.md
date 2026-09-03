@@ -124,6 +124,7 @@ Feature refinement may split or combine these responsibilities, but it must pres
 - Put teacher decisions in structured, confirmable state; use chat for questions and explanation, not as the only record.
 - Reveal technical depth progressively. The default view answers "what happened and what can I do" before "which node and token cost produced it."
 - Separate current, draft, stale, superseded, validated, and product-validation states in language as well as appearance.
+- Grounding honesty (F014): retrieved, per-item citations are traceable to the exact source chunk (expandable filename/position/excerpt/hash chips); zero-relevance lessons show an explicit 无强相关来源语料 notice at the artifact; excluded/unembedded chunks are disclosed (未嵌入 with reason in the sources view, 排除 counts on evidence retrieval rows) — never silent omission or silent fallback.
 - Preserve valid work. A local error or revision does not erase unrelated successful artifacts.
 - Show source and version context at the moment a teacher confirms or overrides a significant finding.
 - Dangerous actions: project/account deletion, supersession, and severe-finding override require explicit consequence text and confirmation; use undo only when the backend semantics truly support it.

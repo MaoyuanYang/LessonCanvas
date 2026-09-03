@@ -231,6 +231,14 @@ export function guardrailFeedback(err: unknown): string | null {
   return null;
 }
 
+export interface SourceChunkView {
+  position: number;
+  text: string;
+  embedding_status: string;
+  embedding_error: string | null;
+  text_sha256: string | null;
+}
+
 export interface Source {
   id: string;
   filename: string;
@@ -240,6 +248,8 @@ export interface Source {
   rejection_code: string | null;
   rejection_message: string | null;
   rights_acknowledged: boolean;
+  content_sha256: string | null;
+  chunks: SourceChunkView[];
   created_at: string;
   updated_at: string;
 }
@@ -448,6 +458,9 @@ export interface BlueprintCitation {
   type: "source" | "standards";
   source_id?: string | null;
   filename?: string | null;
+  chunk_position?: number | null;
+  text_sha256?: string | null;
+  excerpt?: string | null;
   section_id?: string | null;
   snapshot_version?: string | null;
 }
@@ -573,6 +586,8 @@ export interface GenerationArtifact {
   failure_reason: string | null;
   retry_count: number;
   download_url: string | null;
+  citations: BlueprintCitation[];
+  grounding_state: string | null;
 }
 
 export interface GenerationSnapshot {
@@ -659,6 +674,8 @@ export interface DeckArtifact {
   failure_reason: string | null;
   retry_count: number;
   download_url: string | null;
+  citations: BlueprintCitation[];
+  grounding_state: string | null;
 }
 
 export interface DeckGenerationSnapshot {
@@ -753,6 +770,8 @@ export interface ExerciseArtifact {
   retry_count: number;
   exercise_download_url: string | null;
   answer_download_url: string | null;
+  citations: BlueprintCitation[];
+  grounding_state: string | null;
 }
 
 export interface ExerciseGenerationSnapshot {
@@ -861,6 +880,7 @@ export const EVIDENCE_EVENT_LABELS: Record<string, string> = {
   "model.narration": "模型调用·叙述",
   "model.evidence_narration": "模型调用·任务讲解",
   "tool.standards_search": "工具调用·课标检索",
+  "retrieval.semantic_search": "语义检索",
   "tool.render_lesson_plan_docx": "工具调用·渲染教案文档",
   "tool.validate_lesson_plan_docx": "工具调用·校验教案文档",
   "tool.render_lesson_deck_pptx": "工具调用·渲染课件文档",
