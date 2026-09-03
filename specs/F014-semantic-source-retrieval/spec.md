@@ -1,13 +1,13 @@
 # F014: Semantic Source Retrieval
 
-- Spec Status: `REVIEW` (implementation complete; see Gate Record)
-- Roadmap Status: `REVIEW`
+- Spec Status: `DONE`
+- Roadmap Status: `DONE`
 - Priority: `P0`
 - Owner: `YMY / Project Owner` (driving `ZCode feature-dev` session)
 - Work item: [GitHub Issue #28](https://github.com/MaoyuanYang/LessonCanvas/issues/28) — bound 2026-09-03 (authorized); work-status authority
 - Decision Authority: `YMY / Project Owner`
 - Dependencies: None hard (Phase 1 complete); integrates with delivered F001 grounding, F003–F005 generation call sites, F006 evidence trace, F009 evaluation pinning, F011 quota/deletion guardrails, F012 deploy chain
-- Last Updated: 2026-09-03 (implementation T0–T8 complete on `feature/F014-semantic-source-retrieval`; review `review-f014-r1` recorded; delivery steps pending owner authorization)
+- Last Updated: 2026-09-03 (DONE: PR #29 merged as fbe78b4; main re-verified)
 
 ## Gate Record: REVIEW
 
@@ -18,6 +18,16 @@
 - Documentation synced 2026-09-03: README (embedding row), DATABASE (F014 open-items record), ARCHITECTURE (adapter + external-service row + dependency note), API (payload extensions + event type), UX (grounding-honesty states), DESIGN_SYSTEM (shared citation chip), TESTING (F014 suites + E2E gate + deploy backfill), ADR-0007 + index. AGENTS unchanged (no command or module-ownership change).
 - Delivery evidence 2026-09-03 (owner-authorized): deployed-stack chain PASS (build with baked weights via HF mirror + xet disabled, migrations applied, idempotent backfill step, smoke; sample re-seeded with real fastembed embeddings — 3 chunks ok, 3 plan artifacts `retrieved` with citations). Delivery found and fixed latent defect M-4 (worker never registered `lessoncanvas.parse_source`; queued uploads on the deployed stack never parsed — regression test added). TS-026 full live re-baseline under `retrieval_mode=fastembed`: all six passes `completed/pass` with zero blocking failures (previous truncation-era baseline had travelling-around p2 fail C-ART-1); retrieval quality judged plausible on every pass (teacher-intent source ranked first, cosine 0.61-0.81; reading passages 0.32-0.57). Evidence: `live-evidence.json`, `live-evidence-summary.txt`, runner `live-rebaseline-runner.py`; polluted first attempt (pre-M-4-fix) purged via the app's workspace deletion cascade and not part of the baseline.
 - Pending delivery-time steps (each under separate owner authorization): commit/push/PR; main re-verification; Issue #28 status sync.
+
+## Gate Record: DONE
+
+- Status: `PASS`
+- Validation time: 2026-09-03
+- Delivery: full flow authorized by `YMY / Project Owner` on 2026-09-03 (commit/push/PR/merge; Issue #28 update; deploy re-verification; TS-026 live re-baseline). PR [#29](https://github.com/MaoyuanYang/LessonCanvas/pull/29) merged as `fbe78b4`; Issue #28 closed with the projected checklist complete.
+- Main re-verification after merge: backend 548 passed + 4 skipped + ruff clean (incl. the M-4 registration regression test); web 113/113 + tsc clean + eslint 0 errors (3 pre-existing warnings).
+- DONE evidence manifest (working tree @ gate time): spec (this file), ux-ui `ux-ui-f014-r1`, test-design `test-design-f014-r1` + execution snapshot + `live-evidence.json` (TS-026 all six passes `completed/pass` under `retrieval_mode=fastembed`) + `live-rebaseline-runner.py`, plan `plan-f014-r1`, review `review-f014-r1` (SF-1..SF-3, M-4 fixed with test, M-1/M-2/L-1 residuals owner-visible).
+- Deployed stack state: chain verified through the F014 backfill step (weights baked via HF mirror, xet disabled); sample re-seeded with real fastembed embeddings; worker registers `lessoncanvas.parse_source` (M-4).
+- All acceptance criteria AC-001..AC-007 satisfied with traceable evidence (see `review.md` AC→evidence table, the Test Design execution snapshot, and the live evidence files).
 
 ## Gate Record: SPEC READY
 
