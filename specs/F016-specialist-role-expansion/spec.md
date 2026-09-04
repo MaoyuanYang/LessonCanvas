@@ -1,13 +1,23 @@
 # F016: Specialist Role Expansion
 
-- Spec Status: `SPEC READY`
-- Roadmap Status: `NEXT`
+## Gate Record: DONE
+
+- Status: `PASS`
+- Validation time: 2026-09-04
+- Delivery: full remaining flow authorized by `YMY / Project Owner` on 2026-09-04 ("全部授权" — live evidence, commit/push/PR/merge, main re-verification, Issue sync/DONE records). PR [#33](https://github.com/MaoyuanYang/LessonCanvas/pull/33) merged as `f096042` (feature commit `c3b57f9`); Issue #32 closed via the PR with the projected checklist complete.
+- Main re-verification after merge: backend 622 passed + 4 skipped (exit 0) + ruff clean; web 122/122 + tsc clean + eslint 0 errors (3 pre-existing warnings).
+- Live evidence (executed under the same authorization, before delivery): `live-evidence.json` + `live-runner.py` — real-DeepSeek specialist journey (3 lessons × design+write+review; 4 real source analyses with token/cost telemetry; reviewer passed round 1, no revise honestly triggered) and the full F009 six-pass live re-baseline under the new stage set (5 pass; travelling-around pass1 honest `C-ART-1` fail kept explicit; `C-STAGE-1` green on all six; `retrieval=fastembed`/`tool=model_driven`/`stage_set` pinned). `apps/backend/.env`'s DeepSeek key was found stale (401); deploy.env credentials used and recorded.
+- DONE evidence manifest (merged tree @ `f096042`): spec (this file, incl. REVIEW + DONE Gate Records), `ux-ui-f016-r1` @ `519b499459a0`, `test-design-f016-r1` @ `7c71aa3aa167` + execution snapshot (TS-001..TS-021, TS-023, TS-024 GREEN; TS-022 GREEN live), `plan-f016-r1` @ `57c8356599fc` (T0–T9 complete), `review-f016-r1` (SF-1..SF-6 fixed; M-1 pre-existing journey flake reproduced on unmodified main; M-2 stale local env owner-visible), `live-evidence.json` + `live-runner.py`.
+- All acceptance criteria AC-001..AC-006 satisfied with traceable evidence (see the review AC→evidence table, the test-design execution snapshot, and `live-evidence.json`).
+
+- Spec Status: `DONE`
+- Roadmap Status: `DONE`
 - Priority: `P1`
 - Owner: `YMY / Project Owner`
 - Decision Authority: `YMY / Project Owner`
 - Work Item: [GitHub Issue #32](https://github.com/MaoyuanYang/LessonCanvas/issues/32) — bound 2026-09-04 (authorized); work-status authority.
 - Dependencies: `F014` (chunk-level retrieval and hash-bound citations are what make grounded review meaningful); consumes `F015` capabilities softly (the tool-loop primitive exists but no new specialist binds tools in this Feature)
-- Last Updated: 2026-09-04 (SPEC READY approved; D1–D7 resolved)
+- Last Updated: 2026-09-04 (DONE recorded after PR #33 merge)
 
 ## Gate Record: SPEC READY
 
