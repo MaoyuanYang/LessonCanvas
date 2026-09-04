@@ -38,7 +38,7 @@ Phase 2 closes the gap between documented and actual grounding capability and de
 | `F012` | Deployed Portfolio Proof | Make the protected workflow independently inspectable in the cloud | Converts repository claims into observable release evidence | `P0` | `F009`, `F011` | `DONE` | Public entry, synthetic demo data, complete runtime deployment, accessibility, recovery, and honest validation status |
 | `F013` | Teacher Memory | Personalize future work with teacher-confirmed workspace memory | Faster repeat preparation and governed-memory portfolio evidence | `P1` | `F001` | `DONE` | Agent-proposed, teacher-confirmed memory records; management UI; subordinate context application; untrusted-input handling |
 | `F014` | Semantic Source Retrieval | Recall the most relevant source chunks by semantic similarity and cite them traceably | Makes the documented pgvector grounding real and improves grounding quality and traceability as corpora grow | `P0` | None | `DONE` | Delivered via PR [#29](https://github.com/MaoyuanYang/LessonCanvas/pull/29) (fbe78b4): pgvector semantic retrieval live on the deployed stack (ADR-0007 fastembed baked), chunk-level citations across blueprint and all three artifact families, honest degradation, F009 `retrieval_mode` signature with 6/6 live re-baseline passes; delivery-fixed M-4 worker-parse registration |
-| `F015` | Governed Model Tool Calling | Let workflow specialists invoke whitelisted tools in a bounded traced loop | Turns MCP-compatible tool definitions into real governed agentic tool use | `P1` | None | `REVIEW` | Adapter `tools`/`tool_calls` support, bounded tool loop in discovery/planning, per-round trace, whitelist refusal policy, F009 fault scenarios and signature; drafted 2026-09-03 |
+| `F015` | Governed Model Tool Calling | Let workflow specialists invoke whitelisted tools in a bounded traced loop | Turns MCP-compatible tool definitions into real governed agentic tool use | `P1` | None | `DONE` | Delivered via PR [#31](https://github.com/MaoyuanYang/LessonCanvas/pull/31) (8de343b): model_driven planning drafting loop with whitelist/schema refusals + corrective continuation, 5-round cap inside the per-run model-call cap, per-round traced cost, deterministic fallback with disclosure, orchestration-mode parity, adversarial dispatch reachability, F009 `tool_mode` signature + `fault:tool_loop`/C-TOOL-1, D6 evidence-resolved (provider rejects tools+json_object; plain mode required), TS-021 live self-requested round PASS |
 | `F016` | Specialist Role Expansion | Add source-analysis, activity-design, and quality-review specialists to the workflows | Real specialist division of labor with per-stage trace and model-assisted review | `P1` | `F014` | `DRAFT` | Structured source analysis, designer→writer split for lesson plans, reviewer with one bounded revise round, cap/quota/cost updates, F009 stage-set signature; drafted 2026-09-03 |
 
 Only `DRAFT/NEXT/READY/IN_PROGRESS/REVIEW/DONE/BLOCKED` may appear in this Roadmap. No Feature becomes `READY` during `coding-start`.
@@ -63,7 +63,11 @@ F014 -> F016
 
 ## Handoff
 
-### Current: F015 REVIEW — implementation complete, live evidence + delivery pending authorization
+### Current: F015 DONE — Phase 2 second feature delivered
+
+(See the F015 block below for the full delivery record; delivery summary: PR [#31](https://github.com/MaoyuanYang/LessonCanvas/pull/31) merged as `8de343b` 2026-09-04 under the owner-authorized full remaining flow; main re-verified — backend 581 passed + 4 skipped + ruff clean, web 114/114 + tsc clean + eslint 0 errors; Issue #30 closed with checklist complete. Next actionable: F016 Specialist Role Expansion, P1 `DRAFT`, dependencies F014 DONE + soft F015 consumption — bind Issue under separate authorization and run `feature-dev` SPEC_REFINEMENT.)
+
+### Previous: F015 REVIEW
 
 - Feature: `F015 Governed Model Tool Calling`
 - Selection: `DRAFT -> NEXT` confirmed by `YMY / Project Owner` on 2026-09-03 (start instruction after F014 DONE; no hard dependencies).

@@ -1,13 +1,22 @@
 # F015: Governed Model Tool Calling
 
-- Spec Status: `REVIEW` (implementation and deterministic evidence complete; live evidence + delivery pending)
-- Roadmap Status: `REVIEW`
+- Spec Status: `DONE`
+- Roadmap Status: `DONE`
 - Priority: `P1`
 - Owner: `YMY / Project Owner`
 - Decision Authority: `YMY / Project Owner`
 - Dependencies: None hard (Phase 1 complete); consumes the existing MCP-compatible tool registry and whitelist dispatch delivered with F001/F003–F005
 - Work item: [GitHub Issue #30](https://github.com/MaoyuanYang/LessonCanvas/issues/30) — bound 2026-09-03 (authorized); work-status authority
-- Last Updated: 2026-09-03 (implementation T0–T6 + T8 complete; REVIEW recorded; T7 live evidence and delivery pending authorization)
+- Last Updated: 2026-09-04 (DONE: PR #31 merged as 8de343b; main re-verified)
+
+## Gate Record: DONE
+
+- Status: `PASS`
+- Validation time: 2026-09-04
+- Delivery: full remaining flow authorized by `YMY / Project Owner` on 2026-09-04 ("收尾所有剩余步骤" — push/PR/merge/main re-verification/Issue close/DONE records). PR [#31](https://github.com/MaoyuanYang/LessonCanvas/pull/31) merged as `8de343b` (feature commit `50dffa3`); Issue #30 closed with the projected checklist complete.
+- Main re-verification after merge: backend 581 passed + 4 skipped + ruff clean; web 114/114 + tsc clean + eslint 0 errors (3 pre-existing warnings).
+- DONE evidence manifest (working tree @ gate time): spec (this file, incl. REVIEW + DONE Gate Records), `ux-ui-f015-r1`, `test-design-f015-r1` + execution snapshot (TS-001..TS-020, TS-022 GREEN; TS-021 GREEN live), `plan-f015-r1` (T0–T8 complete), `review-f015-r1` (SF-1..SF-4 dispositioned; M-1 resolved by live evidence; M-2 owner-visible), `live-evidence.json` + `live-runner.py` (real self-requested standards round, 4 dispatches / 3 model calls / no fallback; D6 probe: provider rejects tools+json_object with HTTP 400).
+- All acceptance criteria AC-001..AC-006 satisfied with traceable evidence (see the review AC→evidence table, the Test Design execution snapshot, and `live-evidence.json`).
 
 ## Gate Record: REVIEW
 
