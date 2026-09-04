@@ -63,7 +63,11 @@ F014 -> F016
 
 ## Handoff
 
-### Current: F016 DONE — Phase 2 third feature delivered
+### Current: Phase-2 close-out complete — both phases verified end to end
+
+(Holistic close-out of the complete two-phase system recorded in `specs/PHASE2-retrospective.md` (2026-09-04): layered verification cheapest-first — deterministic suites identical to the F016 baseline (backend 622 passed + 4 skipped + ruff clean; web 122/122 + tsc clean + eslint 0 errors + build; `uv audit`/`pnpm audit` clean; tracked-tree credential scan clean), fault-stack E2E across every gated family including the three Phase-2 gates (32 passed / 13 live-gated skips / 0 failed locally, plus 5/5 deployed), deployed-stack rebuild via `deploy.sh` (first real deployment of F013–F016 code; source-analysis backfill analyzed 14 pre-existing sources, re-run idempotent at 14 skipped; seeding idempotent), and one live DeepSeek journey (TS-029, 1.5m) through the rebuilt stack with the real worker. Zero product defects found; one stale E2E cap-instance configuration note fixed in `docs/TESTING.md`; README Current Stage synced. Owner-side residuals re-confirmed: `apps/backend/.env` stale, docker group restored 2026-09-04 during the review, stale web container orphan on host port 3000. Next actionable: none in either Feature Map.)
+
+### Previous: F016 DONE — Phase 2 third feature delivered
 
 (See the F016 gates/delivery lines below; delivery summary: PR [#33](https://github.com/MaoyuanYang/LessonCanvas/pull/33) merged as `f096042` 2026-09-04 under the owner-authorized full remaining flow ("全部授权"); main re-verified — backend 622 passed + 4 skipped + ruff clean, web 122/122 + tsc clean + eslint 0 errors; Issue #32 closed with the checklist complete. Live evidence executed before delivery: `specs/F016-specialist-role-expansion/live-evidence.json` — real-DeepSeek specialist journey (3 lessons × design+write+review, 4 real source analyses with telemetry, no severe findings so no revise honestly triggered) + full F009 six-pass live re-baseline under the new stage set (5 pass, travelling-around pass1 honest `C-ART-1` fail kept explicit, `C-STAGE-1` green on all six). Owner-side environment residuals recorded: `apps/backend/.env` credentials (DB/S3/DeepSeek key) stale against the deployed stack; docker group membership lost Sep 1. Next actionable: none remaining in the Phase-2 Feature Map (F014–F016 all DONE).)
 
