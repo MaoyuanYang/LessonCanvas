@@ -381,7 +381,7 @@ def test_transient_failure_deck_resume_skips_completed(client, auth, db_session)
     assert {artifact.id: artifact.object_key for artifact in artifacts[:2]} == keys_before
 
     db_session.refresh(run)
-    assert run.model_calls == 9  # 6 decks + three failed attempts on deck 3
+    assert run.model_calls == 15  # 6 decks x (write+review) + three failed attempts on deck 3
 
 
 def test_worker_task_dispatch_resumes_same_deck_run(client, auth, db_session):
@@ -442,7 +442,8 @@ def test_deck_cap_exhaustion_settles_capped_with_completed_work(client, auth, db
 
     project_id = confirmed_plans_project(client, auth, db_session)
     run = start_deck_run(db_session, project_id)
-    run.model_call_cap = 1
+    # F016: one complete deck needs write + review under the new stage set.
+    run.model_call_cap = 2
     db_session.commit()
 
     status = execute_deck_generation(str(run.id))
@@ -452,7 +453,7 @@ def test_deck_cap_exhaustion_settles_capped_with_completed_work(client, auth, db
     assert artifacts[0].status == "complete"
     assert {artifact.status for artifact in artifacts[1:]} == {"pending"}
     db_session.refresh(run)
-    assert run.model_calls == 1
+    assert run.model_calls == 2
 
 
 def test_newer_version_supersedes_active_deck_run(client, auth, db_session):
@@ -529,6 +530,9 @@ def test_deck_injection_payload_stays_inert(client, auth, db_session):
     kinds = {trace.event_type for trace in traces}
     assert kinds <= {
         "model.generation_write_deck",
+        # F016: every draft receives a severity-gated review round.
+        "model.generation_review_deck",
+        "model.generation_revise_deck",
         "tool.render_lesson_deck_pptx",
         "tool.validate_lesson_deck_pptx",
         # F013: every run records its (possibly empty) applied-memory
@@ -548,6 +552,8 @@ def test_deck_injection_payload_stays_inert(client, auth, db_session):
             "family", "purpose", "query", "hits", "hit_count", "excluded_count",
             "excluded_reasons", "budget_chars", "used_chars", "grounding_state",
             "error", "item_kind", "item_id",
+                # F016 review-round payload keys.
+                "round", "severe_count", "minor_count", "parse_failed",
         }
 
 

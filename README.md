@@ -28,6 +28,7 @@ LessonCanvas is a portfolio-first Agent application for individual mainland Chin
 | Model | One hosted model behind a thin adapter | `CONFIRMED` | Provider selection remains open until the Agent runtime Feature |
 | Embeddings | Local in-process model behind a thin adapter (ADR-0007) | `CONFIRMED` | fastembed + bge-small-zh-v1.5; weights baked into the deployed image; semantic source retrieval (F014) with chunk-level citations |
 | Model tool calling | Bounded, traced specialist tool loop (F015) | `CONFIRMED` | Whitelisted MCP-compatible tools self-requested by the planning drafting specialist; refusals, caps, deterministic fallback, and per-round cost fully traced; the no-tool orchestration path remains one setting away (`tool_loop_mode`) |
+| Specialist division of labor | Source-analysis, activity-design, and quality-review specialists (F016) | `CONFIRMED` | Structured per-source analyses as labeled subordinate context; plans run design→write→review and decks/exercises write→review with one severity-gated revise round; every stage traces its own role label, latency, tokens, and estimated cost under formula-based per-run caps |
 | Tool protocol | MCP | `CONFIRMED` | External source consumption and internal tool definitions; no public server |
 
 ## Current Stage

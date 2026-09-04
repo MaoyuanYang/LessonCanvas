@@ -71,6 +71,8 @@ def _orchestration_standards_search(theme: str, objectives: str) -> list[dict]:
 
 
 def build_grounding(session, run_id, project_id, brief_fields: dict) -> dict:
+    from lessoncanvas.modules.sources_grounding import analysis as analysis_module
+
     sources = session.scalars(
         select(Source).where(Source.project_id == project_id, Source.status == "ready")
     ).all()
@@ -107,6 +109,9 @@ def build_grounding(session, run_id, project_id, brief_fields: dict) -> dict:
         "sources": source_entries,
         "retrieval": result,
         "standards_sections": standards_sections,
+        # F016 D1: analyses ride the planning state as labeled subordinate
+        # context with an explicit ready/partial/none state (never fabricated).
+        "source_analyses": analysis_module.analyses_digest(session, project_id),
     }
 
 
@@ -129,6 +134,8 @@ def analyze_node(state: PlanningState) -> dict:
             "corpus_excerpt": retrieval_module.corpus_excerpt(result),
             "retrieved_sources": retrieval_module.retrieved_source_entries(result),
             "grounding_state": result.get("grounding_state", "none"),
+            "source_analyses": grounding.get("source_analyses")
+            or {"state": "none", "reason": "grounding unavailable", "sources": []},
         }
         if state.get("memory_context"):
             # F013: subordinate teacher memory as labeled, capped data only.
@@ -235,6 +242,8 @@ def _draft_payload(state, grounding, include_standards: bool) -> dict:
         "corpus_excerpt": retrieval_module.corpus_excerpt(result),
         "retrieved_sources": retrieval_module.retrieved_source_entries(result),
         "grounding_state": result.get("grounding_state", "none"),
+        "source_analyses": grounding.get("source_analyses")
+        or {"state": "none", "reason": "grounding unavailable", "sources": []},
     }
     if include_standards:
         payload["standards"] = grounding.get("standards_sections", [])

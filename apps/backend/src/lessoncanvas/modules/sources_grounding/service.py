@@ -4,7 +4,14 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from lessoncanvas.adapters.storage import StorageAdapter
-from lessoncanvas.models import AuditEvent, Project, Source, SourceChunk, Workspace
+from lessoncanvas.models import (
+    AuditEvent,
+    Project,
+    Source,
+    SourceAnalysis,
+    SourceChunk,
+    Workspace,
+)
 from lessoncanvas.modules.identity_workspace.service import NotFoundError
 from lessoncanvas.modules.sources_grounding import embeddings, parsing, policy, screening
 from lessoncanvas.settings import get_settings
@@ -210,6 +217,7 @@ def delete_source(
             session.flush()
             return False
     session.query(SourceChunk).filter(SourceChunk.source_id == source.id).delete()
+    session.query(SourceAnalysis).filter(SourceAnalysis.source_id == source.id).delete()
     session.delete(source)
     session.add(
         AuditEvent(

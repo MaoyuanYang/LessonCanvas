@@ -87,6 +87,21 @@ class Settings(BaseSettings):
     tool_loop_mode: str = "model_driven"
     tool_loop_max_rounds: int = 5
 
+    # F016 specialist role expansion (Spec D1/D5, owner-confirmed 2026-09-04).
+    # Per-run caps are formula-based at run creation: per-lesson stage count x
+    # lessons + slack, with the pre-F016 flat caps as the floor. Source
+    # analysis is upload-processing-bounded (one call per trigger per source)
+    # and never touches run caps.
+    model_call_cap_plans_per_lesson: int = 5
+    model_call_cap_decks_per_lesson: int = 4
+    model_call_cap_exercises_per_lesson: int = 4
+    model_call_cap_slack: int = 2
+    analysis_digest_budget_chars: int = 2000
+    design_activity_count_min: int = 3
+    design_activity_count_max: int = 8
+    design_timing_minutes_min: int = 5
+    design_timing_minutes_max: int = 60
+
 
 @lru_cache
 def get_settings() -> Settings:

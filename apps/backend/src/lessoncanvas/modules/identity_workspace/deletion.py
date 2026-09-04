@@ -32,6 +32,7 @@ from lessoncanvas.models import (
     RunEvent,
     SlideDeckArtifact,
     Source,
+    SourceAnalysis,
     SourceChunk,
     TechnicalEvaluation,
     TechnicalEvaluationResult,
@@ -51,6 +52,7 @@ class DeletionFailedError(Exception):
 # its `deleting` status is the visible repair marker, not a residual.
 PROJECT_SCOPED_TABLES = (
     Source,
+    SourceAnalysis,
     GenerationRun,
     DeliveryExport,
     AlignmentOverride,
@@ -249,6 +251,11 @@ def delete_project_cascade(
                 _record_residual(
                     session, workspace_id, project_id, "sources", object_key=source.object_key
                 )
+    session.execute(
+        sql_delete(SourceAnalysis).where(
+            SourceAnalysis.source_id.in_([s.id for s in sources] or [uuid.uuid4()])
+        )
+    )
     session.execute(
         sql_delete(SourceChunk).where(
             SourceChunk.source_id.in_([s.id for s in sources] or [uuid.uuid4()])

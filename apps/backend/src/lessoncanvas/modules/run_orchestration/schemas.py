@@ -36,6 +36,38 @@ class CitationOut(BaseModel):
     snapshot_version: str | None = None
 
 
+class ReviewFindingOut(BaseModel):
+    """F016 U3: one normalized review finding (latest round)."""
+
+    dimension: str
+    severity: str
+    message: str
+    reference: str | None = None
+
+
+def _review_findings_of(artifact) -> list[ReviewFindingOut]:
+    import json
+
+    if not getattr(artifact, "review_findings_json", None):
+        return []
+    try:
+        rows = json.loads(artifact.review_findings_json)
+    except json.JSONDecodeError:
+        return []
+    return [ReviewFindingOut(**item) for item in rows if isinstance(item, dict)]
+
+
+def _design_of(artifact) -> dict | None:
+    import json
+
+    if not getattr(artifact, "design_json", None):
+        return None
+    try:
+        return json.loads(artifact.design_json)
+    except json.JSONDecodeError:
+        return None
+
+
 class LessonArtifactOut(BaseModel):
     id: str
     lesson_index: int
@@ -47,6 +79,12 @@ class LessonArtifactOut(BaseModel):
     # F014 U1/U2: chunk citations and the honest per-lesson grounding state.
     citations: list[CitationOut] = []
     grounding_state: str | None = None
+    # F016 D4/U3: the validated design intermediate (plans only, read-only)
+    # and the latest review round's findings/outcome (all families).
+    design: dict | None = None
+    review_findings: list[ReviewFindingOut] = []
+    review_rounds: int = 0
+    review_outcome: str | None = None
 
 
 class GenerationSnapshot(BaseModel):
@@ -75,6 +113,9 @@ class DeckArtifactOut(BaseModel):
     download_url: str | None = None
     citations: list[CitationOut] = []
     grounding_state: str | None = None
+    review_findings: list[ReviewFindingOut] = []
+    review_rounds: int = 0
+    review_outcome: str | None = None
 
 
 class DeckGenerationSnapshot(BaseModel):
@@ -105,6 +146,9 @@ class ExerciseArtifactOut(BaseModel):
     answer_download_url: str | None = None
     citations: list[CitationOut] = []
     grounding_state: str | None = None
+    review_findings: list[ReviewFindingOut] = []
+    review_rounds: int = 0
+    review_outcome: str | None = None
 
 
 class ExerciseGenerationSnapshot(BaseModel):
@@ -153,6 +197,10 @@ def artifact_out(artifact) -> LessonArtifactOut:
         else None,
         citations=_citations_of(artifact),
         grounding_state=artifact.grounding_state,
+        design=_design_of(artifact),
+        review_findings=_review_findings_of(artifact),
+        review_rounds=artifact.review_rounds,
+        review_outcome=artifact.review_outcome,
     )
 
 
@@ -170,6 +218,9 @@ def deck_artifact_out(artifact) -> DeckArtifactOut:
         else None,
         citations=_citations_of(artifact),
         grounding_state=artifact.grounding_state,
+        review_findings=_review_findings_of(artifact),
+        review_rounds=artifact.review_rounds,
+        review_outcome=artifact.review_outcome,
     )
 
 
@@ -196,6 +247,9 @@ def exercise_artifact_out(artifact) -> ExerciseArtifactOut:
         ),
         citations=_citations_of(artifact),
         grounding_state=artifact.grounding_state,
+        review_findings=_review_findings_of(artifact),
+        review_rounds=artifact.review_rounds,
+        review_outcome=artifact.review_outcome,
     )
 
 

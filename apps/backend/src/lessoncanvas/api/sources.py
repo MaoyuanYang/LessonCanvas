@@ -1,3 +1,4 @@
+import json
 import uuid
 from datetime import datetime
 from typing import Annotated
@@ -32,6 +33,23 @@ class ChunkOut(BaseModel):
     text_sha256: str | None
 
 
+class AnalysisOut(BaseModel):
+    """F016 D1/U4: per-source analysis state, digest, and honest telemetry."""
+
+    status: str
+    topics: list[str] = []
+    language_points: list[str] = []
+    suitability: dict = {}
+    key_passages: list[dict] = []
+    error: str | None = None
+    model: str | None = None
+    latency_ms: int | None = None
+    prompt_tokens: int | None = None
+    completion_tokens: int | None = None
+    cost_usd: float | None = None
+    updated_at: datetime | None = None
+
+
 class SourceOut(BaseModel):
     id: uuid.UUID
     filename: str
@@ -43,11 +61,12 @@ class SourceOut(BaseModel):
     rights_acknowledged: bool
     content_sha256: str | None
     chunks: list[ChunkOut]
+    analysis: AnalysisOut | None = None
     created_at: datetime
     updated_at: datetime
 
 
-def to_out(source, chunks) -> SourceOut:
+def to_out(source, chunks, analysis=None) -> SourceOut:
     chunk_outs = [
         ChunkOut(
             position=chunk.position,
@@ -58,6 +77,28 @@ def to_out(source, chunks) -> SourceOut:
         )
         for chunk in chunks
     ]
+    analysis_out: AnalysisOut | None = None
+    if analysis is not None:
+        payload = {}
+        if analysis.payload_json:
+            try:
+                payload = json.loads(analysis.payload_json)
+            except json.JSONDecodeError:
+                payload = {}
+        analysis_out = AnalysisOut(
+            status=analysis.status,
+            topics=payload.get("topics") or [],
+            language_points=payload.get("language_points") or [],
+            suitability=payload.get("suitability") or {},
+            key_passages=payload.get("key_passages") or [],
+            error=analysis.error,
+            model=analysis.model,
+            latency_ms=analysis.latency_ms,
+            prompt_tokens=analysis.prompt_tokens,
+            completion_tokens=analysis.completion_tokens,
+            cost_usd=analysis.cost_usd,
+            updated_at=analysis.updated_at,
+        )
     return SourceOut(
         id=source.id,
         filename=source.filename,
@@ -69,6 +110,7 @@ def to_out(source, chunks) -> SourceOut:
         rights_acknowledged=source.rights_acknowledged,
         content_sha256=source.content_sha256,
         chunks=chunk_outs,
+        analysis=analysis_out,
         created_at=source.created_at,
         updated_at=source.updated_at,
     )
@@ -87,6 +129,16 @@ def chunks_of(session, source_id) -> list:
         )
         .all()
     )
+
+
+def analysis_of(session, source_id):
+    from sqlalchemy import select
+
+    from lessoncanvas.models import SourceAnalysis
+
+    return session.scalars(
+        select(SourceAnalysis).where(SourceAnalysis.source_id == source_id)
+    ).first()
 
 
 def enqueue_parse(source_id: uuid.UUID) -> None:
@@ -144,7 +196,7 @@ def upload_source(
         raise NotFoundError("project not found") from err
     enqueue_parse(source.id)
     session.refresh(source)
-    return to_out(source, chunks_of(session, source.id))
+    return to_out(source, chunks_of(session, source.id), analysis_of(session, source.id))
 
 
 @router.get("", response_model=list[SourceOut])
@@ -157,7 +209,9 @@ def list_sources(
         )
     except ServiceNotFound as err:
         raise NotFoundError("project not found") from err
-    return [to_out(s, chunks_of(session, s.id)) for s in sources]
+    return [
+        to_out(s, chunks_of(session, s.id), analysis_of(session, s.id)) for s in sources
+    ]
 
 
 @router.get("/{source_id}", response_model=SourceOut)
@@ -170,7 +224,53 @@ def get_source(
         )
     except ServiceNotFound as err:
         raise NotFoundError("source not found") from err
-    return to_out(source, chunks_of(session, source.id))
+    return to_out(source, chunks_of(session, source.id), analysis_of(session, source.id))
+
+
+@router.post("/{source_id}/analyze", response_model=SourceOut,
+             dependencies=[Depends(require_expensive_rate)])
+def retry_source_analysis(
+    project_id: uuid.UUID, source_id: uuid.UUID, workspace: WorkspaceDep, session: SessionDep
+) -> SourceOut:
+    """F016 D1/U4: manual retry of a failed (or missing) analysis.
+
+    The one-in-flight rule is enforced by the task-side claim; this endpoint
+    only rejects fresh in-flight attempts so the UI cannot double-trigger.
+    """
+
+    try:
+        source = service.get_source(session, workspace.id, project_id, source_id)
+    except ServiceNotFound as err:
+        session.rollback()
+        raise NotFoundError("source not found") from err
+    if source.status != "ready":
+        session.rollback()
+        raise RequirementError("source is not ready for analysis", {"code": "SOURCE_NOT_READY"})
+    analysis = analysis_of(session, source.id)
+    if analysis is not None and analysis.status == "analyzing":
+        from lessoncanvas.modules.sources_grounding.analysis import (
+            ANALYSIS_CLAIM_STALE_AFTER_SECONDS,
+        )
+
+        claimed_at = analysis.updated_at
+        if claimed_at is not None:
+            age = (datetime.now(claimed_at.tzinfo) - claimed_at).total_seconds()
+            if age < ANALYSIS_CLAIM_STALE_AFTER_SECONDS:
+                session.rollback()
+                raise RequirementError(
+                    "analysis already in flight for this source",
+                    {"code": "ANALYSIS_IN_FLIGHT"},
+                )
+    session.commit()
+    from lessoncanvas.modules.sources_grounding.tasks import enqueue_analysis
+
+    enqueue_analysis(source.id)
+    # The task settles in its own session (synchronously under eager tasks);
+    # drop cached instances so the response reads the settled row, not a
+    # stale identity-map copy.
+    session.expire_all()
+    session.refresh(source)
+    return to_out(source, chunks_of(session, source.id), analysis_of(session, source.id))
 
 
 @router.delete("/{source_id}", status_code=204)

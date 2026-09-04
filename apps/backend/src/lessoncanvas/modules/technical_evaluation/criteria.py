@@ -30,12 +30,14 @@ BLOCKING = "blocking"
 DIAGNOSTIC = "diagnostic"
 
 SCENARIO_CRITERIA: dict[str, list[str]] = {
-    "full_pipeline": ["C-TRACE-1", "C-GROUND-1", "C-ART-1", "C-MEM-1"],
+    "full_pipeline": ["C-TRACE-1", "C-GROUND-1", "C-ART-1", "C-STAGE-1", "C-MEM-1"],
     "fault:duplicate_submission": ["C-IDEM-1"],
     "fault:stale_version": ["C-SUPER-1"],
     "fault:worker_provider_failure": ["C-RECOV-1"],
     "fault:partial_render": ["C-RENDER-1"],
     "fault:tool_loop": ["C-TOOL-1"],
+    "fault:design_invalid": ["C-DESIGN-1"],
+    "fault:review_fail": ["C-REVIEW-1"],
 }
 FULL_PIPELINE_DIAGNOSTICS = ["M-LAT", "M-COST", "M-COVER"]
 
@@ -48,6 +50,9 @@ CRITERION_LABELS = {
     "C-RECOV-1": "Injected-failure recovery",
     "C-RENDER-1": "Partial-render explicitness",
     "C-TOOL-1": "Governed tool-loop fault handling",
+    "C-STAGE-1": "Specialist stage execution and trace",
+    "C-DESIGN-1": "Design-stage failure honesty",
+    "C-REVIEW-1": "Review revise-round honesty",
     "C-MEM-1": "Memory pinning recorded",
     "M-LAT": "Latency distribution (diagnostic)",
     "M-COST": "Cost estimate (diagnostic)",
@@ -597,6 +602,255 @@ def evaluate_tool_loop_governance(
     )
 
 
+FAMILY_EVENT_SUFFIX = {"lesson_plan": "lesson", "slide_deck": "deck", "exercise": "exercises"}
+
+
+def _artifacts_for_run(session: Session, run: GenerationRun) -> list:
+    from lessoncanvas.modules.run_orchestration import service as run_service
+
+    fetch = {
+        "lesson_plan": run_service.artifacts_of,
+        "slide_deck": run_service.deck_artifacts_of,
+        "exercise": run_service.exercise_artifacts_of,
+    }[run.artifact_kind]
+    return fetch(session, run.id)
+
+
+def _trace_lesson_index(payload: dict):
+    """Lesson index of a trace payload: tool/retrieval events carry it at the
+    top level; model-stage events nest it under prompt.lesson."""
+
+    if isinstance(payload.get("lesson_index"), int):
+        return payload["lesson_index"]
+    prompt = payload.get("prompt")
+    source = prompt if isinstance(prompt, dict) else payload
+    lesson = source.get("lesson") or {}
+    return lesson.get("lesson_index") if isinstance(lesson, dict) else None
+
+
+def evaluate_specialist_stages(
+    session: Session, evaluation: TechnicalEvaluation
+) -> CriterionResult:
+    """F016 C-STAGE-1: every completed artifact carries its family's full
+    specialist stage trace (design for plans; write and review everywhere),
+    revise rounds stay bounded, and review strictly precedes rendering."""
+
+    violations: list[str] = []
+    evidence: dict = {"complete_artifacts": 0, "stage_events": {}}
+    for run_id in _run_ids(evaluation):
+        run = session.get(GenerationRun, run_id)
+        if run is None or run.artifact_kind not in FAMILY_EVENT_SUFFIX:
+            continue
+        suffix = FAMILY_EVENT_SUFFIX[run.artifact_kind]
+        write_kind = f"model.generation_write_{suffix}"
+        review_kind = f"model.generation_review_{suffix}"
+        revise_kind = f"model.generation_revise_{suffix}"
+        traces = (
+            session.scalars(
+                select(TraceEvent).where(TraceEvent.run_id == run_id)
+            ).all()
+        )
+        # RunEvent rows carry a monotonic seq: stage ORDER is judged there,
+        # not on trace timestamps (same-microsecond ties scramble trace order).
+        run_events = (
+            session.scalars(
+                select(RunEvent).where(RunEvent.run_id == run_id).order_by(RunEvent.seq)
+            ).all()
+        )
+        for artifact in _artifacts_for_run(session, run):
+            if artifact.status != "complete":
+                continue
+            evidence["complete_artifacts"] += 1
+            lesson_events = [
+                event
+                for event in traces
+                if _trace_lesson_index(json.loads(event.payload_json or "{}"))
+                == artifact.lesson_index
+            ]
+            kinds = [event.event_type for event in lesson_events]
+            evidence["stage_events"][f"{run_id}:{artifact.lesson_index}"] = kinds
+            if run.artifact_kind == "lesson_plan" and (
+                "model.generation_design_lesson" not in kinds
+            ):
+                violations.append(f"lesson{artifact.lesson_index}:missing_design")
+            if write_kind not in kinds:
+                violations.append(f"lesson{artifact.lesson_index}:missing_write")
+            if review_kind not in kinds:
+                violations.append(f"lesson{artifact.lesson_index}:missing_review")
+            if kinds.count(revise_kind) > 1:
+                violations.append(f"lesson{artifact.lesson_index}:revise_unbounded")
+            if getattr(artifact, "review_rounds", 0) > 2:
+                violations.append(f"lesson{artifact.lesson_index}:rounds_unbounded")
+
+            def _payload(item) -> dict:
+                try:
+                    return json.loads(item.payload_json) if item.payload_json else {}
+                except json.JSONDecodeError:
+                    return {}
+
+            lesson_statuses = [
+                _payload(item).get("status")
+                for item in run_events
+                if item.event_type == "lesson"
+                and _payload(item).get("lesson_index") == artifact.lesson_index
+                and _payload(item).get("status")
+            ]
+            try:
+                last_reviewing = max(
+                    i for i, st in enumerate(lesson_statuses) if st in ("reviewing", "revising")
+                )
+            except ValueError:
+                last_reviewing = -1
+            try:
+                first_rendering = min(
+                    i for i, st in enumerate(lesson_statuses) if st == "rendering"
+                )
+            except ValueError:
+                first_rendering = len(lesson_statuses)
+            if last_reviewing >= first_rendering:
+                violations.append(f"lesson{artifact.lesson_index}:render_before_review")
+    if evidence["complete_artifacts"] == 0:
+        return CriterionResult(
+            criterion_key="C-STAGE-1",
+            classification=BLOCKING,
+            outcome="missing_evidence",
+            evidence={"reason": "no completed artifacts to judge stages on"},
+        )
+    return CriterionResult(
+        criterion_key="C-STAGE-1",
+        classification=BLOCKING,
+        outcome="pass" if not violations else "fail",
+        evidence={"violations": violations, **evidence},
+    )
+
+
+def evaluate_design_fault(
+    session: Session, evaluation: TechnicalEvaluation, observation: dict | None
+) -> CriterionResult:
+    """F016 C-DESIGN-1: an invalid design fails honestly after exactly one
+    corrective retry — stage-named failure, no drafting, completed lessons
+    preserved."""
+
+    pointer = (observation or {}).get("run_id")
+    lesson_index = (observation or {}).get("lesson_index")
+    if not pointer or lesson_index is None:
+        return CriterionResult(
+            criterion_key="C-DESIGN-1",
+            classification=BLOCKING,
+            outcome="missing_evidence",
+            evidence={"reason": "no design-fault run recorded"},
+        )
+    run = session.get(GenerationRun, uuid.UUID(pointer))
+    if run is None:
+        return CriterionResult(
+            criterion_key="C-DESIGN-1",
+            classification=BLOCKING,
+            outcome="missing_evidence",
+            evidence={"reason": "run missing"},
+        )
+    violations: list[str] = []
+    artifacts = _artifacts_for_run(session, run)
+    faulted = [a for a in artifacts if a.lesson_index == lesson_index]
+    completed = [a for a in artifacts if a.status == "complete"]
+    design_events = [
+        event
+        for event in session.scalars(
+            select(TraceEvent).where(
+                TraceEvent.run_id == run.id,
+                TraceEvent.event_type == "model.generation_design_lesson",
+            )
+        ).all()
+        if _trace_lesson_index(json.loads(event.payload_json or "{}")) == lesson_index
+    ]
+    write_events = [
+        event
+        for event in session.scalars(
+            select(TraceEvent).where(
+                TraceEvent.run_id == run.id,
+                TraceEvent.event_type == "model.generation_write_lesson",
+            )
+        ).all()
+        if _trace_lesson_index(json.loads(event.payload_json or "{}")) == lesson_index
+    ]
+    if not faulted or faulted[0].status != "failed":
+        violations.append("faulted_lesson_not_failed")
+    elif "design stage failed" not in (faulted[0].failure_reason or ""):
+        violations.append("failure_not_stage_named")
+    if len(design_events) != 2:
+        violations.append(f"design_attempts_{len(design_events)}")
+    if write_events:
+        violations.append("drafted_after_design_failure")
+    if not completed:
+        violations.append("no_completed_lessons_preserved")
+    return CriterionResult(
+        criterion_key="C-DESIGN-1",
+        classification=BLOCKING,
+        outcome="pass" if not violations else "fail",
+        evidence={"violations": violations, "settled_status": run.status},
+    )
+
+
+def evaluate_review_fault(
+    session: Session, evaluation: TechnicalEvaluation, observation: dict | None
+) -> CriterionResult:
+    """F016 C-REVIEW-1: severe findings twice settle failed-after-revise —
+    exactly one revise round, no rendering of the rejected draft, completed
+    lessons preserved."""
+
+    pointer = (observation or {}).get("run_id")
+    lesson_index = (observation or {}).get("lesson_index")
+    if not pointer or lesson_index is None:
+        return CriterionResult(
+            criterion_key="C-REVIEW-1",
+            classification=BLOCKING,
+            outcome="missing_evidence",
+            evidence={"reason": "no review-fault run recorded"},
+        )
+    run = session.get(GenerationRun, uuid.UUID(pointer))
+    if run is None:
+        return CriterionResult(
+            criterion_key="C-REVIEW-1",
+            classification=BLOCKING,
+            outcome="missing_evidence",
+            evidence={"reason": "run missing"},
+        )
+    violations: list[str] = []
+    artifacts = _artifacts_for_run(session, run)
+    faulted = [a for a in artifacts if a.lesson_index == lesson_index]
+    completed = [a for a in artifacts if a.status == "complete"]
+    traces = [
+        event
+        for event in session.scalars(
+            select(TraceEvent).where(TraceEvent.run_id == run.id)
+        ).all()
+        if _trace_lesson_index(json.loads(event.payload_json or "{}")) == lesson_index
+    ]
+    kinds = [event.event_type for event in traces]
+    if not faulted or faulted[0].status != "failed":
+        violations.append("faulted_lesson_not_failed")
+    else:
+        if faulted[0].review_outcome != "failed_after_revise":
+            violations.append("outcome_not_failed_after_revise")
+        if faulted[0].review_rounds != 2:
+            violations.append("rounds_not_two")
+        if "review stage" not in (faulted[0].failure_reason or ""):
+            violations.append("failure_not_stage_named")
+    if kinds.count("model.generation_review_lesson") != 2:
+        violations.append("review_round_count_wrong")
+    if kinds.count("model.generation_revise_lesson") != 1:
+        violations.append("revise_round_count_wrong")
+    if any(kind.startswith("tool.render_") for kind in kinds):
+        violations.append("rendered_rejected_draft")
+    if not completed:
+        violations.append("no_completed_lessons_preserved")
+    return CriterionResult(
+        criterion_key="C-REVIEW-1",
+        classification=BLOCKING,
+        outcome="pass" if not violations else "fail",
+        evidence={"violations": violations, "settled_status": run.status},
+    )
+
+
 def evaluate_pass(
     session: Session,
     evaluation: TechnicalEvaluation,
@@ -628,6 +882,12 @@ def evaluate_pass(
             results.append(evaluate_partial_render(session, evaluation, observation))
         elif key == "C-TOOL-1":
             results.append(evaluate_tool_loop_governance(session, evaluation, observation))
+        elif key == "C-STAGE-1":
+            results.append(evaluate_specialist_stages(session, evaluation))
+        elif key == "C-DESIGN-1":
+            results.append(evaluate_design_fault(session, evaluation, observation))
+        elif key == "C-REVIEW-1":
+            results.append(evaluate_review_fault(session, evaluation, observation))
     if evaluation.scenario == "full_pipeline":
         results.append(measure_latency(session, evaluation))
         results.append(measure_cost(session, evaluation))

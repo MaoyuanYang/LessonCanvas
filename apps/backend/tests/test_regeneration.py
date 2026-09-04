@@ -307,7 +307,7 @@ def test_scoped_start_idempotency_and_retention(client, auth, db_session):
 
     snapshot = client.get(f"/projects/{project_id}/generation", headers=auth).json()
     assert snapshot["status"] == "complete"
-    assert snapshot["model_calls"] == 1  # only lesson 2 regenerated
+    assert snapshot["model_calls"] == 3  # only lesson 2 regenerated (design + write + review)
     retained_after = {r["lesson_index"]: r for r in snapshot["retained_artifacts"]}
 
     prior_checksums = {
@@ -470,7 +470,8 @@ def test_scoped_resume_leaves_retained_untouched(client, auth):
     assert final["status"] == "complete"
     assert final["scope_lesson_indexes"] == [2, 3]
     # Scoped accounting only: stable lesson once + failing lesson's attempts.
-    assert final["model_calls"] <= 8  # two scoped lessons only; retained lessons add zero calls
+    # two scoped lessons (design+write) + bounded retries; retained add zero
+    assert final["model_calls"] <= 12
     retained_indexes = {r["lesson_index"] for r in final["retained_artifacts"]}
     assert retained_indexes == {1, 4, 5, 6}
 

@@ -329,7 +329,8 @@ def test_transient_failure_resume_skips_completed_lessons(client, auth, db_sessi
     assert {a.id: a.object_key for a in artifacts[:2]} == keys_before
 
     db_session.refresh(run)
-    assert run.model_calls == 9  # 6 lessons + three failed attempts on lesson 3
+    # 6 lessons x (design+write+review) + three failed attempts on lesson 3
+    assert run.model_calls == 21
 
 
 def test_persistent_provider_failure_settles_with_completed_work(client, auth, db_session):
@@ -410,7 +411,8 @@ def test_cap_exhaustion_settles_capped_with_completed_work(client, auth, db_sess
 
     project_id = confirmed_blueprint_project(client, auth)
     run = start_run(client, auth, db_session, project_id)
-    run.model_call_cap = 1
+    # F016: one full lesson needs design + write + review under the new stage set.
+    run.model_call_cap = 3
     db_session.commit()
 
     status = execute_generation(str(run.id))
@@ -420,7 +422,7 @@ def test_cap_exhaustion_settles_capped_with_completed_work(client, auth, db_sess
     assert artifacts[0].status == "complete"
     assert {artifact.status for artifact in artifacts[1:]} == {"pending"}
     db_session.refresh(run)
-    assert run.model_calls == 1
+    assert run.model_calls == 3
 
 
 def test_worker_task_dispatch_resumes_same_run(client, auth, db_session):

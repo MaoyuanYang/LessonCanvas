@@ -43,6 +43,19 @@ class HarnessNotFound(Exception):
     pass
 
 
+def specialist_stage_set() -> dict:
+    """F016 D7/AC-006: the per-family specialist stage composition joins the
+    pass-comparability signature. Pre-F016 (writer-only) passes never compare
+    silently with stage-set passes; revise/re_review are part of the
+    composition whenever severe findings trigger them."""
+
+    return {
+        "plans": ["design", "write", "review", "revise", "re_review"],
+        "decks": ["write", "review", "revise", "re_review"],
+        "exercises": ["write", "review", "revise", "re_review"],
+    }
+
+
 def model_config_snapshot() -> str:
     settings = get_settings()
     return json.dumps(
@@ -59,6 +72,8 @@ def model_config_snapshot() -> str:
             # F015 AC-005: tool mode joins the same signature; orchestration-
             # era and model-driven passes never compare silently.
             "tool_mode": settings.tool_loop_mode,
+            # F016 D7/AC-006: the specialist stage set joins the signature.
+            "stage_set": specialist_stage_set(),
         },
         ensure_ascii=False,
     )
@@ -72,6 +87,27 @@ def _memory_state_snapshot(session: Session, workspace_id: uuid.UUID) -> str:
     from lessoncanvas.modules.teacher_memory.service import memory_state_snapshot
 
     return memory_state_snapshot(session, workspace_id)
+
+
+def _source_analysis_state_snapshot(session: Session, project_id: uuid.UUID) -> str:
+    """F016 D7: pin each ready source's analysis status at evaluation
+    creation (none when no analysis row exists); comparability includes it."""
+
+    from lessoncanvas.models import Source, SourceAnalysis
+
+    sources = session.scalars(
+        select(Source).where(Source.project_id == project_id, Source.status == "ready")
+    ).all()
+    analyses = {
+        analysis.source_id: analysis.status
+        for analysis in session.scalars(
+            select(SourceAnalysis).where(SourceAnalysis.project_id == project_id)
+        ).all()
+    }
+    return json.dumps(
+        {str(source.id): analyses.get(source.id, "none") for source in sources},
+        ensure_ascii=False,
+    )
 
 
 def create_evaluation(
@@ -139,6 +175,7 @@ def create_evaluation(
         scenario=scenario,
         model_config_json=model_config_snapshot(),
         memory_state_json=_memory_state_snapshot(session, workspace.id),
+        source_analysis_state_json=_source_analysis_state_snapshot(session, project_id),
         created_by=workspace.subject,
     )
     session.add(evaluation)
@@ -206,6 +243,12 @@ def execute_evaluation(evaluation_id: uuid.UUID) -> str:
             evaluation.brief_version_id = uuid.UUID(outcome["brief_version_id"])
             evaluation.blueprint_version_id = uuid.UUID(outcome["blueprint_version_id"])
             evaluation.run_ids_json = json.dumps(outcome["run_ids"])
+            # F016 D7: re-pin the analysis-state snapshot now that the
+            # harness has settled the seeded sources' analyses; the creation-
+            # time pin predates the run by design (pin-then-execute).
+            evaluation.source_analysis_state_json = _source_analysis_state_snapshot(
+                session, evaluation.project_id
+            )
             session.commit()
 
             results = criteria.evaluate_pass(session, evaluation, outcome.get("observation"))
@@ -270,6 +313,11 @@ def _pass_out(evaluation: TechnicalEvaluation, results) -> dict:
         "dataset_revision": evaluation.dataset_revision,
         "model_config": json.loads(evaluation.model_config_json),
         "memory_state": json.loads(evaluation.memory_state_json),
+        "source_analysis_state": (
+            json.loads(evaluation.source_analysis_state_json)
+            if evaluation.source_analysis_state_json
+            else None
+        ),
         "brief_version_id": (
             str(evaluation.brief_version_id) if evaluation.brief_version_id else None
         ),
@@ -329,6 +377,8 @@ def _config_signature(entry: dict) -> str:
         {
             "model_config": entry.get("model_config"),
             "memory_state": entry.get("memory_state"),
+            # F016 D7: divergent analysis availability blocks comparison.
+            "source_analysis_state": entry.get("source_analysis_state"),
         },
         sort_keys=True,
         ensure_ascii=False,

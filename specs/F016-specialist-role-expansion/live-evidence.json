@@ -1,0 +1,489 @@
+{
+  "feature": "F016",
+  "scenario": "TS-022 live specialist journey + full F009 live re-baseline",
+  "executed_at": "2026-09-04T21:22:38+0800",
+  "adapter": "deepseek",
+  "model": "deepseek-chat",
+  "embedding_adapter": "fastembed",
+  "environment": "isolated lessoncanvas_test database; truncated after run",
+  "units": [
+    "cultural-heritage",
+    "natural-disasters",
+    "travelling-around"
+  ],
+  "journey": {
+    "unit_key": "travelling-around",
+    "elapsed_ms": 42158,
+    "sources_uploaded": 2,
+    "source_analyses": [
+      {
+        "source": "01a06c95",
+        "status": "ready",
+        "model": "deepseek:deepseek-chat",
+        "latency_ms": 1614,
+        "prompt_tokens": 272,
+        "completion_tokens": 168,
+        "cost_usd": 0.000258,
+        "topics": [
+          "travel planning",
+          "adaptability",
+          "preparation"
+        ],
+        "key_passages": 2
+      },
+      {
+        "source": "01a06c95",
+        "status": "ready",
+        "model": "deepseek:deepseek-chat",
+        "latency_ms": 1569,
+        "prompt_tokens": 248,
+        "completion_tokens": 125,
+        "cost_usd": 0.000204,
+        "topics": [
+          "环游世界",
+          "旅行规划",
+          "出行表达"
+        ],
+        "key_passages": 1
+      }
+    ],
+    "run_status": "complete",
+    "model_calls": 9,
+    "model_call_cap": 20,
+    "artifacts": [
+      {
+        "lesson_index": 1,
+        "status": "complete",
+        "design_status": "ready",
+        "design_objectives": 1,
+        "design_activities": 4,
+        "review_rounds": 1,
+        "review_outcome": "passed",
+        "review_findings": 0,
+        "failure_reason": null
+      },
+      {
+        "lesson_index": 2,
+        "status": "complete",
+        "design_status": "ready",
+        "design_objectives": 1,
+        "design_activities": 5,
+        "review_rounds": 1,
+        "review_outcome": "passed",
+        "review_findings": 0,
+        "failure_reason": null
+      },
+      {
+        "lesson_index": 3,
+        "status": "complete",
+        "design_status": "ready",
+        "design_objectives": 3,
+        "design_activities": 7,
+        "review_rounds": 1,
+        "review_outcome": "passed",
+        "review_findings": 0,
+        "failure_reason": null
+      }
+    ],
+    "stage_traces": {
+      "model.generation_design_lesson": {
+        "count": 3,
+        "latency_ms_total": 10210,
+        "cost_usd_total": 0.002228,
+        "tokens_recorded": 3
+      },
+      "model.generation_write_lesson": {
+        "count": 3,
+        "latency_ms_total": 12776,
+        "cost_usd_total": 0.003328,
+        "tokens_recorded": 3
+      },
+      "model.generation_review_lesson": {
+        "count": 3,
+        "latency_ms_total": 2019,
+        "cost_usd_total": 0.00166,
+        "tokens_recorded": 3
+      }
+    }
+  },
+  "f009_rebaseline": [
+    {
+      "unit_key": "cultural-heritage",
+      "pass_index": 1,
+      "status": "completed",
+      "overall_outcome": "pass",
+      "elapsed_ms": 0,
+      "model_config": {
+        "model_adapter": "deepseek",
+        "model": "deepseek-chat",
+        "checkpoint_backend": "memory",
+        "tasks_eager": true,
+        "max_model_calls_per_run": 20,
+        "retrieval_mode": "fastembed",
+        "tool_mode": "model_driven",
+        "stage_set": {
+          "plans": [
+            "design",
+            "write",
+            "review",
+            "revise",
+            "re_review"
+          ],
+          "decks": [
+            "write",
+            "review",
+            "revise",
+            "re_review"
+          ],
+          "exercises": [
+            "write",
+            "review",
+            "revise",
+            "re_review"
+          ]
+        }
+      },
+      "source_analysis_state": {
+        "01a06c96-998c-7910-a633-6e24e6b9515c": "ready",
+        "01a06c96-a1f4-71c4-ae8c-9d39958f89d8": "ready"
+      },
+      "criteria": [
+        {
+          "key": "C-TRACE-1",
+          "outcome": "pass"
+        },
+        {
+          "key": "C-GROUND-1",
+          "outcome": "pass"
+        },
+        {
+          "key": "C-ART-1",
+          "outcome": "pass"
+        },
+        {
+          "key": "C-STAGE-1",
+          "outcome": "pass"
+        },
+        {
+          "key": "C-MEM-1",
+          "outcome": "pass"
+        }
+      ]
+    },
+    {
+      "unit_key": "cultural-heritage",
+      "pass_index": 2,
+      "status": "completed",
+      "overall_outcome": "pass",
+      "elapsed_ms": 0,
+      "model_config": {
+        "model_adapter": "deepseek",
+        "model": "deepseek-chat",
+        "checkpoint_backend": "memory",
+        "tasks_eager": true,
+        "max_model_calls_per_run": 20,
+        "retrieval_mode": "fastembed",
+        "tool_mode": "model_driven",
+        "stage_set": {
+          "plans": [
+            "design",
+            "write",
+            "review",
+            "revise",
+            "re_review"
+          ],
+          "decks": [
+            "write",
+            "review",
+            "revise",
+            "re_review"
+          ],
+          "exercises": [
+            "write",
+            "review",
+            "revise",
+            "re_review"
+          ]
+        }
+      },
+      "source_analysis_state": {
+        "01a06c96-998c-7910-a633-6e24e6b9515c": "ready",
+        "01a06c96-a1f4-71c4-ae8c-9d39958f89d8": "ready"
+      },
+      "criteria": [
+        {
+          "key": "C-TRACE-1",
+          "outcome": "pass"
+        },
+        {
+          "key": "C-GROUND-1",
+          "outcome": "pass"
+        },
+        {
+          "key": "C-ART-1",
+          "outcome": "pass"
+        },
+        {
+          "key": "C-STAGE-1",
+          "outcome": "pass"
+        },
+        {
+          "key": "C-MEM-1",
+          "outcome": "pass"
+        }
+      ]
+    },
+    {
+      "unit_key": "natural-disasters",
+      "pass_index": 1,
+      "status": "completed",
+      "overall_outcome": "pass",
+      "elapsed_ms": 0,
+      "model_config": {
+        "model_adapter": "deepseek",
+        "model": "deepseek-chat",
+        "checkpoint_backend": "memory",
+        "tasks_eager": true,
+        "max_model_calls_per_run": 20,
+        "retrieval_mode": "fastembed",
+        "tool_mode": "model_driven",
+        "stage_set": {
+          "plans": [
+            "design",
+            "write",
+            "review",
+            "revise",
+            "re_review"
+          ],
+          "decks": [
+            "write",
+            "review",
+            "revise",
+            "re_review"
+          ],
+          "exercises": [
+            "write",
+            "review",
+            "revise",
+            "re_review"
+          ]
+        }
+      },
+      "source_analysis_state": {
+        "01a06c96-998c-7910-a633-6e24e6b9515c": "ready",
+        "01a06c96-a1f4-71c4-ae8c-9d39958f89d8": "ready"
+      },
+      "criteria": [
+        {
+          "key": "C-TRACE-1",
+          "outcome": "pass"
+        },
+        {
+          "key": "C-GROUND-1",
+          "outcome": "pass"
+        },
+        {
+          "key": "C-ART-1",
+          "outcome": "pass"
+        },
+        {
+          "key": "C-STAGE-1",
+          "outcome": "pass"
+        },
+        {
+          "key": "C-MEM-1",
+          "outcome": "pass"
+        }
+      ]
+    },
+    {
+      "unit_key": "natural-disasters",
+      "pass_index": 2,
+      "status": "completed",
+      "overall_outcome": "pass",
+      "elapsed_ms": 0,
+      "model_config": {
+        "model_adapter": "deepseek",
+        "model": "deepseek-chat",
+        "checkpoint_backend": "memory",
+        "tasks_eager": true,
+        "max_model_calls_per_run": 20,
+        "retrieval_mode": "fastembed",
+        "tool_mode": "model_driven",
+        "stage_set": {
+          "plans": [
+            "design",
+            "write",
+            "review",
+            "revise",
+            "re_review"
+          ],
+          "decks": [
+            "write",
+            "review",
+            "revise",
+            "re_review"
+          ],
+          "exercises": [
+            "write",
+            "review",
+            "revise",
+            "re_review"
+          ]
+        }
+      },
+      "source_analysis_state": {
+        "01a06c96-998c-7910-a633-6e24e6b9515c": "ready",
+        "01a06c96-a1f4-71c4-ae8c-9d39958f89d8": "ready"
+      },
+      "criteria": [
+        {
+          "key": "C-TRACE-1",
+          "outcome": "pass"
+        },
+        {
+          "key": "C-GROUND-1",
+          "outcome": "pass"
+        },
+        {
+          "key": "C-ART-1",
+          "outcome": "pass"
+        },
+        {
+          "key": "C-STAGE-1",
+          "outcome": "pass"
+        },
+        {
+          "key": "C-MEM-1",
+          "outcome": "pass"
+        }
+      ]
+    },
+    {
+      "unit_key": "travelling-around",
+      "pass_index": 1,
+      "status": "completed",
+      "overall_outcome": "fail",
+      "elapsed_ms": 0,
+      "model_config": {
+        "model_adapter": "deepseek",
+        "model": "deepseek-chat",
+        "checkpoint_backend": "memory",
+        "tasks_eager": true,
+        "max_model_calls_per_run": 20,
+        "retrieval_mode": "fastembed",
+        "tool_mode": "model_driven",
+        "stage_set": {
+          "plans": [
+            "design",
+            "write",
+            "review",
+            "revise",
+            "re_review"
+          ],
+          "decks": [
+            "write",
+            "review",
+            "revise",
+            "re_review"
+          ],
+          "exercises": [
+            "write",
+            "review",
+            "revise",
+            "re_review"
+          ]
+        }
+      },
+      "source_analysis_state": {
+        "01a06c96-998c-7910-a633-6e24e6b9515c": "ready",
+        "01a06c96-a1f4-71c4-ae8c-9d39958f89d8": "ready"
+      },
+      "criteria": [
+        {
+          "key": "C-TRACE-1",
+          "outcome": "pass"
+        },
+        {
+          "key": "C-GROUND-1",
+          "outcome": "pass"
+        },
+        {
+          "key": "C-ART-1",
+          "outcome": "fail"
+        },
+        {
+          "key": "C-STAGE-1",
+          "outcome": "pass"
+        },
+        {
+          "key": "C-MEM-1",
+          "outcome": "pass"
+        }
+      ]
+    },
+    {
+      "unit_key": "travelling-around",
+      "pass_index": 2,
+      "status": "completed",
+      "overall_outcome": "pass",
+      "elapsed_ms": 0,
+      "model_config": {
+        "model_adapter": "deepseek",
+        "model": "deepseek-chat",
+        "checkpoint_backend": "memory",
+        "tasks_eager": true,
+        "max_model_calls_per_run": 20,
+        "retrieval_mode": "fastembed",
+        "tool_mode": "model_driven",
+        "stage_set": {
+          "plans": [
+            "design",
+            "write",
+            "review",
+            "revise",
+            "re_review"
+          ],
+          "decks": [
+            "write",
+            "review",
+            "revise",
+            "re_review"
+          ],
+          "exercises": [
+            "write",
+            "review",
+            "revise",
+            "re_review"
+          ]
+        }
+      },
+      "source_analysis_state": {
+        "01a06c96-998c-7910-a633-6e24e6b9515c": "ready",
+        "01a06c96-a1f4-71c4-ae8c-9d39958f89d8": "ready"
+      },
+      "criteria": [
+        {
+          "key": "C-TRACE-1",
+          "outcome": "pass"
+        },
+        {
+          "key": "C-GROUND-1",
+          "outcome": "pass"
+        },
+        {
+          "key": "C-ART-1",
+          "outcome": "pass"
+        },
+        {
+          "key": "C-STAGE-1",
+          "outcome": "pass"
+        },
+        {
+          "key": "C-MEM-1",
+          "outcome": "pass"
+        }
+      ]
+    }
+  ]
+}

@@ -688,7 +688,7 @@ def test_injection_payloads_ride_as_inert_json(client, auth, db_session):
     db_session.commit()
 
     events = client.get(
-        f"/projects/{project_id}/evidence/{run_ids['lesson_plan']}/events",
+        f"/projects/{project_id}/evidence/{run_ids['lesson_plan']}/events?limit=200",
         headers=auth,
     ).json()["events"]
     probe = next(event for event in events if event["event_type"] == "model.injection_probe")
