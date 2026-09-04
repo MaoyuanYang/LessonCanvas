@@ -29,7 +29,7 @@ import {
 } from "@/lib/api";
 
 
-function narrationText(event: GenerationStreamEvent): string | null {
+export function narrationText(event: GenerationStreamEvent): string | null {
   if (event.event_type === "run") {
     const status = String(event.payload.status ?? "");
     if (status === "queued") return "生成任务已创建，正在排队。";
@@ -48,10 +48,19 @@ function narrationText(event: GenerationStreamEvent): string | null {
   if (event.event_type === "lesson") {
     const index = event.payload.lesson_index as number;
     const status = String(event.payload.status ?? "");
+    if (status === "designing") return `正在设计第 ${index} 课活动……`;
     if (status === "drafting") return `正在起草第 ${index} 课教案……`;
+    if (status === "reviewing") return `第 ${index} 课进入质量评审……`;
+    if (status === "revising") return `第 ${index} 课触发一轮修订……`;
     if (status === "rendering") return `正在渲染第 ${index} 课 DOCX 文件……`;
     if (status === "complete") return `第 ${index} 课教案已完成并通过校验。`;
-    if (status === "failed") return `第 ${index} 课失败：${event.payload.reason ?? "未知原因"}`;
+    if (status === "failed") {
+      const reason = String(event.payload.reason ?? "未知原因");
+      if (reason.includes("review stage")) {
+        return `第 ${index} 课评审未通过（修订后仍存在严重问题）：${reason}`;
+      }
+      return `第 ${index} 课失败：${reason}`;
+    }
   }
   return null;
 }

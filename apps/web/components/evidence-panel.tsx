@@ -109,6 +109,48 @@ function toolRoundSummaryChips(
   return chips;
 }
 
+// F016 U1 (ux-ui.md): review/revise rows carry round/severity/outcome chips
+// on the collapsed row; findings detail stays behind the expand.
+const REVIEW_ROUND_EVENT_TYPES = new Set([
+  "model.generation_review_lesson",
+  "model.generation_review_deck",
+  "model.generation_review_exercises",
+  "model.generation_revise_lesson",
+  "model.generation_revise_deck",
+  "model.generation_revise_exercises",
+]);
+
+function reviewRoundSummaryChips(
+  eventType: string,
+  payload: Record<string, unknown>,
+): string[] {
+  const chips: string[] = [];
+  if (eventType.startsWith("model.generation_review_")) {
+    const round = typeof payload.round === "number" ? payload.round : null;
+    if (round !== null) chips.push(`第 ${round} 轮`);
+    const severe = typeof payload.severe_count === "number" ? payload.severe_count : 0;
+    const minor = typeof payload.minor_count === "number" ? payload.minor_count : 0;
+    chips.push(`严重 ${severe} · 轻微 ${minor}`);
+    if (payload.parse_failed === true) {
+      chips.push("评审输出不可解析");
+    } else if (severe > 0) {
+      chips.push("触发修订");
+    } else {
+      chips.push("未触发修订");
+    }
+    return chips;
+  }
+  // revise rows
+  chips.push("修订重写");
+  const findings = Array.isArray(
+    (payload.prompt as Record<string, unknown> | undefined)?.findings,
+  )
+    ? ((payload.prompt as Record<string, unknown>).findings as unknown[])
+    : [];
+  if (findings.length > 0) chips.push(`携带发现 ${findings.length} 条`);
+  return chips;
+}
+
 function formatCost(costUsd: number | null): string {
   if (costUsd === null) return "未记录";
   return `约 $${costUsd.toFixed(4)}（估算）`;
@@ -561,6 +603,19 @@ export function EvidencePanel({
                                 : null}
                               {TOOL_ROUND_EVENT_TYPES.has(event.event_type)
                                 ? toolRoundSummaryChips(
+                                    event.event_type,
+                                    event.payload as Record<string, unknown>,
+                                  ).map((chip) => (
+                                    <span
+                                      key={chip}
+                                      className="rounded bg-evidence/10 px-1.5 py-0.5 text-xs text-evidence"
+                                    >
+                                      {chip}
+                                    </span>
+                                  ))
+                                : null}
+                              {REVIEW_ROUND_EVENT_TYPES.has(event.event_type)
+                                ? reviewRoundSummaryChips(
                                     event.event_type,
                                     event.payload as Record<string, unknown>,
                                   ).map((chip) => (

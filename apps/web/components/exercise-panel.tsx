@@ -35,7 +35,7 @@ import {
 
 const DIFFICULTY_TIERS: ExerciseDifficulty[] = ["foundation", "consolidation", "advanced"];
 
-function exerciseNarrationText(event: GenerationStreamEvent): string | null {
+export function exerciseNarrationText(event: GenerationStreamEvent): string | null {
   if (event.event_type === "run") {
     const status = String(event.payload.status ?? "");
     if (status === "queued") return "练习与答案生成任务已创建，正在排队。";
@@ -55,6 +55,8 @@ function exerciseNarrationText(event: GenerationStreamEvent): string | null {
     const index = event.payload.lesson_index as number;
     const status = String(event.payload.status ?? "");
     if (status === "drafting") return `正在起草第 ${index} 课练习与答案……`;
+    if (status === "reviewing") return `第 ${index} 课练习进入质量评审……`;
+    if (status === "revising") return `第 ${index} 课练习触发一轮修订……`;
     if (status === "rendering") return `正在渲染第 ${index} 课 DOCX 文件……`;
     if (status === "complete") {
       const itemCount = event.payload.item_count as number | undefined;

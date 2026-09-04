@@ -499,7 +499,7 @@ def test_transient_failure_exercise_resume_skips_completed(client, auth, db_sess
     } == keys_before
 
     db_session.refresh(run)
-    assert run.model_calls == 9  # 6 pairs + three failed attempts on lesson 3
+    assert run.model_calls == 15  # 6 pairs x (write+review) + three failed attempts on lesson 3
 
 
 def test_worker_task_dispatch_resumes_same_exercise_run(client, auth, db_session):
@@ -545,7 +545,7 @@ def test_crashed_exercise_run_resumes_from_checkpoint(client, auth, db_session):
     db_session.expire_all()
     assert status == "complete"
     db_session.refresh(run)
-    assert run.model_calls == 4  # only the four incomplete lessons consumed calls
+    assert run.model_calls == 8  # four incomplete lessons x (write+review)
 
 
 def test_exercise_provider_exhaustion_settles_terminal_or_partial(client, auth, db_session):
@@ -582,7 +582,8 @@ def test_exercise_cap_exhaustion_settles_capped_with_completed_work(
 
     project_id = confirmed_plans_project(client, auth, db_session)
     run = start_exercise_run(db_session, project_id)
-    run.model_call_cap = 1
+    # F016: one complete pair needs write + review under the new stage set.
+    run.model_call_cap = 2
     db_session.commit()
 
     status = execute_exercise_generation(str(run.id))
@@ -592,7 +593,7 @@ def test_exercise_cap_exhaustion_settles_capped_with_completed_work(
     assert artifacts[0].status == "complete"
     assert {artifact.status for artifact in artifacts[1:]} == {"pending"}
     db_session.refresh(run)
-    assert run.model_calls == 1
+    assert run.model_calls == 2
 
 
 def test_newer_version_supersedes_active_exercise_run(client, auth, db_session):
@@ -675,6 +676,9 @@ def test_exercise_injection_payload_stays_inert(client, auth, db_session):
     kinds = {trace.event_type for trace in traces}
     assert kinds <= {
         "model.generation_write_exercises",
+        # F016: every draft receives a severity-gated review round.
+        "model.generation_review_exercises",
+        "model.generation_revise_exercises",
         "tool.render_lesson_exercises_docx",
         "tool.validate_exercise_pair",
         # F013: every run records its (possibly empty) applied-memory
@@ -715,6 +719,11 @@ def test_exercise_injection_payload_stays_inert(client, auth, db_session):
             "error",
             "item_kind",
             "item_id",
+            # F016 review-round payload keys.
+            "round",
+            "severe_count",
+            "minor_count",
+            "parse_failed",
         }
 
 

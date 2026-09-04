@@ -32,8 +32,7 @@ class ProviderTransientError(Exception):
     """Model/provider failure eligible for bounded Celery retry against the same run."""
 
 
-class CapExhaustedError(Exception):
-    """Per-run model-call cap reached; no further model work may begin."""
+from lessoncanvas.modules.run_orchestration.caps import CapExhaustedError  # noqa: E402
 
 
 class LessonValidationError(Exception):
@@ -215,6 +214,7 @@ def process_lesson_node(state: GenerationState) -> dict:
                 context,
                 state.get("memory_context") or [],
                 retrieval_result=retrieval_result,
+                objective_ids=objective_ids,
             )
         except CapExhaustedError:
             return {"outcome": "capped"}
@@ -244,9 +244,31 @@ def _process_one_lesson(
     context: dict,
     memory_context: list | None = None,
     retrieval_result: dict | None = None,
+    objective_ids: set[str] | None = None,
 ) -> None:
     from lessoncanvas.adapters.storage import StorageAdapter
+
+    # F016 D4: designer -> writer split. The validated design is a traced
+    # intermediate the writer consumes as its activity contract; an honest
+    # design-stage failure settles this lesson without drafting. A resumed
+    # run reuses the stored validated design (no re-billing).
+    from lessoncanvas.modules.artifact_production.design import design_stage
     from lessoncanvas.settings import get_settings
+
+    if artifact.design_status == "ready" and artifact.design_json:
+        design = json.loads(artifact.design_json)
+    else:
+        design = design_stage(
+            session,
+            run,
+            artifact,
+            context,
+            objective_ids or set(),
+            retrieval_result,
+            memory_context=memory_context,
+        )
+    if design is None:
+        return
 
     adapter = get_model_adapter()
     storage = StorageAdapter(bucket=get_settings().s3_bucket_artifacts)
@@ -273,6 +295,9 @@ def _process_one_lesson(
             "lesson": context,
             "grounding_state": (retrieval_result or {}).get("grounding_state", "none"),
         }
+        if design:
+            # F016: the writer assembles the full plan from the design.
+            user_payload["design"] = design
         if (retrieval_result or {}).get("hits"):
             # F014: retrieved chunks travel only as labeled user payload.
             user_payload["retrieved_sources"] = [
@@ -324,6 +349,41 @@ def _process_one_lesson(
             usage=response,
         )
         session.commit()
+
+        # F016 D2/D3: severity-gated review between the draft and rendering.
+        from lessoncanvas.modules.artifact_production.review import (
+            FAILED_AFTER_REVISE,
+            UNPARSEABLE,
+            review_failure_reason,
+            review_stage,
+        )
+
+        review_outcome, plan = review_stage(
+            session,
+            run,
+            artifact,
+            family="lesson",
+            writer_payload=user_payload,
+            draft=plan,
+        )
+        if review_outcome == FAILED_AFTER_REVISE:
+            artifact.status = "failed"
+            artifact.failure_reason = review_failure_reason("lesson")
+            session.commit()
+            run_service.append_event(
+                session,
+                run.id,
+                "lesson",
+                {"lesson_index": artifact.lesson_index, "status": "failed",
+                 "reason": artifact.failure_reason},
+            )
+            session.commit()
+            return
+        if review_outcome == UNPARSEABLE:
+            last_error = LessonValidationError("unparseable review output")
+            artifact.retry_count = attempts - 1
+            session.commit()
+            continue
 
         artifact.status = "rendering"
         session.commit()

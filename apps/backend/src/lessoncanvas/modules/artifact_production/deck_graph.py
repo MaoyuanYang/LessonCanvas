@@ -34,8 +34,7 @@ class ProviderTransientError(Exception):
     """Model/provider failure eligible for bounded Celery retry against the same run."""
 
 
-class CapExhaustedError(Exception):
-    """Per-run model-call cap reached; no further model work may begin."""
+from lessoncanvas.modules.run_orchestration.caps import CapExhaustedError  # noqa: E402
 
 
 class DeckValidationError(Exception):
@@ -363,6 +362,41 @@ def _process_one_deck(
             usage=response,
         )
         session.commit()
+
+        # F016 D2/D3: severity-gated review between the draft and rendering.
+        from lessoncanvas.modules.artifact_production.review import (
+            FAILED_AFTER_REVISE,
+            UNPARSEABLE,
+            review_failure_reason,
+            review_stage,
+        )
+
+        review_outcome, deck = review_stage(
+            session,
+            run,
+            artifact,
+            family="deck",
+            writer_payload=user_payload,
+            draft=deck,
+        )
+        if review_outcome == FAILED_AFTER_REVISE:
+            artifact.status = "failed"
+            artifact.failure_reason = review_failure_reason("deck")
+            session.commit()
+            run_service.append_event(
+                session,
+                run.id,
+                "lesson",
+                {"lesson_index": artifact.lesson_index, "status": "failed",
+                 "reason": artifact.failure_reason},
+            )
+            session.commit()
+            return
+        if review_outcome == UNPARSEABLE:
+            last_error = DeckValidationError("unparseable review output")
+            artifact.retry_count = attempts - 1
+            session.commit()
+            continue
 
         artifact.status = "rendering"
         session.commit()

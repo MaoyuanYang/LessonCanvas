@@ -239,6 +239,25 @@ export interface SourceChunkView {
   text_sha256: string | null;
 }
 
+export interface SourceAnalysisView {
+  status: string;
+  topics: string[];
+  language_points: string[];
+  suitability: {
+    recommended?: boolean | null;
+    audience_fit?: string | null;
+    cautions?: string[];
+  };
+  key_passages: { chunk_position: number; digest: string }[];
+  error: string | null;
+  model: string | null;
+  latency_ms: number | null;
+  prompt_tokens: number | null;
+  completion_tokens: number | null;
+  cost_usd: number | null;
+  updated_at: string | null;
+}
+
 export interface Source {
   id: string;
   filename: string;
@@ -250,6 +269,7 @@ export interface Source {
   rights_acknowledged: boolean;
   content_sha256: string | null;
   chunks: SourceChunkView[];
+  analysis: SourceAnalysisView | null;
   created_at: string;
   updated_at: string;
 }
@@ -294,6 +314,18 @@ export async function deleteSource(
   sourceId: string,
 ): Promise<void> {
   return apiFetch<void>(`/projects/${projectId}/sources/${sourceId}`, { method: "DELETE", token });
+}
+
+// F016 U4: manual retry of a failed (or stale) source analysis.
+export async function retrySourceAnalysis(
+  token: string | null,
+  projectId: string,
+  sourceId: string,
+): Promise<Source> {
+  return apiFetch<Source>(`/projects/${projectId}/sources/${sourceId}/analyze`, {
+    method: "POST",
+    token,
+  });
 }
 
 export interface DiscoveryStatus {
@@ -578,6 +610,25 @@ export async function confirmBlueprint(
   );
 }
 
+export interface ReviewFinding {
+  dimension: string;
+  severity: string;
+  message: string;
+  reference: string | null;
+}
+
+export interface ActivityDesign {
+  objective_ids: string[];
+  activities: {
+    name: string;
+    type: string | null;
+    description: string;
+    timing_minutes: number;
+  }[];
+  assessment_approach: string | null;
+  evidence_references: { chunk_position: number }[];
+}
+
 export interface GenerationArtifact {
   id: string;
   lesson_index: number;
@@ -588,6 +639,10 @@ export interface GenerationArtifact {
   download_url: string | null;
   citations: BlueprintCitation[];
   grounding_state: string | null;
+  design: ActivityDesign | null;
+  review_findings: ReviewFinding[];
+  review_rounds: number;
+  review_outcome: string | null;
 }
 
 export interface GenerationSnapshot {
@@ -676,6 +731,9 @@ export interface DeckArtifact {
   download_url: string | null;
   citations: BlueprintCitation[];
   grounding_state: string | null;
+  review_findings: ReviewFinding[];
+  review_rounds: number;
+  review_outcome: string | null;
 }
 
 export interface DeckGenerationSnapshot {
@@ -772,6 +830,9 @@ export interface ExerciseArtifact {
   answer_download_url: string | null;
   citations: BlueprintCitation[];
   grounding_state: string | null;
+  review_findings: ReviewFinding[];
+  review_rounds: number;
+  review_outcome: string | null;
 }
 
 export interface ExerciseGenerationSnapshot {
@@ -877,6 +938,14 @@ export const EVIDENCE_EVENT_LABELS: Record<string, string> = {
   "model.generation_write_lesson": "模型调用·撰写教案",
   "model.generation_write_deck": "模型调用·撰写课件",
   "model.generation_write_exercises": "模型调用·撰写练习",
+  // F016 U1: specialist stage labels (design / review / revise).
+  "model.generation_design_lesson": "模型调用·活动设计",
+  "model.generation_review_lesson": "模型调用·质量评审（教案）",
+  "model.generation_review_deck": "模型调用·质量评审（课件）",
+  "model.generation_review_exercises": "模型调用·质量评审（练习）",
+  "model.generation_revise_lesson": "模型调用·修订重写（教案）",
+  "model.generation_revise_deck": "模型调用·修订重写（课件）",
+  "model.generation_revise_exercises": "模型调用·修订重写（练习）",
   "model.narration": "模型调用·叙述",
   "model.evidence_narration": "模型调用·任务讲解",
   "tool.standards_search": "工具调用·课标检索",
@@ -1374,6 +1443,10 @@ export const EVALUATION_CRITERION_LABELS: Record<string, string> = {
   "C-SUPER-1": "版本取代安全",
   "C-RECOV-1": "故障恢复不重复计费",
   "C-RENDER-1": "截断输出显式失败",
+  "C-TOOL-1": "工具调用治理",
+  "C-STAGE-1": "阶段执行与留痕",
+  "C-DESIGN-1": "设计阶段失败诚实",
+  "C-REVIEW-1": "评审修订轮诚实",
   "C-MEM-1": "记忆状态已钉扎",
   "M-LAT": "延迟分布",
   "M-COST": "成本估算",

@@ -5,7 +5,13 @@ import { useRef, useState } from "react";
 import { getApiToken } from "@/lib/auth";
 import { DesktopRequiredNotice, useDesktop } from "@/components/desktop-gate";
 import { Alert, Button, StatusBadge } from "@/components/ui";
-import { ApiClientError, deleteSource, listSources, uploadSource } from "@/lib/api";
+import {
+  ApiClientError,
+  deleteSource,
+  listSources,
+  retrySourceAnalysis,
+  uploadSource,
+} from "@/lib/api";
 import type { Source } from "@/lib/api";
 
 const EMBEDDING_STATUS_LABELS: Record<string, string> = {
@@ -53,6 +59,97 @@ function SourceChunkRegion({ source }: { source: Source }) {
   );
 }
 
+// F016 U4 (ux-ui.md): per-source analysis badge, expandable digest with its
+// own cost line, and the gated manual retry. Analysis failure never blocks
+// the source (chunk view and deletion behave as before).
+const ANALYSIS_STATUS_LABELS: Record<string, string> = {
+  pending: "待分析",
+  analyzing: "分析中",
+  ready: "已分析",
+  failed: "分析失败",
+};
+
+function formatAnalysisCost(analysis: NonNullable<Source["analysis"]>): string {
+  if (analysis.cost_usd === null || analysis.cost_usd === undefined) return "未记录";
+  return `约 $${analysis.cost_usd.toFixed(4)}（估算）`;
+}
+
+function SourceAnalysisRegion({
+  source,
+  canWrite,
+  onRetry,
+  retryPending,
+}: {
+  source: Source;
+  canWrite: boolean;
+  onRetry: (sourceId: string) => void;
+  retryPending: boolean;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const analysis = source.analysis;
+  if (!analysis) return null;
+  const failed = analysis.status === "failed";
+  return (
+    <div className="mt-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <StatusBadge
+          status={ANALYSIS_STATUS_LABELS[analysis.status] ?? analysis.status}
+        />
+        {(analysis.status === "ready" || failed) && (
+          <button
+            type="button"
+            aria-expanded={expanded}
+            onClick={() => setExpanded((value) => !value)}
+            className="text-xs text-evidence focus-visible:outline-2 focus-visible:outline-focus"
+          >
+            {failed ? "查看失败原因" : "查看来源分析"}
+          </button>
+        )}
+        {failed && canWrite ? (
+          <button
+            type="button"
+            disabled={retryPending}
+            onClick={() => onRetry(source.id)}
+            className="text-xs text-evidence underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-focus disabled:text-ink-secondary"
+          >
+            重试分析
+          </button>
+        ) : null}
+      </div>
+      {expanded ? (
+        failed ? (
+          <p className="mt-2 text-xs text-ink-secondary">原因：{analysis.error ?? "未知"}</p>
+        ) : (
+          <div className="mt-2 space-y-1 rounded border border-line bg-surface-alt/60 p-2 text-xs text-ink">
+            {analysis.topics.length > 0 ? (
+              <p>
+                <span className="font-medium">主题：</span>
+                {analysis.topics.join("；")}
+              </p>
+            ) : null}
+            {analysis.language_points.length > 0 ? (
+              <p>
+                <span className="font-medium">语言点：</span>
+                {analysis.language_points.join("；")}
+              </p>
+            ) : null}
+            {analysis.key_passages.length > 0 ? (
+              <p>
+                <span className="font-medium">关键段落：</span>
+                第 {analysis.key_passages.map((p) => p.chunk_position).join("、")} 段
+              </p>
+            ) : null}
+            <p className="text-ink-secondary">
+              模型 {analysis.model ?? "未记录"} · 延迟 {analysis.latency_ms ?? "未记录"} ms · 成本{" "}
+              {formatAnalysisCost(analysis)}
+            </p>
+          </div>
+        )
+      ) : null}
+    </div>
+  );
+}
+
 export function SourcesPanel({
   projectId,
   readOnly = false,
@@ -87,6 +184,16 @@ export function SourcesPanel({
   const deleteMutation = useMutation({
     mutationFn: async (sourceId: string) => deleteSource(await getApiToken(), projectId, sourceId),
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["sources", projectId] }),
+  });
+
+  const retryMutation = useMutation({
+    mutationFn: async (sourceId: string) =>
+      retrySourceAnalysis(await getApiToken(), projectId, sourceId),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["sources", projectId] }),
+    onError: (err) => {
+      if (err instanceof ApiClientError) setError(err.message);
+      else setError("重试分析失败");
+    },
   });
 
   const sources = sourcesQuery.data;
@@ -171,6 +278,12 @@ export function SourcesPanel({
                 {source.status === "ready" && (source.chunks?.length ?? 0) > 0 ? (
                   <SourceChunkRegion source={source} />
                 ) : null}
+                <SourceAnalysisRegion
+                  source={source}
+                  canWrite={canWrite}
+                  onRetry={(sourceId) => retryMutation.mutate(sourceId)}
+                  retryPending={retryMutation.isPending}
+                />
               </div>
               {canWrite ? (
                 <Button

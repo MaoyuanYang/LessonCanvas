@@ -30,7 +30,7 @@ import {
   type GenerationStreamEvent,
 } from "@/lib/api";
 
-function deckNarrationText(event: GenerationStreamEvent): string | null {
+export function deckNarrationText(event: GenerationStreamEvent): string | null {
   if (event.event_type === "run") {
     const status = String(event.payload.status ?? "");
     if (status === "queued") return "课件生成任务已创建，正在排队。";
@@ -50,6 +50,8 @@ function deckNarrationText(event: GenerationStreamEvent): string | null {
     const index = event.payload.lesson_index as number;
     const status = String(event.payload.status ?? "");
     if (status === "drafting") return `正在起草第 ${index} 课课件……`;
+    if (status === "reviewing") return `第 ${index} 课课件进入质量评审……`;
+    if (status === "revising") return `第 ${index} 课课件触发一轮修订……`;
     if (status === "rendering") return `正在渲染第 ${index} 课 PPTX 文件……`;
     if (status === "complete") {
       const slideCount = event.payload.slide_count as number | undefined;

@@ -194,6 +194,38 @@ class SourceChunk(Base):
     text_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
 
 
+class SourceAnalysis(Base):
+    """F016 D1: latest-wins structured analysis of one source by the
+    source-analysis specialist. One row per source (unique); analysis is not
+    run-owned, so per-attempt telemetry lives here rather than in TraceEvent.
+    Missing tokens keep cost NULL (never zero) per the honesty rule."""
+
+    __tablename__ = "source_analyses"
+    __table_args__ = (UniqueConstraint("source_id", name="uq_source_analyses_source"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
+    source_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("sources.id"), nullable=False
+    )
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("projects.id"), nullable=False, index=True
+    )
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("workspaces.id"), nullable=False, index=True
+    )
+    status: Mapped[str] = mapped_column(String(16), nullable=False, default="pending")
+    payload_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    model: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    latency_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    prompt_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    completion_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    cost_usd: Mapped[float | None] = mapped_column(nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
+
+
 class DiscoveryRun(Base):
     __tablename__ = "discovery_runs"
 
@@ -408,6 +440,13 @@ class LessonPlanArtifact(Base):
     # F014: server-injected chunk citations from this artifact's own retrieval.
     citations_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     grounding_state: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    # F016 D4: the validated activity-design intermediate (evidence-visible only).
+    design_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    design_status: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    # F016 D2/D3: findings of the latest review round and its outcome.
+    review_findings_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    review_rounds: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    review_outcome: Mapped[str | None] = mapped_column(String(24), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, onupdate=utcnow
@@ -443,6 +482,10 @@ class SlideDeckArtifact(Base):
     # F014: server-injected chunk citations from this artifact's own retrieval.
     citations_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     grounding_state: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    # F016 D2/D3: findings of the latest review round and its outcome.
+    review_findings_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    review_rounds: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    review_outcome: Mapped[str | None] = mapped_column(String(24), nullable=True)
     retry_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(
@@ -479,6 +522,10 @@ class ExerciseArtifact(Base):
     # F014: server-injected chunk citations from this artifact's own retrieval.
     citations_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     grounding_state: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    # F016 D2/D3: findings of the latest review round and its outcome.
+    review_findings_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    review_rounds: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    review_outcome: Mapped[str | None] = mapped_column(String(24), nullable=True)
     retry_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(
@@ -611,6 +658,10 @@ class TechnicalEvaluation(Base):
     scenario: Mapped[str] = mapped_column(String(48), nullable=False)
     model_config_json: Mapped[str] = mapped_column(Text, nullable=False)
     memory_state_json: Mapped[str] = mapped_column(Text, nullable=False)
+    # F016 D7: per-pass snapshot of the seeded sources' analysis states so
+    # passes with divergent analysis availability never compare silently
+    # (pre-F016 passes keep NULL and stay incomparable).
+    source_analysis_state_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     brief_version_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("brief_versions.id"), nullable=True
     )

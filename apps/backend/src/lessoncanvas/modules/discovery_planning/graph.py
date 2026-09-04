@@ -108,10 +108,13 @@ def analyze_node(state: DiscoveryState) -> dict:
         if run.model_calls >= get_settings().max_model_calls_per_run:
             raise RunQuotaError("model call quota exhausted for this run")
         adapter = get_model_adapter()
+        from lessoncanvas.modules.sources_grounding import analysis as analysis_module
+
         user_payload = {
             "kind": "gap_analysis",
             "known_fields": list(state.get("known_fields", {}).keys()),
             "required_fields": REQUIRED_FIELDS,
+            "source_analyses": analysis_module.analyses_digest(session, run.project_id),
         }
         if state.get("memory_context"):
             # F013: subordinate teacher memory as labeled, capped data only.
@@ -223,10 +226,13 @@ def build_draft_node(state: DiscoveryState) -> dict:
         if run.model_calls >= get_settings().max_model_calls_per_run:
             raise RunQuotaError("model call quota exhausted for this run")
         adapter = get_model_adapter()
+        from lessoncanvas.modules.sources_grounding import analysis as analysis_module
+
         user_payload = {
             "kind": "build_draft",
             "fields": state.get("known_fields", {}),
             "required_fields": REQUIRED_FIELDS,
+            "source_analyses": analysis_module.analyses_digest(session, run.project_id),
         }
         if state.get("memory_context"):
             # F013: subordinate teacher memory as labeled, capped data only.

@@ -94,7 +94,34 @@ def upload_unit_sources(
         else:
             parse_source.delay(str(source.id))
         uploaded.append(str(source.id))
+    _settle_source_analyses(session, project_id)
     return uploaded
+
+
+def _settle_source_analyses(session: Session, project_id: uuid.UUID) -> None:
+    """F016 D7: bounded wait until every ready source carries a settled
+    analysis (ready/failed). Analyses are subordinate context — on timeout the
+    pass proceeds and the pinned analysis-state snapshot discloses the
+    absence honestly."""
+
+    from lessoncanvas.models import Source, SourceAnalysis
+
+    deadline = time.monotonic() + 90
+    while time.monotonic() < deadline:
+        session.expire_all()
+        ready = session.scalars(
+            select(Source).where(Source.project_id == project_id, Source.status == "ready")
+        ).all()
+        settled = session.scalars(
+            select(SourceAnalysis).where(
+                SourceAnalysis.project_id == project_id,
+                SourceAnalysis.status.in_(("ready", "failed")),
+            )
+        ).all()
+        settled_sources = {row.source_id for row in settled}
+        if all(source.id in settled_sources for source in ready):
+            return
+        time.sleep(RUN_WAIT_POLL_SECONDS)
 
 
 def _interview_loop(status_fn, submit_fn, scripted_answers: dict, max_rounds: int = 6) -> str:
@@ -494,6 +521,15 @@ def execute_worker_provider_failure(
         preserved = [row.lesson_index for row in artifacts if row.status == "complete"]
         incomplete = [row.lesson_index for row in artifacts if row.status != "complete"]
         pre_resume_calls = run.model_calls
+        # F016: a resumed lesson bills write + review; its stored validated
+        # design is reused without re-billing (or all three stages when the
+        # design never settled). Computed here, before the resume executes
+        # and the artifact rows settle to complete.
+        resume_cost = sum(
+            2 if row.design_status == "ready" else 3
+            for row in artifacts
+            if row.status != "complete"
+        )
 
         # Clear the fault and resume the SAME run from its checkpoint.
         FakeModelAdapter.activate_eval_faults(None)
@@ -517,7 +553,7 @@ def execute_worker_provider_failure(
         "settled_status_after_fault": settled,
         "preserved_lessons": preserved,
         "incomplete_lessons": incomplete,
-        "expected_model_calls": pre_resume_calls + len(incomplete),
+        "expected_model_calls": pre_resume_calls + resume_cost,
         "final_status": final.status,
     }
     return {
@@ -657,6 +693,96 @@ def execute_tool_loop_faults(
     }
 
 
+def execute_design_fault(
+    session: Session,
+    storage,
+    workspace_id: uuid.UUID,
+    project_id: uuid.UUID,
+    unit: EvaluationUnit,
+) -> dict:
+    """F016 fault:design_invalid — one lesson's design references an unknown
+    objective twice; the stage must fail honestly after its single corrective
+    retry with completed lessons preserved."""
+
+    from lessoncanvas.models import BlueprintVersion
+
+    brief_version_id, blueprint_version_id, interview_run_ids = reach_confirmed_pair(
+        session, storage, workspace_id, project_id, unit
+    )
+    run_ids: list[str] = list(interview_run_ids)
+    blueprint = session.get(BlueprintVersion, blueprint_version_id)
+    lessons = json.loads(blueprint.payload_json).get("lessons") or []
+    fault_lesson = int(lessons[0]["index"]) if lessons else 1
+    FakeModelAdapter.activate_eval_faults(
+        {"generation_design_lesson": {"lesson_index": fault_lesson, "mode": "design_invalid"}}
+    )
+    try:
+        run, _created = _start_artifact_run(session, workspace_id, project_id, "lesson_plan")
+        run_ids.append(str(run.id))
+        settled = (
+            run.status if get_settings().tasks_eager else _wait_terminal("lesson_plan", run.id)
+        )
+        session.expire_all()
+    finally:
+        FakeModelAdapter.activate_eval_faults(None)
+    return {
+        "brief_version_id": str(brief_version_id),
+        "blueprint_version_id": str(blueprint_version_id),
+        "run_ids": run_ids,
+        "observation": {
+            "scenario": "fault:design_invalid",
+            "run_id": str(run.id),
+            "lesson_index": fault_lesson,
+            "settled_status": settled,
+        },
+    }
+
+
+def execute_review_fault(
+    session: Session,
+    storage,
+    workspace_id: uuid.UUID,
+    project_id: uuid.UUID,
+    unit: EvaluationUnit,
+) -> dict:
+    """F016 fault:review_fail — one lesson's review stays severe across the
+    revise round; the draft must settle failed-after-revise naming the review
+    stage, with completed lessons preserved and no third round."""
+
+    from lessoncanvas.models import BlueprintVersion
+
+    brief_version_id, blueprint_version_id, interview_run_ids = reach_confirmed_pair(
+        session, storage, workspace_id, project_id, unit
+    )
+    run_ids: list[str] = list(interview_run_ids)
+    blueprint = session.get(BlueprintVersion, blueprint_version_id)
+    lessons = json.loads(blueprint.payload_json).get("lessons") or []
+    fault_lesson = int(lessons[0]["index"]) if lessons else 1
+    FakeModelAdapter.activate_eval_faults(
+        {"generation_review_lesson": {"lesson_index": fault_lesson, "mode": "review_severe_twice"}}
+    )
+    try:
+        run, _created = _start_artifact_run(session, workspace_id, project_id, "lesson_plan")
+        run_ids.append(str(run.id))
+        settled = (
+            run.status if get_settings().tasks_eager else _wait_terminal("lesson_plan", run.id)
+        )
+        session.expire_all()
+    finally:
+        FakeModelAdapter.activate_eval_faults(None)
+    return {
+        "brief_version_id": str(brief_version_id),
+        "blueprint_version_id": str(blueprint_version_id),
+        "run_ids": run_ids,
+        "observation": {
+            "scenario": "fault:review_fail",
+            "run_id": str(run.id),
+            "lesson_index": fault_lesson,
+            "settled_status": settled,
+        },
+    }
+
+
 SCENARIO_EXECUTORS = {
     "full_pipeline": execute_full_pipeline,
     "fault:duplicate_submission": execute_duplicate_submission,
@@ -664,4 +790,6 @@ SCENARIO_EXECUTORS = {
     "fault:worker_provider_failure": execute_worker_provider_failure,
     "fault:partial_render": execute_partial_render,
     "fault:tool_loop": execute_tool_loop_faults,
+    "fault:design_invalid": execute_design_fault,
+    "fault:review_fail": execute_review_fault,
 }

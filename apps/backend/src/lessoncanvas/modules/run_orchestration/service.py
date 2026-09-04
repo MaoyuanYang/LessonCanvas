@@ -22,6 +22,7 @@ from lessoncanvas.models import (
     SlideDeckArtifact,
     Workspace,
 )
+from lessoncanvas.modules.run_orchestration.caps import compute_model_call_cap
 from lessoncanvas.settings import get_settings
 
 LESSON_PLAN_KIND = "lesson_plan"
@@ -342,7 +343,7 @@ def start_generation(
         blueprint_version_id=blueprint.id,
         artifact_kind=LESSON_PLAN_KIND,
         status="queued",
-        model_call_cap=get_settings().max_model_calls_per_run,
+        model_call_cap=compute_model_call_cap("plans", len(lessons)),
         scope_json=json.dumps(scope) if scope is not None else None,
     )
     session.add(run)
@@ -429,7 +430,7 @@ def start_deck_generation(
         artifact_kind=SLIDE_DECK_KIND,
         prerequisite_run_id=plan_run.id if plan_run is not None else None,
         status="queued",
-        model_call_cap=get_settings().max_model_calls_per_deck_run,
+        model_call_cap=compute_model_call_cap("decks", len(lessons)),
         scope_json=json.dumps(deck_scope) if deck_scope is not None else None,
     )
     session.add(run)
@@ -526,7 +527,7 @@ def start_exercise_generation(
         prerequisite_run_id=plan_run.id if plan_run is not None else None,
         difficulty=difficulty,
         status="queued",
-        model_call_cap=get_settings().max_model_calls_per_exercise_run,
+        model_call_cap=compute_model_call_cap("exercises", len(lessons)),
         scope_json=json.dumps(exercise_scope) if exercise_scope is not None else None,
     )
     session.add(run)

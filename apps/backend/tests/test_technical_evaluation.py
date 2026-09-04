@@ -338,6 +338,7 @@ def test_report_contract_comparison_and_supersession(client, auth, db_session, m
     data = client.get(
         f"/projects/{project_id}/technical-evaluation/report", headers=auth
     ).json()
+
     assert data["overall_outcome"] == "missing_evidence"
 
     for scenario in (
@@ -346,6 +347,9 @@ def test_report_contract_comparison_and_supersession(client, auth, db_session, m
         "fault:worker_provider_failure",
         "fault:partial_render",
         "fault:tool_loop",
+        # F016: the specialist-stage fault classes join the blocking set.
+        "fault:design_invalid",
+        "fault:review_fail",
     ):
         created = _create_pass(client, auth, project_id, scenario=scenario)
         assert created["evaluation"]["status"] == "completed", scenario
@@ -617,3 +621,85 @@ def test_ts017_tool_loop_calls_stay_in_the_trace_ledger(client, auth, db_session
     )
     assert run.model_calls > 1  # the loop billed more than the old single call
     assert traced == run.model_calls
+
+
+# --- F016 TS-016: stage set joins the comparability signature -------------
+
+
+def test_ts016_stage_set_and_analysis_state_join_comparability_signature(
+    client, auth, db_session, monkeypatch
+):
+    monkeypatch.setattr(get_settings(), "eval_fault_profile", "enabled", raising=False)
+    project_id = _create_project(client, auth)
+
+    # Signature pins the per-family stage composition (Spec D7).
+    config = json.loads(service.model_config_snapshot())
+    assert config["stage_set"] == service.specialist_stage_set()
+    assert config["stage_set"]["plans"] == ["design", "write", "review", "revise", "re_review"]
+    assert config["stage_set"]["decks"] == ["write", "review", "revise", "re_review"]
+
+    first_full = _create_pass(client, auth, project_id, scenario="full_pipeline", pass_index=1)
+    assert first_full["evaluation"]["status"] == "completed"
+    second_full = _create_pass(client, auth, project_id, scenario="full_pipeline", pass_index=2)
+    assert second_full["evaluation"]["status"] == "completed"
+    data = client.get(
+        f"/projects/{project_id}/technical-evaluation/report", headers=auth
+    ).json()
+    entry = next(item for item in data["comparisons"] if item["pass_index"] == 1)
+    assert entry["comparison_available"] is True
+
+    # Divergent source-analysis availability blocks comparison silently never:
+    # rewrite the second pass's pinned snapshot and the pair must fall back to
+    # the configuration reason.
+    from lessoncanvas.models import TechnicalEvaluation
+
+    row = (
+        db_session.query(TechnicalEvaluation)
+        .filter(
+            TechnicalEvaluation.project_id == uuid.UUID(project_id),
+            TechnicalEvaluation.scenario == "full_pipeline",
+            TechnicalEvaluation.pass_index == 2,
+        )
+        .one()
+    )
+    row.source_analysis_state_json = json.dumps({"some-source": "failed"})
+    db_session.commit()
+    data = client.get(
+        f"/projects/{project_id}/technical-evaluation/report", headers=auth
+    ).json()
+    entry = next(item for item in data["comparisons"] if item["pass_index"] == 1)
+    assert entry["comparison_available"] is False
+    assert entry["comparison_unavailable_reason"] == "不同数据集版本或模型配置"
+
+
+# --- F016 TS-017: stage criterion + fault scenarios ------------------------
+
+
+def test_ts017_stage_criterion_and_specialist_fault_scenarios(client, auth, monkeypatch):
+    monkeypatch.setattr(get_settings(), "eval_fault_profile", "enabled", raising=False)
+    project_id = _create_project(client, auth)
+
+    full = _create_pass(client, auth, project_id, scenario="full_pipeline", pass_index=1)
+    assert full["evaluation"]["status"] == "completed"
+    stage = _criterion(full["evaluation"], "C-STAGE-1")
+    assert stage["outcome"] == "pass"
+    # Every completed artifact carries its family's stage set in the trace.
+    stages = stage["evidence"]["stage_events"]
+    for kinds in stages.values():
+        assert "model.generation_review_lesson" in kinds or any(
+            k.startswith("model.generation_review_") for k in kinds
+        )
+
+    design = _create_pass(client, auth, project_id, scenario="fault:design_invalid")
+    assert design["evaluation"]["status"] == "completed"
+    assert design["evaluation"]["overall_outcome"] == "pass"
+    design_outcome = _criterion(design["evaluation"], "C-DESIGN-1")
+    assert design_outcome["outcome"] == "pass"
+    assert design_outcome["evidence"]["violations"] == []
+
+    review = _create_pass(client, auth, project_id, scenario="fault:review_fail")
+    assert review["evaluation"]["status"] == "completed"
+    assert review["evaluation"]["overall_outcome"] == "pass"
+    review_outcome = _criterion(review["evaluation"], "C-REVIEW-1")
+    assert review_outcome["outcome"] == "pass"
+    assert review_outcome["evidence"]["violations"] == []

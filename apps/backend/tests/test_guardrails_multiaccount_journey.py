@@ -112,10 +112,13 @@ def test_multiaccount_journey_isolation_limits_idempotency_and_bounded_spend():
     session.close()
 
     # Bounded spend: one generation run per live workspace despite duplicate
-    # submissions, each within its per-run cap (fake adapter).
-    cap = get_settings().max_model_calls_per_run
+    # submissions, each within its per-run cap (fake adapter). F016: caps are
+    # formula-based at run creation (plans 5×lessons+slack) with the flat
+    # settings as the floor, so a cap may exceed the flat value.
+    floor = get_settings().max_model_calls_per_run
     assert len(runs) == len(live)
-    assert all(run.model_calls <= run.model_call_cap <= cap for run in runs)
+    assert all(run.model_calls <= run.model_call_cap for run in runs)
+    assert all(run.model_call_cap >= floor for run in runs)
 
     # Isolation: every surviving project answers only to its own workspace.
     for result in live:
