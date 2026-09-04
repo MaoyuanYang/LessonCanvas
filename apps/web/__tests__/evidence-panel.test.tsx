@@ -269,6 +269,75 @@ describe("EvidencePanel", () => {
     vi.unstubAllGlobals();
   });
 
+  it("labels F015 tool-round events with summary chips and expands raw payloads", async () => {
+    const toolEvents = {
+      run_id: "run-plan",
+      events: [
+        eventFixture("t1", {
+          event_type: "tool.request",
+          lesson_index: null,
+          payload: {
+            round: 0,
+            tool_calls: [
+              { id: "call-1", name: "search_curriculum_standards", arguments: { query: "阅读" } },
+            ],
+            outcome: "pending",
+          },
+        }),
+        eventFixture("t2", {
+          event_type: "tool.result",
+          lesson_index: null,
+          payload: {
+            round: 0,
+            name: "search_curriculum_standards",
+            outcome: "dispatched",
+            result_count: 3,
+          },
+        }),
+        eventFixture("t3", {
+          event_type: "tool.refused",
+          lesson_index: null,
+          payload: {
+            round: 1,
+            name: "render_lesson_plan_docx",
+            reason: "tool not in bound whitelist: render_lesson_plan_docx",
+          },
+        }),
+        eventFixture("t4", {
+          event_type: "tool.fallback",
+          lesson_index: null,
+          payload: { reason: "round_cap_exhausted", fallback: "deterministic_orchestration" },
+        }),
+      ],
+      next_cursor: null,
+    };
+    const fetchMock = vi.fn().mockImplementation((url: string) => {
+      if (url.includes("/narrate/stream")) return Promise.resolve(sseResponse([]));
+      if (url.includes("/narrate")) return Promise.resolve(jsonResponse({ started: true }, 202));
+      if (url.includes("/run-plan/events")) return Promise.resolve(jsonResponse(toolEvents));
+      if (url.includes("/evidence/run-plan")) return Promise.resolve(jsonResponse(SUMMARY));
+      if (url.endsWith("/evidence")) return Promise.resolve(jsonResponse(INVENTORY));
+      return Promise.resolve(jsonResponse({ runs: [], next_cursor: null }));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    renderUi(<EvidencePanel projectId="p1" onNavigate={() => {}} />);
+    expect(await screen.findByText("技术证据")).toBeVisible();
+
+    expect(await screen.findByText("工具请求（模型）")).toBeVisible();
+    // Round chip appears on both the request and the result row
+    expect(screen.getAllByText("第 1 轮 · search_curriculum_standards").length).toBe(2);
+    expect(screen.getByText("工具结果")).toBeVisible();
+    expect(screen.getByText("返回 3 条")).toBeVisible();
+    expect(screen.getByText("工具拒绝")).toBeVisible();
+    expect(screen.getByText(/拒绝：tool not in bound whitelist/)).toBeVisible();
+    expect(screen.getByText("工具循环回退")).toBeVisible();
+    expect(screen.getByText("回退：round_cap_exhausted")).toBeVisible();
+
+    fireEvent.click(screen.getByText("工具请求（模型）"));
+    expect(await screen.findByText("复制原始数据")).toBeVisible();
+    vi.unstubAllGlobals();
+  });
+
   it("streams explanation narration with stop and maps quota exhaustion", async () => {
     const fetchMock = vi.fn().mockImplementation((url: string, init?: { method?: string }) => {
       if (url.includes("/narrate/stream")) {

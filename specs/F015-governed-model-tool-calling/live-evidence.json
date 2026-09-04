@@ -1,0 +1,59 @@
+{
+  "feature": "F015",
+  "scenario": "TS-021 live self-requested tool round + D6 probe",
+  "executed_at": "2026-09-04T14:36:55+0800",
+  "adapter": "deepseek",
+  "model": "deepseek-chat",
+  "unit_key": "travelling-around",
+  "environment": "isolated lessoncanvas_test database; truncated after run",
+  "d6_probe": {
+    "request_mode": "tools + response_format json_object",
+    "http_status": 400,
+    "latency_ms": 421,
+    "finish_reason": null,
+    "has_tool_calls": false,
+    "content_preview": "",
+    "usage": null
+  },
+  "attempts": [
+    {
+      "attempt": 1,
+      "elapsed_ms": 9398,
+      "model_calls": 3,
+      "rounds": [
+        {
+          "round": 0,
+          "name": "search_curriculum_standards",
+          "outcome": "dispatched"
+        },
+        {
+          "round": 0,
+          "name": "search_curriculum_standards",
+          "outcome": "dispatched"
+        },
+        {
+          "round": 1,
+          "name": "search_curriculum_standards",
+          "outcome": "dispatched"
+        },
+        {
+          "round": 1,
+          "name": "search_curriculum_standards",
+          "outcome": "dispatched"
+        }
+      ],
+      "refused_count": 0,
+      "self_requested_rounds": 4,
+      "dispatched_tool": "search_curriculum_standards",
+      "final_contract_ok": true,
+      "fallback_reason": null,
+      "dropped_tool_calls": [],
+      "tool_results_count": 2
+    }
+  ],
+  "ts021": {
+    "outcome": "pass",
+    "attempt": 1,
+    "summary": "planning drafting specialist self-requested a real search_curriculum_standards round and produced the unchanged blueprint contract"
+  }
+}

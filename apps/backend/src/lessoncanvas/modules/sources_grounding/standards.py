@@ -3,6 +3,17 @@ from dataclasses import dataclass
 from functools import lru_cache
 from importlib import resources
 
+# F015 TS-016 fault injection bookkeeping: the mid-loop tool-failure scenario
+# fails only within the bounded loop budget, then clears so the deterministic
+# fallback completes the stage — exactly the D2 recovery semantics under test.
+# Eval-gated like FakeModelAdapter.activate_eval_faults; production can never
+# arm it. In-process and per-run deterministic under the eager test profile.
+_EVAL_TOOL_FAILURE_BUDGET: dict[str, int] = {}
+
+
+def reset_eval_tool_faults() -> None:
+    _EVAL_TOOL_FAILURE_BUDGET.clear()
+
 
 @dataclass(frozen=True)
 class StandardsSection:
@@ -82,4 +93,20 @@ def search_standards(query: str, limit: int = 5) -> list[dict]:
 def execute_tool(name: str, arguments: dict) -> list[dict]:
     if name != STANDARDS_TOOL_DEFINITION["name"]:
         raise KeyError(f"unknown tool: {name}")
+    # F015 TS-016 fault injection: raises deterministically for the bounded
+    # loop budget only (gated to fake-adapter evaluation environments exactly
+    # like FakeModelAdapter.activate_eval_faults); production configurations
+    # can never arm it.
+    from lessoncanvas.settings import get_settings
+
+    settings = get_settings()
+    if (
+        settings.model_adapter == "fake"
+        and settings.eval_fault_profile
+        and "STANDARDS_TOOL_FAIL" in str(arguments.get("query", ""))
+    ):
+        used = _EVAL_TOOL_FAILURE_BUDGET.get("used", 0)
+        if used < settings.tool_loop_max_rounds:
+            _EVAL_TOOL_FAILURE_BUDGET["used"] = used + 1
+            raise RuntimeError("standards tool failure (eval fault)")
     return search_standards(arguments.get("query", ""), int(arguments.get("limit", 5)))

@@ -68,7 +68,7 @@ FastAPI modular monolith ---------------- Managed identity
 
 - `Identity and Workspace -> managed identity`: trust authenticated subject identity, then apply application-owned workspace authorization.
 - `Sources and Grounding -> workspace authorization, object storage, PostgreSQL/pgvector, and controlled official sources`: process only owner-authorized material and keep retrieval inside the approved evidence boundary. F014: the thin embedding adapter (`adapters/embedding.py`, ADR-0007) and the vector-retrieval service live here; planning and all three generation families consume top-k retrieval per item, and retrieved text always travels as labeled user payload, never prompt authority.
-- `Discovery and Planning -> Sources and Grounding, Run Orchestration`: consume source evidence and participate in the governed workflow without owning source files or task delivery.
+- `Discovery and Planning -> Sources and Grounding, Run Orchestration`: consume source evidence and participate in the governed workflow without owning source files or task delivery. F015: the planning drafting specialist runs inside a bounded, traced tool loop (`discovery_planning/tool_loop.py`) — it may self-request whitelisted registry tools (`search_curriculum_standards` first), every request is validated against the bound set and input schema before dispatch, refusals and mid-loop failures feed back as data-only observations, rounds are capped (`tool_loop_max_rounds`, counting 1:1 toward the per-run model-call cap), and loop exit without a final blueprint falls back to the pre-F015 deterministic path with disclosure (`tool_loop_mode` selects `model_driven` vs `orchestration` per environment).
 - `Artifact Production -> approved brief and blueprint, Sources and Grounding, Run Orchestration, generation tools`: generate only against an immutable confirmed version and cited evidence.
 - `Alignment and Evaluation -> sources, approved intent, artifacts, and runs`: compare evidence and own validation outcomes but never silently rewrite the owning concepts.
 - `Run Orchestration -> all Agent-capable modules, PostgreSQL, and Celery`: control sequence and state without making modules or task transport a competing workflow truth.
@@ -76,7 +76,7 @@ FastAPI modular monolith ---------------- Managed identity
 - `Teacher Memory and Preferences -> workspace authorization, PostgreSQL, and Discovery and Planning context`: propose from confirmed outcomes, persist only teacher-confirmed records, and supply subordinate context.
 - `Discovery and Planning / Artifact Production -> Teacher Memory (context input only)` [F013]: the discovery, planning, and generation graphs read the snapshot-once effective set as a labeled, capped data payload; memory never enters system prompts or gains instruction framing, and the bound confirmed version always wins (deterministic `language_mode` conflict check).
 - `Sources and Grounding -> MCP official-source servers`: consume curriculum evidence through the controlled protocol boundary while treating server content and metadata as untrusted.
-- `Artifact Production -> MCP tool definitions`: register generation and validation tools once and consume the same definitions from the workflow.
+- `Artifact Production -> MCP tool definitions`: register generation and validation tools once and consume the same definitions from the workflow. F015: render/validate document tools stay orchestration-called deterministic post-steps — the model-driven tool loop binds grounding tools only.
 
 ## Main Data and Request Flows
 
@@ -109,7 +109,7 @@ FastAPI modular monolith ---------------- Managed identity
 
 | Service | Purpose | Failure impact | Boundary |
 | --- | --- | --- | --- |
-| Hosted model provider | Requirements analysis, planning, generation, and supported evaluation | The affected step pauses or fails visibly; completed state remains recoverable | One provider through an application adapter; no silent fallback |
+| Hosted model provider | Requirements analysis, planning (including model-driven tool rounds, F015), generation, and supported evaluation | The affected step pauses or fails visibly; completed state remains recoverable; tool-loop faults are refused, traced, or fall back deterministically | One provider through an application adapter; no silent fallback; tool results re-enter the conversation as data only, never prompt authority |
 | Local embedding model (ADR-0007) | Chunk/query embeddings for semantic source retrieval (F014) | Chunks persist an explicit `embedding_failed` state and retrieval excludes them with disclosure; generation proceeds honestly ungrounded | In-process fastembed + bge-small-zh-v1.5 with weights baked into the image; no network service, no external data flow |
 | Managed identity provider | Registration, login, verification, and identity sessions | New login or session refresh may be unavailable | The application still owns workspace authorization and deletion orchestration |
 | S3-compatible storage | Private uploads and generated files | Upload, generation, or download pauses; database state must not claim a missing file is ready | Access only through authorized application flows or scoped signed delivery |

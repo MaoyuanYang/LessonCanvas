@@ -148,7 +148,7 @@ def test_planning_provider_failure_preserves_state_and_retry(client, auth, monke
     from lessoncanvas.modules.discovery_planning import planning as planning_module
 
     class Failing:
-        def complete(self, system, user):
+        def complete(self, system, user, tools=None, history=None):
             raise model_adapter.ModelProviderError("down")
 
     monkeypatch.setattr(planning_module, "get_model_adapter", lambda: Failing())
@@ -186,8 +186,22 @@ def test_planning_uses_standards_tool_with_snapshot_citations(client, auth):
         f"/projects/{project_id}/evidence/{planning_run['run_id']}/events", headers=auth
     ).json()
     event_types = {event["event_type"] for event in events["events"]}
-    assert "tool.standards_search" in event_types
     assert "model.planning_build_draft" in event_types
+    # F015: in model_driven mode the standards tool use is visible as traced
+    # model-driven rounds; the orchestration-issued event appears only in
+    # orchestration mode / deterministic fallback.
+    import json as _json
+
+    standards_visible = any(
+        event["event_type"] == "tool.standards_search"
+        or (
+            event["event_type"] in {"tool.request", "tool.result"}
+            and "search_curriculum_standards"
+            in _json.dumps(event.get("payload") or {}, ensure_ascii=False)
+        )
+        for event in events["events"]
+    )
+    assert standards_visible
 
 
 def test_planning_injection_corpus_stays_within_contract(client, auth):

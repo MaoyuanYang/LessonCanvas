@@ -35,6 +35,7 @@ SCENARIO_CRITERIA: dict[str, list[str]] = {
     "fault:stale_version": ["C-SUPER-1"],
     "fault:worker_provider_failure": ["C-RECOV-1"],
     "fault:partial_render": ["C-RENDER-1"],
+    "fault:tool_loop": ["C-TOOL-1"],
 }
 FULL_PIPELINE_DIAGNOSTICS = ["M-LAT", "M-COST", "M-COVER"]
 
@@ -46,6 +47,7 @@ CRITERION_LABELS = {
     "C-SUPER-1": "Supersession safety",
     "C-RECOV-1": "Injected-failure recovery",
     "C-RENDER-1": "Partial-render explicitness",
+    "C-TOOL-1": "Governed tool-loop fault handling",
     "C-MEM-1": "Memory pinning recorded",
     "M-LAT": "Latency distribution (diagnostic)",
     "M-COST": "Cost estimate (diagnostic)",
@@ -104,11 +106,16 @@ def evaluate_trace_completeness(
         model_calls = (
             generation.model_calls if generation is not None else (discovery.model_calls or 0)
         )
+        # F015: every billed model call must be traced with usage. Tool-loop
+        # rounds bill as model calls and trace as `tool.request` events
+        # (request + usage), so both event kinds count toward the
+        # trace-completeness ledger.
         traced = len(
             session.scalars(
                 select(TraceEvent.id).where(
                     TraceEvent.run_id == run_id,
-                    TraceEvent.event_type.startswith("model."),
+                    TraceEvent.event_type.startswith("model.")
+                    | (TraceEvent.event_type == "tool.request"),
                 )
             ).all()
         )
@@ -484,6 +491,112 @@ def measure_coverage(session: Session, evaluation: TechnicalEvaluation) -> Crite
     )
 
 
+def evaluate_tool_loop_governance(
+    session: Session, evaluation: TechnicalEvaluation, observation: dict | None
+) -> CriterionResult:
+    """F015 C-TOOL-1: every fault variant ends in an honest, governed state —
+    refusals traced and never dispatched, the cap never over-billed, the
+    deterministic fallback completing the stage. Judged from recorded state;
+    the harness observation is only a pointer set."""
+
+    from lessoncanvas.settings import get_settings
+
+    variants = (observation or {}).get("variants") or []
+    evidence: dict = {"variants": []}
+    violations: list[str] = []
+    if not variants:
+        return CriterionResult(
+            criterion_key="C-TOOL-1",
+            classification=BLOCKING,
+            outcome="missing_evidence",
+            evidence={"reason": "no tool-loop variants recorded"},
+        )
+
+    max_rounds = get_settings().tool_loop_max_rounds
+    for variant in variants:
+        run = session.get(DiscoveryRun, uuid.UUID(variant["planning_run_id"]))
+        if run is None:
+            violations.append(f"{variant['variant']}:run_missing")
+            continue
+        events = session.scalars(
+            select(TraceEvent).where(TraceEvent.run_id == run.id)
+        ).all()
+
+        def payloads_of(source_events, event_type: str) -> list[dict]:
+            return [
+                json.loads(event.payload_json)
+                for event in source_events
+                if event.event_type == event_type
+            ]
+
+        requests = payloads_of(events, "tool.request")
+        refused = payloads_of(events, "tool.refused")
+        results = payloads_of(events, "tool.result")
+        fallback = payloads_of(events, "tool.fallback")
+        entry = {
+            "variant": variant["variant"],
+            "run_id": str(run.id),
+            "model_calls": run.model_calls,
+            "requests": len(requests),
+            "refusals": len(refused),
+            "dispatched": len([p for p in results if p.get("outcome") == "dispatched"]),
+            "failed_rounds": len([p for p in results if p.get("outcome") == "failed"]),
+            "fallback": bool(fallback),
+            "draft_persisted": bool(run.draft_json),
+        }
+        evidence["variants"].append(entry)
+        if not run.draft_json:
+            violations.append(f"{variant['variant']}:no_draft")
+        kind = variant["variant"]
+        # The loop is bounded per invocation regardless of interview rounds:
+        # at most max_rounds traced requests (each one billed model call).
+        if len(requests) > max_rounds:
+            violations.append(f"{kind}:loop_overbilled({len(requests)})")
+        # Every billed call on the run stays in the trace ledger (C-TRACE-1
+        # invariant restated for the loop-aware vocabulary).
+        traced_ledger = len(
+            session.scalars(
+                select(TraceEvent.id).where(
+                    TraceEvent.run_id == run.id,
+                    TraceEvent.event_type.startswith("model.")
+                    | (TraceEvent.event_type == "tool.request"),
+                )
+            ).all()
+        )
+        if traced_ledger != run.model_calls:
+            violations.append(f"{kind}:ledger_mismatch({traced_ledger}/{run.model_calls})")
+        if kind == "cap_exhaustion":
+            if len(requests) != max_rounds:
+                violations.append(f"cap:requests({len(requests)}!={max_rounds})")
+            if not fallback or fallback[0].get("reason") != "round_cap_exhausted":
+                violations.append("cap:fallback_not_disclosed")
+        elif kind == "unknown_tool":
+            if not refused or "whitelist" not in str(refused[0].get("reason", "")):
+                violations.append("unknown_tool:refusal_not_traced")
+            if any(
+                p.get("name") != "search_curriculum_standards" and p.get("outcome") == "dispatched"
+                for p in results
+            ):
+                violations.append("unknown_tool:non_whitelisted_dispatch")
+        elif kind == "malformed_arguments":
+            if not refused or not str(refused[0].get("reason", "")).startswith(
+                ("missing required argument", "argument ", "arguments ")
+            ):
+                violations.append("malformed:refusal_reason_missing")
+        elif kind == "tool_failure_mid_loop":
+            if not entry["failed_rounds"]:
+                violations.append("tool_failure:not_traced")
+            if not fallback:
+                violations.append("tool_failure:no_fallback")
+
+    return CriterionResult(
+        criterion_key="C-TOOL-1",
+        classification=BLOCKING,
+        outcome="pass" if not violations else "fail",
+        evidence=evidence,
+    )
+
+
 def evaluate_pass(
     session: Session,
     evaluation: TechnicalEvaluation,
@@ -513,6 +626,8 @@ def evaluate_pass(
             results.append(evaluate_recovery(session, evaluation, observation))
         elif key == "C-RENDER-1":
             results.append(evaluate_partial_render(session, evaluation, observation))
+        elif key == "C-TOOL-1":
+            results.append(evaluate_tool_loop_governance(session, evaluation, observation))
     if evaluation.scenario == "full_pipeline":
         results.append(measure_latency(session, evaluation))
         results.append(measure_cost(session, evaluation))

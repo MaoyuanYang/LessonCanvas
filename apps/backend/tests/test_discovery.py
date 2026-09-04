@@ -92,7 +92,7 @@ def test_provider_failure_preserves_state_and_retry_resumes(client, auth, monkey
     from lessoncanvas.modules.discovery_planning import graph as discovery_graph
 
     class Failing:
-        def complete(self, system, user):
+        def complete(self, system, user, tools=None, history=None):
             raise model_adapter.ModelProviderError("down")
 
     monkeypatch.setattr(discovery_graph, "get_model_adapter", lambda: Failing())

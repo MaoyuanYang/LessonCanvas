@@ -588,10 +588,80 @@ def execute_partial_render(
     }
 
 
+def execute_tool_loop_faults(
+    session: Session,
+    storage,
+    workspace_id: uuid.UUID,
+    project_id: uuid.UUID,
+    unit: EvaluationUnit,
+) -> dict:
+    """F015 TS-016: every tool-loop fault class resolves to an honest terminal
+    state. Each variant revises the confirmed brief so the drafting specialist
+    runs with the matching scripted marker, then planning must still produce a
+    blueprint (deterministic fallback where the loop cannot)."""
+
+    from lessoncanvas.modules.discovery_planning import brief as brief_service
+    from lessoncanvas.modules.discovery_planning import planning as planning_service
+    from lessoncanvas.modules.sources_grounding.standards import reset_eval_tool_faults
+
+    reset_eval_tool_faults()
+    brief_version_id, blueprint_version_id, interview_run_ids = reach_confirmed_pair(
+        session, storage, workspace_id, project_id, unit
+    )
+    run_ids: list[str] = list(interview_run_ids)
+    variants: list[dict] = []
+
+    for variant, marker in (
+        ("cap_exhaustion", "TOOL_LOOP_FOREVER"),
+        ("unknown_tool", "TOOL_UNKNOWN"),
+        ("malformed_arguments", "TOOL_BAD_ARGS"),
+        ("tool_failure_mid_loop", "STANDARDS_TOOL_FAIL"),
+    ):
+        draft = brief_service.current_draft(session, project_id)
+        brief_service.patch_draft(
+            session,
+            project_id,
+            {"unit_theme": f"{marker} {unit.title}"},
+            draft.revision,
+        )
+        session.commit()
+        brief_service.confirm_brief(session, project_id)
+        session.commit()
+        brief_version_id = brief_service.current_version(session, project_id).id
+
+        planning_service.start_planning(
+            session, workspace_id, project_id, brief_version_id
+        )
+        session.commit()
+        planning_run_id = _interview_loop(
+            lambda: planning_service.planning_status(session, project_id),
+            lambda answers: (
+                planning_service.submit_planning_answers(session, project_id, answers),
+                session.commit(),
+            ),
+            unit.planning_answers,
+        )
+        _await_planning_draft(session, project_id, planning_run_id)
+        if planning_run_id and planning_run_id != "None":
+            run_ids.append(planning_run_id)
+            variants.append(
+                {"variant": variant, "theme_marker": marker, "planning_run_id": planning_run_id}
+            )
+        session.expire_all()
+
+    return {
+        "brief_version_id": str(brief_version_id),
+        "blueprint_version_id": str(blueprint_version_id),
+        "run_ids": run_ids,
+        "observation": {"scenario": "fault:tool_loop", "variants": variants},
+    }
+
+
 SCENARIO_EXECUTORS = {
     "full_pipeline": execute_full_pipeline,
     "fault:duplicate_submission": execute_duplicate_submission,
     "fault:stale_version": execute_stale_version,
     "fault:worker_provider_failure": execute_worker_provider_failure,
     "fault:partial_render": execute_partial_render,
+    "fault:tool_loop": execute_tool_loop_faults,
 }

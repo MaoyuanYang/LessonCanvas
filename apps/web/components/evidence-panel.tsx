@@ -44,6 +44,15 @@ function eventLabel(eventType: string): string {
 
 // F014 U4 (ux-ui.md): retrieval rows carry teacher-readable summary chips on
 // the collapsed row; full query/hit detail stays behind the existing expand.
+// F015 U1: the four model-driven tool-round event types get the same chip
+// treatment; orchestration-issued tool events keep their existing rows.
+const TOOL_ROUND_EVENT_TYPES = new Set([
+  "tool.request",
+  "tool.result",
+  "tool.refused",
+  "tool.fallback",
+]);
+
 function retrievalSummaryChips(payload: Record<string, unknown>): string[] {
   const chips: string[] = [];
   if (typeof payload.hit_count === "number") {
@@ -54,6 +63,48 @@ function retrievalSummaryChips(payload: Record<string, unknown>): string[] {
   }
   if (typeof payload.used_chars === "number" && typeof payload.budget_chars === "number") {
     chips.push(`预算 ${payload.used_chars}/${payload.budget_chars} 字`);
+  }
+  return chips;
+}
+
+// F015 U1/U2 (ux-ui.md): tool-round rows carry round/name/outcome chips on
+// the collapsed row; arguments and raw results stay behind the expand.
+function toolRoundSummaryChips(
+  eventType: string,
+  payload: Record<string, unknown>,
+): string[] {
+  const chips: string[] = [];
+  const round = payload.round;
+  const roundLabel = typeof round === "number" ? `第 ${round + 1} 轮` : null;
+  const name = typeof payload.name === "string" ? payload.name : null;
+  if (eventType === "tool.request") {
+    const calls = Array.isArray(payload.tool_calls) ? payload.tool_calls : [];
+    const first = calls[0] as Record<string, unknown> | undefined;
+    const firstName = first && typeof first.name === "string" ? first.name : null;
+    const outcome = typeof payload.outcome === "string" ? payload.outcome : null;
+    if (roundLabel && (firstName || name)) {
+      chips.push(`${roundLabel} · ${firstName ?? name}`);
+    }
+    if (outcome === "dropped_final_json_wins") chips.push("已让位于最终答案");
+    if (outcome === "no_progress") chips.push("无进展");
+    return chips;
+  }
+  if (eventType === "tool.result") {
+    if (roundLabel && name) chips.push(`${roundLabel} · ${name}`);
+    if (payload.outcome === "dispatched" && typeof payload.result_count === "number") {
+      chips.push(`返回 ${payload.result_count} 条`);
+    }
+    if (payload.outcome === "failed") chips.push("执行失败");
+    return chips;
+  }
+  if (eventType === "tool.refused") {
+    if (name) chips.push(name);
+    if (typeof payload.reason === "string") chips.push(`拒绝：${payload.reason}`);
+    return chips;
+  }
+  if (eventType === "tool.fallback") {
+    if (typeof payload.reason === "string") chips.push(`回退：${payload.reason}`);
+    return chips;
   }
   return chips;
 }
@@ -507,6 +558,19 @@ export function EvidencePanel({
                                       </span>
                                     ),
                                   )
+                                : null}
+                              {TOOL_ROUND_EVENT_TYPES.has(event.event_type)
+                                ? toolRoundSummaryChips(
+                                    event.event_type,
+                                    event.payload as Record<string, unknown>,
+                                  ).map((chip) => (
+                                    <span
+                                      key={chip}
+                                      className="rounded bg-evidence/10 px-1.5 py-0.5 text-xs text-evidence"
+                                    >
+                                      {chip}
+                                    </span>
+                                  ))
                                 : null}
                               <span className="text-ink-secondary">{formatTime(event.created_at)}</span>
                               <span className="text-ink-secondary">

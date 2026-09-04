@@ -345,6 +345,7 @@ def test_report_contract_comparison_and_supersession(client, auth, db_session, m
         "fault:stale_version",
         "fault:worker_provider_failure",
         "fault:partial_render",
+        "fault:tool_loop",
     ):
         created = _create_pass(client, auth, project_id, scenario=scenario)
         assert created["evaluation"]["status"] == "completed", scenario
@@ -511,3 +512,108 @@ def test_deepseek_stream_requests_provider_usage(monkeypatch):
     assert list(tokens) == []
     assert usage == {"prompt_tokens": 7, "completion_tokens": 11}
     assert captured["json"]["stream_options"] == {"include_usage": True}
+
+
+# ---------------------------------------------------------------------------
+# F015 TS-015/TS-016/TS-017: tool-mode signature, tool-loop fault scenarios,
+# and tool-loop-aware call accounting.
+# ---------------------------------------------------------------------------
+
+
+def test_ts015_tool_mode_joins_comparability_signature(client, auth, monkeypatch):
+    monkeypatch.setattr(get_settings(), "eval_fault_profile", "enabled", raising=False)
+    project_id = _create_project(client, auth)
+    first = _create_pass(client, auth, project_id, scenario="fault:tool_loop", pass_index=1)
+    assert first["evaluation"]["status"] == "completed"
+
+    # Signature pins the configured tool mode (model_driven default).
+    config = json.loads(service.model_config_snapshot())
+    assert config["tool_mode"] == get_settings().tool_loop_mode == "model_driven"
+
+    # Two full-pipeline passes of the same unit under different tool modes
+    # never compare silently: the report refuses the cross-mode comparison
+    # with the configuration reason (retrieval_mode precedent).
+    first_full = _create_pass(client, auth, project_id, scenario="full_pipeline", pass_index=1)
+    assert first_full["evaluation"]["status"] == "completed"
+    monkeypatch.setattr(get_settings(), "tool_loop_mode", "orchestration", raising=False)
+    try:
+        second_full = _create_pass(
+            client, auth, project_id, scenario="full_pipeline", pass_index=2
+        )
+        assert second_full["evaluation"]["status"] == "completed"
+    finally:
+        monkeypatch.setattr(get_settings(), "tool_loop_mode", "model_driven", raising=False)
+
+    configs = {
+        entry["pass_index"]: json.dumps(entry["model_config"], sort_keys=True)
+        for entry in _report_passes(client, auth, project_id)
+        if entry["scenario"] == "full_pipeline"
+    }
+    assert configs[1] != configs[2]  # tool_mode differs in the pinned config
+    report = client.get(f"/projects/{project_id}/technical-evaluation/report", headers=auth).json()
+    by_pass = {item["pass_index"]: item for item in report["comparisons"]}
+    assert by_pass[1]["comparison_available"] is False
+    assert by_pass[1]["comparison_unavailable_reason"] == "不同数据集版本或模型配置"
+    assert by_pass[2]["comparison_available"] is False
+
+
+def _report_passes(client, auth, project_id):
+    report = client.get(f"/projects/{project_id}/technical-evaluation/report", headers=auth)
+    assert report.status_code == 200
+    return report.json()["passes"]
+
+
+def test_ts016_tool_loop_fault_scenarios_all_pass(client, auth, db_session, monkeypatch):
+    monkeypatch.setattr(get_settings(), "eval_fault_profile", "enabled", raising=False)
+    project_id = _create_project(client, auth)
+    payload = _create_pass(client, auth, project_id, scenario="fault:tool_loop")
+    evaluation = payload["evaluation"]
+
+    assert evaluation["status"] == "completed"
+    assert evaluation["overall_outcome"] == "pass"
+    outcome = _criterion(evaluation, "C-TOOL-1")
+    assert outcome["outcome"] == "pass"
+    variants = {entry["variant"]: entry for entry in outcome["evidence"]["variants"]}
+    assert set(variants) == {
+        "cap_exhaustion",
+        "unknown_tool",
+        "malformed_arguments",
+        "tool_failure_mid_loop",
+    }
+    cap = variants["cap_exhaustion"]
+    assert cap["requests"] == get_settings().tool_loop_max_rounds
+    assert cap["fallback"] and cap["draft_persisted"]
+    assert cap["model_calls"] > get_settings().tool_loop_max_rounds  # interview + loop billed
+    assert variants["unknown_tool"]["refusals"] == 1
+    assert variants["unknown_tool"]["dispatched"] >= 1
+    assert variants["malformed_arguments"]["refusals"] == 1
+    assert variants["tool_failure_mid_loop"]["failed_rounds"] >= 1
+    assert all(entry["draft_persisted"] for entry in variants.values())
+
+
+def test_ts017_tool_loop_calls_stay_in_the_trace_ledger(client, auth, db_session):
+    """Every billed loop call is a traced event: model_calls equals the count
+    of model.* + tool.request events (the C-TRACE-1 ledger) on a loop run."""
+
+    from lessoncanvas.models import DiscoveryRun
+
+    project_id = _create_project(client, auth)
+    payload = _create_pass(client, auth, project_id, scenario="full_pipeline")
+    run_ids = _evaluation_run_ids(db_session, payload["evaluation"]["evaluation_id"])
+    run = next(
+        db_session.get(DiscoveryRun, run_id)
+        for run_id in run_ids
+        if db_session.get(DiscoveryRun, run_id) is not None
+        and db_session.get(DiscoveryRun, run_id).kind == "planning"
+    )
+    traced = len(
+        db_session.scalars(
+            select(TraceEvent.id).where(
+                TraceEvent.run_id == run.id,
+                TraceEvent.event_type.startswith("model.")
+                | (TraceEvent.event_type == "tool.request"),
+            )
+        ).all()
+    )
+    assert run.model_calls > 1  # the loop billed more than the old single call
+    assert traced == run.model_calls

@@ -1,12 +1,24 @@
 import json
 import re
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import lru_cache
 
 import httpx
 
 from lessoncanvas.settings import get_settings
+
+
+@dataclass
+class ToolCall:
+    """One provider-parsed function-call request (F015).
+
+    `arguments` is the parsed JSON object; None marks a malformed payload so
+    the loop refuses it before dispatch instead of crashing."""
+
+    id: str
+    name: str
+    arguments: dict | None
 
 
 @dataclass
@@ -16,6 +28,7 @@ class ModelResponse:
     completion_tokens: int = 0
     cost_usd: float = 0.0
     latency_ms: int = 0
+    tool_calls: list[ToolCall] = field(default_factory=list)
 
 
 class ModelProviderError(Exception):
@@ -56,30 +69,91 @@ def parse_model_json(text: str) -> dict:
     raise ValueError("model response contains no JSON object")
 
 
+def provider_tool_definitions(tools: list[dict]) -> list[dict]:
+    """Map MCP-style definitions (name/description/inputSchema) to the
+    provider's function-calling shape. Whitelist semantics stay upstream:
+    the loop validates names; this mapping only describes the bound set."""
+
+    return [
+        {
+            "type": "function",
+            "function": {
+                "name": tool["name"],
+                "description": tool.get("description", ""),
+                "parameters": tool.get("inputSchema", {"type": "object"}),
+            },
+        }
+        for tool in tools
+    ]
+
+
+def parse_tool_calls(message: dict) -> list[ToolCall]:
+    """Parse `message.tool_calls` tolerantly: unparseable argument JSON marks
+    the call malformed (arguments=None) rather than raising, so the loop can
+    refuse it with a recorded reason."""
+
+    calls: list[ToolCall] = []
+    for raw in message.get("tool_calls") or []:
+        if not isinstance(raw, dict):
+            continue
+        function = raw.get("function") or {}
+        raw_arguments = function.get("arguments")
+        arguments: dict | None
+        try:
+            parsed = json.loads(raw_arguments) if isinstance(raw_arguments, str) else raw_arguments
+            arguments = parsed if isinstance(parsed, dict) else None
+        except json.JSONDecodeError:
+            arguments = None
+        calls.append(
+            ToolCall(
+                id=str(raw.get("id") or ""),
+                name=str(function.get("name") or ""),
+                arguments=arguments,
+            )
+        )
+    return calls
+
+
 class DeepSeekAdapter:
-    def complete(self, system: str, user: str) -> ModelResponse:
+    def complete(
+        self,
+        system: str,
+        user: str,
+        tools: list[dict] | None = None,
+        history: list[dict] | None = None,
+    ) -> ModelResponse:
         settings = get_settings()
         started = time.monotonic()
+        messages = [
+            {"role": "system", "content": system},
+            {"role": "user", "content": user},
+            *(history or []),
+        ]
+        # F015 D6: tool rounds run in plain function-calling mode (no
+        # response_format) and the final answer is JSON-revalidated server
+        # side; json_object is reserved for no-tools completions.
+        request: dict = {
+            "model": settings.deepseek_model,
+            "messages": messages,
+            "temperature": 0.2,
+        }
+        if tools is not None:
+            request["tools"] = provider_tool_definitions(tools)
+        else:
+            request["response_format"] = {"type": "json_object"}
         try:
             response = httpx.post(
                 f"{settings.deepseek_base_url}/chat/completions",
                 headers={"Authorization": f"Bearer {settings.deepseek_api_key}"},
-                json={
-                    "model": settings.deepseek_model,
-                    "messages": [
-                        {"role": "system", "content": system},
-                        {"role": "user", "content": user},
-                    ],
-                    "temperature": 0.2,
-                    "response_format": {"type": "json_object"},
-                },
+                json=request,
                 timeout=60,
             )
             response.raise_for_status()
             payload = response.json()
         except (httpx.HTTPError, KeyError) as error:
             raise ModelProviderError("model provider unavailable") from error
-        choice = payload["choices"][0]["message"]["content"]
+        message = payload["choices"][0]["message"]
+        choice = message.get("content") or ""
         usage = payload.get("usage", {})
         latency = int((time.monotonic() - started) * 1000)
         return ModelResponse(
@@ -88,6 +162,7 @@ class DeepSeekAdapter:
             completion_tokens=usage.get("completion_tokens", 0),
             cost_usd=0.0,
             latency_ms=latency,
+            tool_calls=parse_tool_calls(message),
         )
 
     def stream_with_usage(self, system: str, user: str):
@@ -182,7 +257,13 @@ class FakeModelAdapter:
             return None
         return str(spec.get("mode") or "")
 
-    def complete(self, system: str, user: str) -> ModelResponse:
+    def complete(
+        self,
+        system: str,
+        user: str,
+        tools: list[dict] | None = None,
+        history: list[dict] | None = None,
+    ) -> ModelResponse:
         data = json.loads(user)
         kind = data.get("kind")
         lesson = data.get("lesson") or {}
@@ -219,6 +300,10 @@ class FakeModelAdapter:
             missing = [g for g in gaps if g not in known]
             questions = [{"field": m, "question": f"请说明规划缺口：{m}"} for m in missing[:3]]
             return ModelResponse(text=json.dumps({"questions": questions}), latency_ms=1)
+        if kind == "planning_build_draft" and tools:
+            # F015: the planning drafting specialist runs inside the bounded
+            # tool loop; rounds are scripted deterministically by marker.
+            return _fake_planning_tool_round(data, history or [])
         if kind == "planning_build_draft":
             return ModelResponse(text=json.dumps(_fake_planning_blueprint(data)), latency_ms=1)
         if kind == "generation_write_lesson":
@@ -527,6 +612,119 @@ def _fake_exercise_set(data: dict) -> dict:
             "categories": categories,
         }
     }
+
+
+STANDARDS_TOOL_NAME = "search_curriculum_standards"
+
+
+def _tool_history_sections(history: list[dict]) -> tuple[list[dict], bool]:
+    """Extract standards sections the loop already returned as tool results
+    (data-only `tool`-role messages) and whether a dispatched round already
+    happened. A dispatched-but-empty result (a JSON list, even empty) still
+    counts as a completed round; refusal/failure feedback parses to a dict
+    and does not. Returns (sections, round_done)."""
+
+    sections: list[dict] = []
+    round_done = False
+    for message in history:
+        if not isinstance(message, dict) or message.get("role") != "tool":
+            continue
+        try:
+            content = json.loads(message.get("content") or "null")
+        except json.JSONDecodeError:
+            continue
+        if isinstance(content, list):
+            round_done = True
+            sections.extend(item for item in content if isinstance(item, dict))
+    return sections, round_done
+
+
+def _planning_tool_request(data: dict, call_id: str, name: str, arguments: dict | None):
+    return ModelResponse(
+        text="",
+        prompt_tokens=8,
+        completion_tokens=6,
+        latency_ms=1,
+        tool_calls=[ToolCall(id=call_id, name=name, arguments=arguments)],
+    )
+
+
+def _fake_planning_tool_round(data: dict, history: list[dict]) -> ModelResponse:
+    """Deterministic tool-loop scripting for the planning drafting specialist.
+
+    Markers live in the brief unit_theme, following the generation-family
+    title-marker convention:
+    TOOL_LOOP_FOREVER -> keep requesting tools (round-cap exhaustion);
+    TOOL_UNKNOWN      -> request a name outside the bound set (default: the
+                         render tool registered elsewhere but unbound here;
+                         `inject_tool_name` overrides for adversarial scripts);
+    TOOL_BAD_ARGS     -> malformed arguments (`tool_args_mode`: missing_query |
+                         wrong_type | non_object);
+    default           -> one real standards round, then the final blueprint
+                         built from the tool results; an answer without any
+                         round when the theme carries TOOL_DIRECT.
+    """
+
+    brief = data.get("brief", {})
+    theme = str(brief.get("unit_theme") or "")
+    sections, standards_round_done = _tool_history_sections(history)
+    round_index = sum(1 for m in history if isinstance(m, dict) and m.get("role") == "tool")
+
+    # Adversarial scripting hook: a name planted anywhere in the payload text
+    # (source-derived brief fields, memory records) is requested verbatim on
+    # round 0, proving content can never widen the bound tool set.
+    payload_text = json.dumps(data, ensure_ascii=False)
+    injected_name = re.search(r"TOOL_INJECT_NAME:([A-Za-z0-9_]+)", payload_text)
+    if injected_name and round_index == 0:
+        return _planning_tool_request(
+            data, "call-inject-0", injected_name.group(1), {"query": theme}
+        )
+
+    if "TOOL_LOOP_FOREVER" in theme:
+        return _planning_tool_request(
+            data, f"call-loop-{round_index}", STANDARDS_TOOL_NAME, {"query": theme, "limit": 3}
+        )
+    # Refusal markers fire on the first round only: once the loop has fed a
+    # refusal observation back (a tool-role message that is not a sections
+    # list), the scripted model corrects itself, proving the D2
+    # record-and-continue policy lets a bounded loop recover.
+    if "TOOL_UNKNOWN" in theme and round_index == 0:
+        name = str(data.get("inject_tool_name") or "render_lesson_plan_docx")
+        return _planning_tool_request(data, "call-unknown-0", name, {"query": theme})
+    if "TOOL_BAD_ARGS" in theme and round_index == 0:
+        mode = data.get("tool_args_mode") or "missing_query"
+        arguments: dict | None = {"limit": 3}
+        if mode == "wrong_type":
+            arguments = {"query": 123, "limit": 3}
+        elif mode == "non_object":
+            arguments = None
+        return _planning_tool_request(
+            data, "call-badargs-0", STANDARDS_TOOL_NAME, arguments
+        )
+    if "TOOL_DIRECT" in theme:
+        merged = dict(data)
+        merged["standards"] = sections
+        return ModelResponse(
+            text=json.dumps(_fake_planning_blueprint(merged)),
+            prompt_tokens=12,
+            completion_tokens=48,
+            latency_ms=1,
+        )
+    if not standards_round_done:
+        objectives = str(brief.get("teaching_objectives") or "")
+        tokens = [t for t in re.split(r"[：:，,、；;。\s]+", f"{theme} {objectives}") if t]
+        query = " ".join(tokens[:6])
+        return _planning_tool_request(
+            data, f"call-standards-{round_index}", STANDARDS_TOOL_NAME, {"query": query, "limit": 3}
+        )
+    merged = dict(data)
+    merged["standards"] = sections
+    return ModelResponse(
+        text=json.dumps(_fake_planning_blueprint(merged)),
+        prompt_tokens=12,
+        completion_tokens=48,
+        latency_ms=1,
+    )
 
 
 def _fake_planning_blueprint(data: dict) -> dict:
