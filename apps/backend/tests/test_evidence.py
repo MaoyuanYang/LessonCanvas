@@ -499,8 +499,15 @@ class _SlowStreamAdapter:
         tokens, _usage = self.stream_with_usage(system, user)
         yield from tokens
 
-    def complete(self, system, user):
-        raise AssertionError("evidence narration never calls complete()")
+    def complete(self, system, user, tools=None, history=None):
+        # F015: planning drafting legitimately completes with tools bound;
+        # only narration must stream. Narration attempts still fail loudly;
+        # everything else delegates to the deterministic fake.
+        if '"narration"' in user:
+            raise AssertionError("evidence narration never calls complete()")
+        from lessoncanvas.adapters.model import FakeModelAdapter
+
+        return FakeModelAdapter().complete(system, user, tools=tools, history=history)
 
 
 def _install_slow_narration(monkeypatch):

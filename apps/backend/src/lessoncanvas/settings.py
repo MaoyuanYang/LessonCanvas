@@ -80,6 +80,13 @@ class Settings(BaseSettings):
     citation_top_chunks: int = 3
     citation_excerpt_chars: int = 200
 
+    # F015 governed model tool calling (Spec D2/D5). model_driven runs the
+    # bounded specialist tool loop; orchestration preserves the pre-F015
+    # deterministic path. Round budget is shared with the per-run model-call
+    # cap (no separate tool-loop budget).
+    tool_loop_mode: str = "model_driven"
+    tool_loop_max_rounds: int = 5
+
 
 @lru_cache
 def get_settings() -> Settings:

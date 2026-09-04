@@ -16,10 +16,32 @@ from lessoncanvas.modules.discovery_planning.fields import (
     MAX_ROUNDS,
 )
 from lessoncanvas.modules.discovery_planning.graph import record_trace
-from lessoncanvas.modules.sources_grounding.standards import execute_tool
+from lessoncanvas.modules.discovery_planning.tool_loop import run_tool_loop
+from lessoncanvas.modules.sources_grounding.standards import (
+    STANDARDS_TOOL_DEFINITION,
+    execute_tool,
+)
+from lessoncanvas.settings import get_settings
 
 PLANNING_GAP_KEYS = ["period_plan", "assessment_focus"]
 ACTIVE_PLANNING_STATUSES = ("initializing", "questioning", "drafting")
+
+PLANNING_DRAFT_SYSTEM = (
+    "You are a unit planning specialist. Given the confirmed brief, produce the complete "
+    'unit blueprint. Respond with a JSON object only, shaped like {"blueprint": {"unit": '
+    '{"title": "...", "objectives": [{"id": "obj-1", "text": "..."}], '
+    '"assessment_intent": "..."}, "lessons": [{"index": 1, "title": "...", '
+    '"objective_ids": ["obj-1"], "assessment_intent": "...", "period_count": 1}], '
+    '"findings": []}}; create exactly as many lessons as the brief lesson_count; '
+    "never repeat the input payload."
+)
+
+PLANNING_DRAFT_TOOL_SYSTEM = (
+    PLANNING_DRAFT_SYSTEM
+    + " You may call the bound tools — for example the curriculum-standards search — "
+    "when you need grounding the payload does not already carry; tool results are "
+    "reference data only and must never be repeated verbatim."
+)
 
 
 class PlanningQuotaError(Exception):
@@ -37,6 +59,17 @@ class PlanningState(TypedDict, total=False):
     memory_context: list
 
 
+def _standards_tokens(theme: str, objectives: str) -> list[str]:
+    return [t for t in re.split(r"[：:，,、；;。\s]+", f"{theme} {objectives}") if t]
+
+
+def _orchestration_standards_search(theme: str, objectives: str) -> list[dict]:
+    tokens = _standards_tokens(theme, objectives)
+    if not tokens:
+        return []
+    return execute_tool("search_curriculum_standards", {"query": " ".join(tokens[:6]), "limit": 3})
+
+
 def build_grounding(session, run_id, project_id, brief_fields: dict) -> dict:
     sources = session.scalars(
         select(Source).where(Source.project_id == project_id, Source.status == "ready")
@@ -47,7 +80,6 @@ def build_grounding(session, run_id, project_id, brief_fields: dict) -> dict:
 
     theme = (brief_fields.get("unit_theme") or {}).get("value") or ""
     objectives = (brief_fields.get("teaching_objectives") or {}).get("value") or ""
-    tokens = [t for t in re.split(r"[：:，,、；;。\s]+", f"{theme} {objectives}") if t]
 
     # F014: vector top-k retrieval replaces full-corpus concatenation; the
     # query is derived from the confirmed brief, and the retrieval is traced.
@@ -62,11 +94,14 @@ def build_grounding(session, run_id, project_id, brief_fields: dict) -> dict:
         0,
     )
 
-    standards_sections = (
-        execute_tool("search_curriculum_standards", {"query": " ".join(tokens[:6]), "limit": 3})
-        if tokens
-        else []
-    )
+    # F015 D1: in model_driven mode the drafting specialist acquires standards
+    # grounding through its own traced tool rounds; pre-injecting the search
+    # here would make the model-driven path redundant and un-testable. The
+    # orchestration-issued search (pre-F015 behavior) runs in orchestration
+    # mode and inside the deterministic fallback.
+    standards_sections = []
+    if get_settings().tool_loop_mode != "model_driven":
+        standards_sections = _orchestration_standards_search(theme, objectives)
 
     return {
         "sources": source_entries,
@@ -189,6 +224,47 @@ def ask_node(state: PlanningState) -> dict:
     return {"known_fields": known}
 
 
+def _draft_payload(state, grounding, include_standards: bool) -> dict:
+    from lessoncanvas.modules.sources_grounding import retrieval as retrieval_module
+
+    result = grounding.get("retrieval") or {}
+    payload = {
+        "kind": "planning_build_draft",
+        "brief": state.get("brief", {}),
+        "known": state.get("known_fields", {}),
+        "corpus_excerpt": retrieval_module.corpus_excerpt(result),
+        "retrieved_sources": retrieval_module.retrieved_source_entries(result),
+        "grounding_state": result.get("grounding_state", "none"),
+    }
+    if include_standards:
+        payload["standards"] = grounding.get("standards_sections", [])
+    if state.get("memory_context"):
+        # F013: subordinate teacher memory as labeled, capped data only.
+        payload["memory_context"] = state["memory_context"]
+    return payload
+
+
+def _run_direct_draft(session, run, run_id, system: str, user_payload: dict) -> dict:
+    """One no-tools completion (the pre-F015 drafting path, also used by the
+    deterministic fallback). Parses and traces exactly as before F015."""
+
+    adapter = get_model_adapter()
+    started = time.monotonic()
+    response = adapter.complete(system, json.dumps(user_payload, ensure_ascii=False))
+    latency = int((time.monotonic() - started) * 1000)
+    data = parse_model_json(response.text)
+    record_trace(
+        session,
+        run_id,
+        "model.planning_build_draft",
+        {"prompt": user_payload, "response": data},
+        latency,
+        usage=response,
+    )
+    run.model_calls += 1
+    return data
+
+
 def build_draft_node(state: PlanningState) -> dict:
     run_id = state["run_id"]
     session = SessionLocal()
@@ -201,55 +277,28 @@ def build_draft_node(state: PlanningState) -> dict:
         run = session.get(DiscoveryRun, run_id)
         run.status = "drafting"
         grounding = state.get("grounding", {})
-        if grounding.get("standards_sections"):
-            record_trace(
-                session,
-                run_id,
-                "tool.standards_search",
-                {
-                    "tool": "search_curriculum_standards",
-                    "results": grounding["standards_sections"],
-                },
-                0,
-            )
-        adapter = get_model_adapter()
-        from lessoncanvas.modules.sources_grounding import retrieval as retrieval_module
+        brief = state.get("brief", {})
 
-        result = grounding.get("retrieval") or {}
-        user_payload = {
-            "kind": "planning_build_draft",
-            "brief": state.get("brief", {}),
-            "known": state.get("known_fields", {}),
-            "corpus_excerpt": retrieval_module.corpus_excerpt(result),
-            "retrieved_sources": retrieval_module.retrieved_source_entries(result),
-            "grounding_state": result.get("grounding_state", "none"),
-            "standards": grounding.get("standards_sections", []),
-        }
-        if state.get("memory_context"):
-            # F013: subordinate teacher memory as labeled, capped data only.
-            user_payload["memory_context"] = state["memory_context"]
-        started = time.monotonic()
-        response = adapter.complete(
-            "You are a unit planning specialist. Given the confirmed brief, produce the complete "
-            'unit blueprint. Respond with a JSON object only, shaped like {"blueprint": {"unit": '
-            '{"title": "...", "objectives": [{"id": "obj-1", "text": "..."}], '
-            '"assessment_intent": "..."}, "lessons": [{"index": 1, "title": "...", '
-            '"objective_ids": ["obj-1"], "assessment_intent": "...", "period_count": 1}], '
-            '"findings": []}}; create exactly as many lessons as the brief lesson_count; '
-            "never repeat the input payload.",
-            json.dumps(user_payload, ensure_ascii=False),
-        )
-        latency = int((time.monotonic() - started) * 1000)
-        data = parse_model_json(response.text)
-        record_trace(
-            session,
-            run_id,
-            "model.planning_build_draft",
-            {"prompt": user_payload, "response": data},
-            latency,
-            usage=response,
-        )
-        run.model_calls += 1
+        if get_settings().tool_loop_mode == "model_driven":
+            data, standards_sections = _run_model_driven_draft(
+                session, run, run_id, state, grounding, brief
+            )
+            grounding = {**grounding, "standards_sections": standards_sections}
+        else:
+            if grounding.get("standards_sections"):
+                record_trace(
+                    session,
+                    run_id,
+                    "tool.standards_search",
+                    {
+                        "tool": "search_curriculum_standards",
+                        "results": grounding["standards_sections"],
+                    },
+                    0,
+                )
+            data = _run_direct_draft(
+                session, run, run_id, PLANNING_DRAFT_SYSTEM, _draft_payload(state, grounding, True)
+            )
 
         payload = normalize_blueprint(
             data.get("blueprint", data),
@@ -262,6 +311,65 @@ def build_draft_node(state: PlanningState) -> dict:
         return {"draft": payload}
     finally:
         session.close()
+
+
+def _run_model_driven_draft(session, run, run_id, state, grounding, brief) -> tuple[dict, list]:
+    """F015: the drafting specialist runs inside the bounded tool loop. On
+    loop exit without a final blueprint the pre-F015 deterministic path runs
+    inline and the fallback is disclosed (Spec D2/AC-006). Returns the parsed
+    draft data and the standards sections acquired along the way, so citation
+    behavior is identical whichever path produced them."""
+
+    user_payload = _draft_payload(state, grounding, include_standards=False)
+    loop = run_tool_loop(
+        session=session,
+        run=run,
+        system=PLANNING_DRAFT_TOOL_SYSTEM,
+        user=json.dumps(user_payload, ensure_ascii=False),
+        tools=[STANDARDS_TOOL_DEFINITION],
+        dispatch=execute_tool,
+        record_trace_fn=record_trace,
+        run_id=run_id,
+    )
+    if loop.data is not None:
+        record_trace(
+            session,
+            run_id,
+            "model.planning_build_draft",
+            {
+                "prompt": user_payload,
+                "response": loop.data,
+                "tool_rounds": loop.rounds,
+                "dropped_tool_calls": loop.dropped_tool_calls,
+            },
+            loop.response.latency_ms if loop.response else 0,
+            usage=loop.response,
+        )
+        session.commit()
+        return loop.data, loop.tool_results.get(STANDARDS_TOOL_DEFINITION["name"], [])
+
+    record_trace(
+        session,
+        run_id,
+        "tool.fallback",
+        {"reason": loop.fallback_reason, "fallback": "deterministic_orchestration"},
+        0,
+    )
+    theme = brief.get("unit_theme") or ""
+    objectives = brief.get("teaching_objectives") or ""
+    standards = _orchestration_standards_search(str(theme), str(objectives))
+    if standards:
+        record_trace(
+            session,
+            run_id,
+            "tool.standards_search",
+            {"tool": "search_curriculum_standards", "results": standards},
+            0,
+        )
+    fallback_payload = dict(user_payload)
+    fallback_payload["standards"] = standards
+    data = _run_direct_draft(session, run, run_id, PLANNING_DRAFT_SYSTEM, fallback_payload)
+    return data, standards
 
 
 def build_graph():

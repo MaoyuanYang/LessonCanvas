@@ -56,6 +56,9 @@ def model_config_snapshot() -> str:
             # signature so truncation-era and semantic-retrieval passes never
             # compare silently.
             "retrieval_mode": settings.embedding_adapter,
+            # F015 AC-005: tool mode joins the same signature; orchestration-
+            # era and model-driven passes never compare silently.
+            "tool_mode": settings.tool_loop_mode,
         },
         ensure_ascii=False,
     )
