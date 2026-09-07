@@ -4,16 +4,16 @@
 
 | Field | Value |
 | --- | --- |
-| Snapshot Revision | `STAGE-83` |
-| Parent Snapshot | `STAGE-82` @ `9fff33a2ea92` (pre-write hash guard; PR #27 merged `66a0b6c`, main re-verified) |
-| Last Reconciled At | `2026-09-03T01:03:40+08:00` |
-| Reconciled By | `ZCode feature-dev session (YMY / Project Owner driving)` |
-| Repository Ref | `main @ 66a0b6c` (PR #27 merge; F013 delivered) |
-| Write Coordination | `SINGLE_WRITER:ZCode feature-dev session` |
+| Snapshot Revision | `STAGE-84` |
+| Parent Snapshot | `STAGE-83` @ `5442ed213b` (pre-write hash guard; STAGE-83 was stale at pre-F014 — reconciled by F017 after the 2026-09-06 verification pass found it) |
+| Last Reconciled At | `2026-09-06T22:53:42+08:00` |
+| Reconciled By | `ZCode project-dev session (YMY / Project Owner driving)` |
+| Repository Ref | `main @ b818b15` (Phase-2 close-out; F017 remediation changes in worktree, uncommitted) |
+| Write Coordination | `SINGLE_WRITER:ZCode project-dev session` |
 | Lifecycle Path | `GREENFIELD` |
 | Project Phase | `COMPLETE` |
 | Overall State | `ACTIVE` |
-| Current Milestone | F013 Teacher Memory DONE (PR #27 merge `66a0b6c`; backend 515+4skip + ruff, web 108 + tsc + lint 0 errors on main; TS-026 live DeepSeek evidence recorded; Issue #26 closed). Phase-1 Feature Map complete: F001–F013 all DONE. Follow-up candidate: public cloud/internet exposure deployment Feature (F012 D1 residual). Prior: F012 DONE (deployed LAN stack healthy; ADR-0006 delivered) |
+| Current Milestone | Both phases verified end to end: F001–F016 all DONE (Phase-2 close-out 2026-09-04; independent verification pass 2026-09-06 — `docs/VERIFICATION.md`: every executable promise held, zero product defects). Active work: F017 verification remediation `REVIEW` (implemented + fully re-verified in worktree; awaiting owner commit/PR authorization). Follow-up candidate: public cloud/internet exposure deployment Feature (F012 D1 residual) |
 | Tracking Mode | `REMOTE` |
 
 ## Lifecycle Progress
@@ -21,15 +21,16 @@
 | Area / Milestone | State | Authoritative Evidence | Next Condition |
 | --- | --- | --- | --- |
 | Macro design and Feature Map | `COMPLETE` | `specs/ROADMAP.md`, `docs/PRODUCT.md`, `docs/ARCHITECTURE.md` | N/A |
-| F001 Grounded Confirmed Brief | `COMPLETE` | Issue #1 (closed), PR #2 merge `1253ca2`, `specs/F001-grounded-confirmed-brief/` | N/A |
-| F002 planning workflow delivered | `COMPLETE` | Issue #3 (closed), PR #4 merge `8f90bb6`, `specs/F002-confirmed-unit-blueprint/` | N/A |
-| F003 Recoverable Unit Lesson Plans | `DONE` | Issue #6 (closed), PR #7 merge `ad81c82`, `specs/F003-recoverable-unit-lesson-plans/` | F004/F005 refinement |
-| F004+ remaining Feature map | `IN_PROGRESS` | `specs/ROADMAP.md` Feature Map + Issue [#14](https://github.com/MaoyuanYang/LessonCanvas/issues/14) (closed) | F009 delivery (A-009) |
+| Phase-1 Features F001–F013 | `COMPLETE` | `specs/ROADMAP.md` Feature Map; PRs #2–#27 all merged; `specs/PHASE1-retrospective.md` | N/A |
+| Phase-2 Features F014–F016 | `COMPLETE` | `specs/ROADMAP.md` Feature Map; PRs #29/#31/#33 merged; `specs/PHASE2-retrospective.md` | N/A |
+| Whole-project verification (2026-09-06) | `COMPLETE` | `docs/VERIFICATION.md` (all executable promises held; zero product defects; remediation findings recorded) | N/A |
+| F017 Verification Remediation | `REVIEW` | `specs/F017-verification-remediation/spec.md` Gate Record | owner review + commit/PR authorization -> DONE |
 
 ## Active Work
 
 | Activity ID | Work Item | Member | Type | Skill | Skill Stage | Activity State | Work Status | Branch / Worktree | Status Authority | Next Checkpoint | Updated At |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `A-014` | `F017 Verification Remediation (2026-09-06 pass)` | `ZCode project-dev session (YMY / Project Owner driving)` | `AGENT` | `project-dev` | `REVIEW` | `ACTIVE` | `REVIEW` | `N/A` | `specs/ROADMAP.md` F017 row (local work item; no remote Issue bound) | owner commit/PR authorization -> DONE (Gate Record in spec) | `2026-09-06T23:05:00+08:00` |
 | `A-013` | `F013 Teacher Memory` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/26` | N/A - terminal (PR #27 merge `66a0b6c`; DONE record in spec Gate Record) | `2026-09-03T01:03:40+08:00` |
 | `A-010` | `F010 Teacher Product Validation` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/20` | N/A - terminal (PR #21 merge `683172b`) | `2026-09-01T20:25:15+08:00` |
 | `A-012` | `F012 Deployed Portfolio Proof` | `ZCode feature-dev session (YMY / Project Owner driving)` | `AGENT` | `feature-dev` | `COMPLETE` | `DONE` | `DONE` | `N/A` | `https://github.com/MaoyuanYang/LessonCanvas/issues/24` | N/A - terminal (PR #25 merge `c6c7b53`; DONE record in spec Gate Record) | `2026-09-02T23:30:00+08:00` |
@@ -91,6 +92,19 @@
 | F013 | `UI READY` | `PASS` | `specs/F013-teacher-memory/ux-ui.md` UI READY Record @ `ux-ui-f013-r1` / `8b39aeebb9a9` (owner-ratified 2026-09-02) |
 | F013 | `TEST DESIGN READY` | `PASS` | `specs/F013-teacher-memory/test-design.md` Record @ `test-design-f013-r1` / `c033f186772a`, TS-001..TS-027 (risk-based scope; Plan `plan-f013-r1` @ `427356ca088e` approved together 2026-09-02); `Roadmap Status: READY` recorded 2026-09-02 |
 | F013 | `DONE` | `PASS` | PR #27 merge `66a0b6c` (commit `8ddae59`); main re-verified backend 515+4skip + ruff, web 108 + tsc + lint 0 errors; TS-026 live evidence in `specs/F013-teacher-memory/live-evidence.json`; DONE evidence manifest in `specs/F013-teacher-memory/spec.md` Gate Record |
+| F014 | `SPEC READY` | `PASS` | `specs/F014-semantic-source-retrieval/spec.md` Gate Record |
+| F014 | `UI READY` | `PASS` | `specs/F014-semantic-source-retrieval/ux-ui.md` UI READY Record |
+| F014 | `TEST DESIGN READY` | `PASS` | `specs/F014-semantic-source-retrieval/test-design.md` Record |
+| F014 | `DONE` | `PASS` | PR #29 merge `fbe78b4`; ADR-0007; DONE evidence manifest in `specs/F014-semantic-source-retrieval/spec.md` Gate Record |
+| F015 | `SPEC READY` | `PASS` | `specs/F015-governed-model-tool-calling/spec.md` Gate Record |
+| F015 | `UI READY` | `PASS` | `specs/F015-governed-model-tool-calling/ux-ui.md` UI READY Record |
+| F015 | `TEST DESIGN READY` | `PASS` | `specs/F015-governed-model-tool-calling/test-design.md` Record |
+| F015 | `DONE` | `PASS` | PR #31 merge `8de343b`; DONE evidence manifest in `specs/F015-governed-model-tool-calling/spec.md` Gate Record |
+| F016 | `SPEC READY` | `PASS` | `specs/F016-specialist-role-expansion/spec.md` Gate Record |
+| F016 | `UI READY` | `PASS` | `specs/F016-specialist-role-expansion/ux-ui.md` UI READY Record |
+| F016 | `TEST DESIGN READY` | `PASS` | `specs/F016-specialist-role-expansion/test-design.md` Record |
+| F016 | `DONE` | `PASS` | PR #33 merge `f096042`; live evidence incl. six-pass F009 re-baseline in `specs/F016-specialist-role-expansion/`; DONE evidence manifest in `specs/F016-specialist-role-expansion/spec.md` Gate Record |
+| F017 | `SPEC READY` | `PASS` | `specs/F017-verification-remediation/spec.md` (brief change record; no UI/test-design gates — no product behavior change) |
 
 ## Blockers and Conflicts
 
@@ -110,6 +124,9 @@
 
 | Activity ID | Work Item | Member | Outcome | Final Work Status | Final Status Authority | Delivery Evidence | Completed At |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| `A-013x` | `F016 Specialist Role Expansion` | `ZCode feature-dev session` | Specialist role expansion delivered end to end (source-analysis specialist with deploy backfill, plans designer stage, severity-gated review in all three families, formula caps, F009 stage-set signature with pinned analysis state; live evidence incl. six-pass re-baseline) | `DONE` | Issue #32 (auto-closed by merge) | PR #33 merge `f096042` | `2026-09-04` |
+| `A-013w` | `F015 Governed Model Tool Calling` | `ZCode feature-dev session` | Governed model tool calling delivered end to end (model_driven planning drafting loop, whitelist/schema refusals, corrective continuation, bounded rounds inside the run cap, deterministic fallback with disclosure, adversarial dispatch containment, TS-021 live evidence) | `DONE` | Issue #30 (auto-closed by merge) | PR #31 merge `8de343b` | `2026-09-04` |
+| `A-013v` | `F014 Semantic Source Retrieval` | `ZCode feature-dev session` | Semantic source retrieval delivered end to end (pgvector retrieval with chunk-level citations across planning and all three artifact families, honest degradation paths, deploy backfill, ADR-0007 fastembed, F009 retrieval_mode signature with six-pass live re-baseline) | `DONE` | Issue #28 (auto-closed by merge) | PR #29 merge `fbe78b4` | `2026-09-03` |
 | `A-013` | `F013 Teacher Memory` | `ZCode feature-dev session` | Teacher memory delivered end to end (governed proposal pipeline with identity idempotency + best-effort failure + content-hash dedupe; confirmed records with caps and race-safe admission; snapshot-once subordinate injection across discovery/planning/generation with `memory.applied` traces; deterministic language conflict rule; U6 budget priority with disclosed skips; per-project overrides; account + workspace + evidence surfaces; F009 revision-list pinning joining the comparability signature; F011 deletion sweep extension; adversarial inertness proven; TS-026 live DeepSeek quality evidence incl. a real transient failure and live dedupe; review IF-1..IF-5 dispositioned) | `DONE` | Issue #26 (auto-closed by merge) | PR #27 merge `66a0b6c` | `2026-09-03` |
 | `A-012` | `F012 Deployed Portfolio Proof` | `ZCode feature-dev session` | Deployed portfolio proof delivered end to end (local full-stack containers + LAN entry with deploy/smoke/teardown chain, synthetic sample read-only journey + idempotent seeding, live DeepSeek recovery journey TS-029, deletion completeness all-zero + retained ledger, SSE single-process + D10 recheck, teardown/redeploy, a11y/420px spot; ADR-0006 removed Clerk for the MVP — guest workspace tokens, subject rename, deterministic E2E; B-001 checkpointer deadlock found+fixed via entrypoint pre-setup; review IF-1..IF-11 all dispositioned) | `DONE` | Issue #24 (closed) | PR #25 merge `c6c7b53` | `2026-09-02` |
 | `A-011` | `F011 Public Multi-Account Guardrails` | `ZCode feature-dev session` | Public multi-account guardrails delivered end to end (PostgreSQL-authoritative nested rate windows, admission + SSE/upload caps, upload hardening with bomb guards, race-safe quotas and workspace resolution, deletion completeness incl. checkpoints with metadata-only residual repair, worker fast-fail F006 M-2, download audits + usage/audit surfaces + D4(b) retained ledger, governed adversarial corpus + 71-path sweep + 5-workspace journey; latent F001 content_type defect fixed; dependency audits clean) | `DONE` | Issue #22 (auto-closed by merge) | PR #23 merge `42fd778` | `2026-09-02` |

@@ -1,7 +1,7 @@
 # F011: Public Multi-Account Guardrails
 
 - Spec Status: `SPEC READY`
-- Roadmap Status: `NEXT`
+- Roadmap Status: `DONE`
 - Priority: `P0`
 - Owner: Implementation assignee unassigned until Coding starts
 - Work item: [GitHub Issue #22](https://github.com/MaoyuanYang/LessonCanvas/issues/22) — bound 2026-09-01 (authorized); work-status authority

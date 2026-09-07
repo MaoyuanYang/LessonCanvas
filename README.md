@@ -46,13 +46,24 @@ LessonCanvas is a portfolio-first Agent application for individual mainland Chin
 docker compose -f infra/docker-compose.yml up -d
 ```
 
-Starts PostgreSQL+pgvector, Redis, and MinIO with healthchecks.
+Starts PostgreSQL+pgvector, Redis, and MinIO with healthchecks; all services
+auto-restart (`restart: unless-stopped`) after a daemon or host restart.
+
+On a machine that also runs the deployed portfolio stack (below), start the
+infra services with the deployed credentials instead — the plain form above
+recreates postgres/minio with the fallback dev-only credentials and silently
+breaks the deployed stack's MinIO authentication (and any test run using the
+deployed credentials):
+
+```text
+docker compose -f infra/docker-compose.yml --env-file infra/deploy.env up -d
+```
 
 ## Deployed Portfolio Stack (F012)
 
 ```text
 cp infra/deploy.env.example infra/deploy.env     # fill real values (git-ignored)
-infra/scripts/deploy.sh                          # build -> migrate -> start -> smoke
+infra/scripts/deploy.sh                          # build -> start+migrate -> health-wait -> embedding backfill -> source-analysis backfill -> smoke
 LESSONCANVAS_MODEL_ADAPTER=fake LESSONCANVAS_TASKS_EAGER=true \
   docker compose -f infra/docker-compose.yml --profile app exec api \
   python scripts/seed_sample.py                  # idempotent synthetic sample
@@ -68,6 +79,7 @@ Runs the complete stack (Web, API, Celery Worker, PostgreSQL/pgvector, Redis, Mi
 cd apps/backend
 uv sync --group dev
 uv run uvicorn lessoncanvas.main:app --reload        # API on :8000, GET /health
+uv run celery -A lessoncanvas.worker.celery_app worker   # worker, needs Redis
 
 # Frontend (Node 24, pnpm via corepack)
 corepack pnpm install
@@ -86,6 +98,11 @@ corepack pnpm web:test
 corepack pnpm web:lint
 corepack pnpm web:typecheck
 ```
+
+The same deterministic gates run in CI (`.github/workflows/ci.yml`: backend
+ruff+pytest against pgvector/MinIO service containers, web test/lint/typecheck/
+build). Live-model evaluation and gated E2E journeys stay outside CI by design
+(`docs/TESTING.md`).
 
 ## Documentation
 

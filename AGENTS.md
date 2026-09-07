@@ -47,7 +47,10 @@
 
 ```text
 Start:    docker compose -f infra/docker-compose.yml up -d
-          (PostgreSQL+pgvector, Redis, MinIO; all with healthchecks)
+          (PostgreSQL+pgvector, Redis, MinIO; all with healthchecks and
+          restart: unless-stopped; on a machine that also runs the deployed
+          stack, use --env-file infra/deploy.env so the infra containers keep
+          the deployed credentials instead of the fallback dev-only values)
 
 Backend:  cd apps/backend
           uv sync --group dev
@@ -64,16 +67,18 @@ Frontend: corepack pnpm install                            (pnpm via corepack)
           corepack pnpm web:typecheck
 
 Deployed stack (F012):
-          infra/scripts/deploy.sh                          (full-stack containers; needs infra/deploy.env)
+          infra/scripts/deploy.sh                          (build -> start+migrate -> health-wait -> embedding backfill -> source-analysis backfill -> smoke; needs infra/deploy.env)
           infra/scripts/smoke.sh                           (deployed health/entry checks)
           infra/scripts/teardown.sh                        (destructive clean-state teardown)
+
+CI:       .github/workflows/ci.yml                         (deterministic gates only: backend ruff+pytest on service containers, web test/lint/typecheck/build)
 ```
 
 - Never invent a command. When tooling changes, update this file, `README.md`, and `docs/TESTING.md` together.
 - Run the smallest relevant checks during development and the project-required verification before completion.
 - Test observable behavior and contracts, not private implementation structure.
 - Add a regression test for a bug fix when practical.
-- Keep deterministic CI separate from controlled live-model evaluation when provider cost or variance would make CI unreliable.
+- Keep deterministic CI separate from controlled live-model evaluation when provider cost or variance would make CI unreliable. CI runs no live-model work and no gated E2E journey; those stay owner-authorized local executions.
 
 ## Stable Coding Conventions
 
