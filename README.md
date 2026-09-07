@@ -37,6 +37,7 @@ LessonCanvas is a portfolio-first Agent application for individual mainland Chin
 - Delivered features: all sixteen Features `F001`–`F016` are `DONE` — Phase 1 (`F001`–`F013`: grounded confirmed brief, confirmed unit blueprint, recoverable lesson plans, editable slide decks, exercises and answers, layered run evidence, versioned targeted regeneration, alignment review and delivery, technical portfolio evaluation, teacher product validation, public multi-account guardrails, deployed portfolio proof, teacher memory) and Phase 2 (`F014`–`F016`: semantic source retrieval, governed model tool calling, specialist role expansion); see `specs/ROADMAP.md`
 - Phase-1 close-out: holistic review and full-stack re-verification recorded in `specs/PHASE1-retrospective.md` (2026-09-03)
 - Phase-2 close-out: layered full-stack re-verification of the complete two-phase system recorded in `specs/PHASE2-retrospective.md` (2026-09-04)
+- Independent verification pass (2026-09-06): every executable promise held, zero product defects — `docs/VERIFICATION.md`; all findings remediated by F017 (PR [#34](https://github.com/MaoyuanYang/LessonCanvas/pull/34), 2026-09-07), including deterministic CI (`.github/workflows/ci.yml`, first run green)
 - Next actionable: none remaining in either Feature Map; sole named follow-up candidate is the public cloud/region/internet exposure deployment Feature (F012 D1 residual)
 - Application scaffold: monorepo with `apps/web` (Next.js) and `apps/backend` (FastAPI + Celery) established; infrastructure via `infra/docker-compose.yml`
 

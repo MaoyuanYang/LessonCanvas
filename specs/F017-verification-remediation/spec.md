@@ -1,7 +1,7 @@
 # F017 — Verification Remediation (2026-09-06 pass)
 
 - Spec Status: `SPEC READY`
-- Roadmap Status: `REVIEW`
+- Roadmap Status: `DONE`
 - Work type: documentation / infrastructure / hygiene remediation of the findings recorded in `docs/VERIFICATION.md` (2026-09-06 verification pass). No product behavior changes.
 - Change level: L1 per item (see decisions); no ADR required — no module boundary, technology choice, or source-of-truth change.
 
@@ -41,6 +41,15 @@ No new product tests — no behavior changed. Verification = the existing docume
 ## Plan
 
 Single batch (docs + config + hygiene in one change record): AC-1 → AC-9 in dependency order (compose + CI first, then docs, then hygiene), then the full verification above, then DONE record + Roadmap sync.
+
+## Gate Record: DONE (2026-09-07)
+
+Delivered via PR [#34](https://github.com/MaoyuanYang/LessonCanvas/pull/34) merged as `e9c0f6f` under the owner-authorized full remaining flow ("全部授权"). The REVIEW block below records the implementation verification; delivery added:
+
+- First real CI execution on PR #34. Two first-run defects found and fixed in the workflow itself (`a9430b8`): MinIO cannot be a GitHub Actions service container (the image has no default command and service containers cannot take one — it exited immediately and reported unhealthy), so CI starts it as a plain `docker run` step with a health wait; and root package.json scripts call bare `pnpm`, so `corepack enable` installs the shims before use.
+- Post-fix CI: **both jobs green** — backend (ruff + full pytest) 6m50s, web (vitest + eslint + tsc + build) 1m18s — the deterministic CI promise is now executable and passing on GitHub Actions.
+
+All AC-1..AC-9 verified; documentation sync complete (README/AGENTS/TESTING/FRONTEND/VERIFICATION/ROADMAP/STAGE + F001/F011 headers). Residuals unchanged from the REVIEW record: none from the finding list; F010 real-teacher evidence and the public-exposure deployment feature remain the standing owner-decision items recorded in `docs/VERIFICATION.md`.
 
 ## Gate Record: REVIEW (2026-09-06)
 
