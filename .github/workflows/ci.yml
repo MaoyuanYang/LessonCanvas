@@ -1,0 +1,96 @@
+# Deterministic CI (F017, verification finding 3): runs exactly the documented
+# local gates from README.md / docs/TESTING.md / AGENTS.md.
+#
+# Deliberately excluded, per the documented separation (AGENTS.md build-and-test
+# rules; docs/TESTING.md "deterministic vs live"):
+#   - live-model evaluation (real DeepSeek journeys, F009/F013-F016 live runners)
+#   - fault-stack/deployed E2E (needs the composed stack and gated env)
+# The backend job uses the scripted fake adapter (settings default) and the
+# dev-only service credentials below; no secrets are required.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
+
+jobs:
+  backend:
+    name: backend (ruff + pytest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/backend
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: lessoncanvas
+          POSTGRES_PASSWORD: lessoncanvas_dev_only
+          POSTGRES_DB: lessoncanvas
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U lessoncanvas"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      # conftest default, stated explicitly: isolated test database created and
+      # migrated automatically by the session fixture.
+      LESSONCANVAS_DATABASE_URL: postgresql+psycopg://lessoncanvas:lessoncanvas_dev_only@localhost:5432/lessoncanvas_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      # MinIO cannot be a service container: the image has no default command,
+      # and service containers cannot take one — start it as a plain container.
+      - name: Start MinIO
+        run: |
+          docker run -d --name minio -p 9000:9000 \
+            -e MINIO_ROOT_USER=lessoncanvas \
+            -e MINIO_ROOT_PASSWORD=lessoncanvas_dev_only \
+            minio/minio:latest server /data
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:9000/minio/health/live; then
+              echo "minio ready"; exit 0
+            fi
+            sleep 2
+          done
+          echo "minio did not become ready"; docker logs minio; exit 1
+      - name: Install dependencies
+        run: uv sync --group dev
+      - name: Lint
+        run: uv run ruff check src tests migrations
+      - name: Test
+        run: uv run pytest
+
+  web:
+    name: web (vitest + eslint + tsc + build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      # Root package.json scripts call bare `pnpm`; install the corepack shims
+      # so the nested invocations resolve.
+      - run: corepack enable
+      - name: Install dependencies
+        run: corepack pnpm install --frozen-lockfile
+      - name: Component tests
+        run: corepack pnpm web:test
+      - name: Lint
+        run: corepack pnpm web:lint
+      - name: Typecheck
+        run: corepack pnpm web:typecheck
+      - name: Build
+        run: corepack pnpm web:build

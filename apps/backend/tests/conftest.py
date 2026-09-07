@@ -3,10 +3,16 @@ import os
 import socket
 from pathlib import Path
 
-os.environ.setdefault(
-    "LESSONCANVAS_DATABASE_URL",
-    "postgresql+psycopg://lessoncanvas:lessoncanvas_dev_only@localhost:5432/lessoncanvas_test",
-)
+# An explicitly exported LESSONCANVAS_DATABASE_URL wins verbatim (CI, credential
+# overrides). Otherwise derive the test database URL from the effective settings
+# (shell env or apps/backend/.env) so local credentials flow through, swapping
+# only the database name onto the isolated lessoncanvas_test database.
+if os.environ.get("LESSONCANVAS_DATABASE_URL") is None:
+    from lessoncanvas.settings import get_settings
+
+    _base_url = get_settings().database_url
+    get_settings.cache_clear()
+    os.environ["LESSONCANVAS_DATABASE_URL"] = _base_url.rsplit("/", 1)[0] + "/lessoncanvas_test"
 os.environ["LESSONCANVAS_TASKS_EAGER"] = "true"
 os.environ["LESSONCANVAS_S3_BUCKET_SOURCES"] = "lessoncanvas-sources-test"
 os.environ["LESSONCANVAS_MODEL_ADAPTER"] = "fake"

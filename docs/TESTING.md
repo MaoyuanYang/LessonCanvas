@@ -46,7 +46,7 @@
 
 ## Environments and Test Data
 
-- Environments: local, CI, and a public-demo-like staging environment once scaffolding exists. Provider-live evaluations run separately from deterministic CI unless cost and stability permit otherwise.
+- Environments: local and CI (`.github/workflows/ci.yml`: the deterministic backend and web gates on push/PR; no live-model work, no gated E2E), plus a public-demo-like deployed environment (`infra/scripts/deploy.sh`, F012). Provider-live evaluations run separately from deterministic CI unless cost and stability permit otherwise.
 - Isolation: every test creates explicit workspace ownership and cleans all database, vector, object, and trace state. Cross-owner negative cases are mandatory.
 - Test data: use synthetic, public, or explicitly licensed senior-high English samples. Never use identifiable student information or a teacher's private material as an ungoverned fixture.
 - External services: use fakes for deterministic rule tests, contract tests or sandboxes for provider boundaries, and a controlled live suite for model and rendering evidence.
@@ -68,19 +68,27 @@
 ```text
 Backend unit/integration:  cd apps/backend && uv run pytest
 Backend lint:              uv run ruff check src tests migrations
+Backend worker (dev):      uv run celery -A lessoncanvas.worker.celery_app worker   (needs Redis)
 Frontend component tests:  corepack pnpm web:test          (Vitest + Testing Library)
 Frontend lint/typecheck:   corepack pnpm web:lint / web:typecheck
 E2E:                       corepack pnpm --filter web test:e2e   (Playwright; journeys bootstrap a guest workspace token via /auth/guest-token — fully deterministic, ADR-0006)
 Services:                  docker compose -f infra/docker-compose.yml up -d
+                           (on a machine that also runs the deployed stack, use
+                           --env-file infra/deploy.env — the plain form recreates
+                           postgres/minio with fallback dev credentials and silently
+                           breaks the deployed stack's MinIO authentication)
 Dev DB migration:          cd apps/backend && uv run alembic upgrade head   (run after pulling new migrations; the test DB upgrades automatically)
-Deployed stack:            infra/scripts/deploy.sh            (F012 full-stack container deployment: build -> migrate -> start -> smoke)
+Deployed stack:            infra/scripts/deploy.sh            (F012 full-stack container deployment: build -> start+migrate -> health-wait -> embedding backfill -> source-analysis backfill -> smoke)
 Deployed smoke:            infra/scripts/smoke.sh             (API /health + web entry; API_BASE/WEB_BASE overridable)
 Deployed teardown:         infra/scripts/teardown.sh          (destructive: removes containers AND volumes)
 Sample seeding:            LESSONCANVAS_MODEL_ADAPTER=fake LESSONCANVAS_TASKS_EAGER=true \
                              uv run python scripts/seed_sample.py   (in apps/backend; idempotent, zero model spend)
+CI:                        .github/workflows/ci.yml           (deterministic backend ruff+pytest on pgvector/MinIO service containers + web test/lint/typecheck/build; no secrets, no live model)
 ```
 
 Deterministic suites replace DeepSeek with the scripted fake adapter and use application-issued workspace tokens (ADR-0006; no third-party identity in any suite); live-provider evidence runs separately (F001 Test Design TQ-001). Integration tests that require local services skip automatically when a service is unreachable.
+
+Current environment note (F017, 2026-09-06): the local `apps/backend/.env` is refreshed to the deployed-stack credentials, so `uv run pytest` runs bare — the conftest derives the test URL from the effective settings (shell env or `apps/backend/.env`) and swaps only the database name onto the isolated `lessoncanvas_test` database; an explicitly exported `LESSONCANVAS_DATABASE_URL` still wins verbatim (CI, overrides). Historical per-feature environment notes below that mention deploy.env overrides or a stale `.env` record the state at their delivery date. The deployed stack still occupies the local API port (:8000) and serves web on :3002 (`LESSONCANVAS_WEB_PORT`), so deterministic E2E keeps using free ports with a dedicated fake API and CORS extended to the dev web origin.
 
 E2E operational notes (Phase-1 review, 2026-09-03): each gated spec enables via its `E2E_*_FAULT=1` / `E2E_*_LIVE=1` variable. Run journeys with `--workers=1` (serial). The fault-marker scripting is one-shot per fake-API process per key: `TRANSIENT_FAIL` fails only the first three attempts for a lesson, and the plan-phase key is shared by the generation/deck/exercise TS-026 journeys — start a fresh fake instance before each such suite. Cap-exhaustion journeys additionally need a separately configured fake instance paired with its own web server whose `NEXT_PUBLIC_API_BASE_URL` targets that instance, because the browser calls the API baked into the web build/server, not `E2E_API_BASE_URL` (which only mints the workspace token). Since F016, per-run caps are `max(family floor, per-lesson formula + slack)` (`run_orchestration/caps.py`), so a small cap requires zeroing the formula and lowering the floor below the full-run stage count while keeping it at or above the planning-run budget: for the standard 6-lesson journey unit use plans `LESSONCANVAS_MAX_MODEL_CALLS_PER_RUN=17` with `LESSONCANVAS_MODEL_CALL_CAP_PLANS_PER_LESSON=0` and `LESSONCANVAS_MODEL_CALL_CAP_SLACK=0` (cap 17 < 18 stage calls → exhausts at the lesson-6 review; the discovery run checks the same raw setting, so the floor must stay ≥ planning needs), and decks/exercises `LESSONCANVAS_MAX_MODEL_CALLS_PER_DECK_RUN=2` / `..._PER_EXERCISE_RUN=2` with their `..._CAP_{DECKS,EXERCISES}_PER_LESSON=0` (cap 2 → lesson 1 write+review completes, lesson 2 exhausts). Verified green in the Phase-2 close-out pass (2026-09-04; `specs/PHASE2-retrospective.md`). Run at most one `next dev` per app directory at a time: concurrent dev servers share `.next` and cross-contaminate `NEXT_PUBLIC_*` inlining. Recorded green executions served the web from `next dev`; production builds surface the known fill/save re-render race more often (F004 M-1 / F013 IF-4 class).
 

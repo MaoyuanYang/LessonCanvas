@@ -1,7 +1,7 @@
 # F001: Grounded Confirmed Brief
 
 - Spec Status: `SPEC READY`
-- Roadmap Status: `NEXT`
+- Roadmap Status: `DONE`
 - Work item: [GitHub Issue #1](https://github.com/MaoyuanYang/LessonCanvas/issues/1)
 - Priority: `P0`
 - Owner: Implementation assignee unassigned until Coding starts
